@@ -1,5 +1,3 @@
-import get2dContextError from './get2dContextError';
-
 export default function imageToBlob(image: HTMLImageElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
@@ -7,7 +5,7 @@ export default function imageToBlob(image: HTMLImageElement): Promise<Blob> {
     canvas.height = image.height;
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) throw get2dContextError();
+    if (!ctx) throw new Error('Failed to get canvas 2d context.');
 
     ctx.drawImage(image, 0, 0);
 
@@ -15,7 +13,7 @@ export default function imageToBlob(image: HTMLImageElement): Promise<Blob> {
       if (blob) {
         resolve(blob);
       } else {
-        reject(new Error('Unable get blob from image.'));
+        reject(new Error('Unable to get blob from image.'));
       }
     });
   });
