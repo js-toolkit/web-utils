@@ -11,7 +11,7 @@
 // opt-in, read https://cra.link/PWA
 
 import appEnv from '@vzh/configs/appEnv';
-import apprc from '@vzh/configs/apprc';
+import buildConfig from '@vzh/configs/buildConfig';
 
 export interface Config {
   onUpdate?(registration: ServiceWorkerRegistration): void;
@@ -109,7 +109,8 @@ function checkValidServiceWorker(swUrl: string, config?: Config): Promise<void> 
 export function register(config?: Config): void {
   if (appEnv.prod && 'serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
-    const publicUrl = new URL(apprc.client.output.publicPath, window.location.href);
+    const clientBuildConfig = buildConfig.client || buildConfig.default.client;
+    const publicUrl = new URL(clientBuildConfig.output.publicPath, window.location.href);
     if (publicUrl.origin !== window.location.origin) {
       // Our service worker won't work if PUBLIC_URL is on a different origin
       // from what our page is served on. This might happen if a CDN is used to
@@ -119,7 +120,7 @@ export function register(config?: Config): void {
     }
 
     window.addEventListener('load', () => {
-      const swUrl = `${apprc.client.output.publicPath}${apprc.client.output.sw.swDest}`;
+      const swUrl = `${clientBuildConfig.output.publicPath}${clientBuildConfig.output.sw.swDest}`;
 
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
