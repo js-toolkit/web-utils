@@ -11,8 +11,15 @@ export default class EventTargetListeners {
     return listener;
   }
 
-  removeAllListeners(): this {
-    this.listeners.forEach((l) => l.removeAllListeners());
+  removeAllListeners<T extends EventTarget>(target?: T): this {
+    if (target) {
+      // eslint-disable-next-line no-unused-expressions
+      this.listeners.get(target)?.removeAllListeners();
+      this.listeners.delete(target);
+    } else {
+      this.listeners.forEach((l) => l.removeAllListeners());
+      this.listeners.clear();
+    }
     return this;
   }
 }

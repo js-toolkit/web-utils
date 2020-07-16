@@ -131,6 +131,10 @@ export default class EventTargetListener<
     const map = useCapture ? this.captureListeners[type] : this.normalListeners[type];
     const wrapper = map?.get(listener);
     map && wrapper && map.delete(listener);
+    if (map?.size === 0) {
+      if (useCapture) delete this.captureListeners[type];
+      else delete this.normalListeners[type];
+    }
     this.target.removeEventListener(type, wrapper ?? listener, options);
 
     return this;
