@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 type GetEventType<T extends Element> = T['addEventListener'] extends {
   (
     type: infer K,
@@ -29,9 +31,9 @@ export default class ElementEventListener<
     this.target = target;
   }
 
-  on<K extends GetEventType<T>>(
+  on<K extends GetEventType<T>, E extends Event = Event>(
     type: K,
-    listener: (this: T, ev: K extends keyof M ? M[K] : Event, ...rest: any[]) => any,
+    listener: (this: T, ev: K extends keyof M ? M[K] : E, ...rest: any[]) => any,
     options?: boolean | AddEventListenerOptions
   ): this;
 
@@ -42,7 +44,7 @@ export default class ElementEventListener<
   ): this;
 
   on(type: string, listener: any, options?: boolean | AddEventListenerOptions): this {
-    this.target.addEventListener(type, listener);
+    this.target.addEventListener(type, listener, options);
 
     const useCapture =
       options === true || (typeof options === 'object' && (options.capture ?? false));
@@ -60,16 +62,41 @@ export default class ElementEventListener<
     return this;
   }
 
-  off<K extends GetEventType<T>>(
+  once<K extends GetEventType<T>, E extends Event = Event>(
     type: K,
-    listener: (this: T, ev: K extends keyof M ? M[K] : Event) => any,
+    listener: (this: T, ev: K extends keyof M ? M[K] : E, ...rest: any[]) => any,
+    options?: boolean | Omit<AddEventListenerOptions, 'once'>
+  ): this;
+
+  once(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | Omit<AddEventListenerOptions, 'once'>
+  ): this;
+
+  once(
+    type: string,
+    listener: any,
+    options?: boolean | Omit<AddEventListenerOptions, 'once'>
+  ): this {
+    return this.on(type, listener, {
+      ...(typeof options === 'object' ? options : { capture: options === true }),
+      once: true,
+    });
+  }
+
+  off<K extends GetEventType<T>, E extends Event = Event>(
+    type: K,
+    listener: (this: T, ev: K extends keyof M ? M[K] : E, ...rest: any[]) => any,
     options?: boolean | EventListenerOptions
   ): this;
+
   off(
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | EventListenerOptions
   ): this;
+
   off(type: string, listener: any, options?: boolean | EventListenerOptions): this {
     this.target.removeEventListener(type, listener, options);
 
@@ -91,7 +118,7 @@ export default class ElementEventListener<
 
   removeAllListeners(type?: string): this;
 
-  removeAllListeners(type?: any): this {
+  removeAllListeners(type?: string): this {
     if (type) {
       const normalList = this.listeners[type];
       normalList && normalList.forEach((l) => this.off(type, l));
