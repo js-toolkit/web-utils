@@ -103,10 +103,10 @@
   dependencies:
     eslint-visitor-keys "^1.1.0"
 
-"@vzh/configs@^3.65.1":
-  version "3.65.1"
-  resolved "https://registry.yarnpkg.com/@vzh/configs/-/configs-3.65.1.tgz#5fda6d44d1eabad985b547245f32a58cb84a882d"
-  integrity sha512-PYh7iAjt/5MG1ALWqPfAX9Dyu0XJ2sdPmeAuBh1E8tMvEHc/mKQ6DsGJskL6Uw0oLGJc/EC4rLUhXUo7HS4Zeg==
+"@vzh/configs@^3.65.2":
+  version "3.65.2"
+  resolved "https://registry.yarnpkg.com/@vzh/configs/-/configs-3.65.2.tgz#2cc560a432710c0728418ab57f1fb1d73e88dea2"
+  integrity sha512-Z+I4Z9EnPpieRZtPmCgIVpQu6uCz0+9LzIx3nJ5SISe6NKQZg4jwxwOjlEwTJBDiOLrNpNPbeXxlNkOsBQ1epw==
 
 acorn-jsx@^5.2.0:
   version "5.2.0"
