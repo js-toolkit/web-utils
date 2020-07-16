@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-type GetEventType<T extends Element> = T['addEventListener'] extends {
+type GetEventType<T extends EventTarget> = T['addEventListener'] extends {
   (
     type: infer K,
     listener: (this: T, ev: any) => any,
@@ -15,20 +15,39 @@ type GetEventType<T extends Element> = T['addEventListener'] extends {
   ? K
   : string;
 
-export default class ElementEventListener<
-  T extends Element,
+export default class EventTargetListener<
+  T extends EventTarget,
   M extends ElementEventMap = ElementEventMap
 > {
   private readonly target: T;
 
-  private readonly listeners: Partial<Record<string, Set<EventListenerOrEventListenerObject>>> = {};
+  private readonly normalListeners: Partial<
+    Record<string, Map<EventListenerOrEventListenerObject, EventListener>>
+  > = {};
 
   private readonly captureListeners: Partial<
-    Record<string, Set<EventListenerOrEventListenerObject>>
+    Record<string, Map<EventListenerOrEventListenerObject, EventListener>>
   > = {};
 
   constructor(target: T) {
     this.target = target;
+  }
+
+  private createWrapper(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ): (ev: Event, ...rest: any[]) => any {
+    return (ev: Event, ...rest: any[]) => {
+      if (typeof options === 'object' && options.once) {
+        this.off(type, listener, options);
+      }
+      if (typeof listener === 'object') {
+        (listener.handleEvent as (ev: Event, ...rest: any[]) => any)(ev, ...rest);
+      } else {
+        (listener as (ev: Event, ...rest: any[]) => any)(ev, ...rest);
+      }
+    };
   }
 
   on<K extends GetEventType<T>, E extends Event = Event>(
@@ -44,19 +63,27 @@ export default class ElementEventListener<
   ): this;
 
   on(type: string, listener: any, options?: boolean | AddEventListenerOptions): this {
-    this.target.addEventListener(type, listener, options);
-
     const useCapture =
       options === true || (typeof options === 'object' && (options.capture ?? false));
 
     if (useCapture) {
-      const list = this.captureListeners[type] ?? new Set();
-      list.add(listener);
-      this.captureListeners[type] = list;
+      const map =
+        this.captureListeners[type] ?? new Map<EventListenerOrEventListenerObject, EventListener>();
+
+      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, options);
+      !map.has(listener) && map.set(listener, wrapper);
+
+      this.captureListeners[type] = map;
+      this.target.addEventListener(type, wrapper, options);
     } else {
-      const list = this.listeners[type] ?? new Set();
-      list.add(listener);
-      this.listeners[type] = list;
+      const map =
+        this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, EventListener>();
+
+      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, options);
+      !map.has(listener) && map.set(listener, wrapper);
+
+      this.normalListeners[type] = map;
+      this.target.addEventListener(type, wrapper, options);
     }
 
     return this;
@@ -98,18 +125,13 @@ export default class ElementEventListener<
   ): this;
 
   off(type: string, listener: any, options?: boolean | EventListenerOptions): this {
-    this.target.removeEventListener(type, listener, options);
-
     const useCapture =
       options === true || (typeof options === 'object' && (options.capture ?? false));
 
-    if (useCapture) {
-      const list = this.captureListeners[type];
-      list && list.delete(listener);
-    } else {
-      const list = this.listeners[type];
-      list && list.delete(listener);
-    }
+    const map = useCapture ? this.captureListeners[type] : this.normalListeners[type];
+    const wrapper = map?.get(listener);
+    map && wrapper && map.delete(listener);
+    this.target.removeEventListener(type, wrapper ?? listener, options);
 
     return this;
   }
@@ -120,13 +142,13 @@ export default class ElementEventListener<
 
   removeAllListeners(type?: string): this {
     if (type) {
-      const normalList = this.listeners[type];
-      normalList && normalList.forEach((l) => this.off(type, l));
-
-      const captureList = this.captureListeners[type];
-      captureList && captureList.forEach((l) => this.off(type, l, true));
+      const normalMap = this.normalListeners[type];
+      normalMap && normalMap.forEach((l) => this.off(type, l));
+      //
+      const captureMap = this.captureListeners[type];
+      captureMap && captureMap.forEach((l) => this.off(type, l, true));
     } else {
-      Object.keys(this.listeners).forEach((k) => this.removeAllListeners(k));
+      Object.keys(this.normalListeners).forEach((k) => this.removeAllListeners(k));
       Object.keys(this.captureListeners).forEach((k) => this.removeAllListeners(k));
     }
 
