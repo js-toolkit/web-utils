@@ -137,33 +137,33 @@ export default {
     return this.isFullscreen ? this.exit() : this.request(element);
   },
 
-  onChange(callback: VoidFunction): void {
-    this.on('change', callback);
+  onChange(listener: EventListenerOrEventListenerObject): void {
+    this.on('change', listener);
   },
 
-  onError(callback: VoidFunction): void {
-    this.on('error', callback);
+  onError(listener: EventListenerOrEventListenerObject): void {
+    this.on('error', listener);
   },
 
   on(
     type: FullscreenEventTypes,
-    callback: VoidFunction,
+    listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
   ): void {
     const eventName = eventNameMap[type];
     if (eventName) {
-      document.addEventListener(eventName, callback, options);
+      document.addEventListener(eventName, listener, options);
     }
   },
 
   off(
     type: FullscreenEventTypes,
-    callback: VoidFunction,
+    listener: EventListenerOrEventListenerObject,
     options?: boolean | EventListenerOptions
   ): void {
     const eventName = eventNameMap[type];
     if (eventName) {
-      document.removeEventListener(eventName, callback, options);
+      document.removeEventListener(eventName, listener, options);
     }
   },
 };
