@@ -53,7 +53,7 @@ const fullscreenFnNames: FullscreenFnNames | undefined = (() => {
     },
   ];
 
-  return fnNames.find((names) => names[1] in document);
+  return fnNames.find(({ exitFullscreenName }) => exitFullscreenName in document);
 })();
 
 export type FullscreenEventTypes = 'change' | 'error';
