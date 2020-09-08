@@ -13,10 +13,10 @@ export default function getInnerRect(element: Element): ClientRect {
     height,
   } = window.getComputedStyle(element);
 
-  const left = parseFloat(paddingLeft) - parseFloat(borderLeftWidth);
-  const right = parseFloat(paddingRight) - parseFloat(borderRightWidth);
-  const top = parseFloat(paddingTop) - parseFloat(borderTopWidth);
-  const bottom = parseFloat(paddingBottom) - parseFloat(borderBottomWidth);
+  const left = parseFloat(paddingLeft) + parseFloat(borderLeftWidth);
+  const right = parseFloat(paddingRight) + parseFloat(borderRightWidth);
+  const top = parseFloat(paddingTop) + parseFloat(borderTopWidth);
+  const bottom = parseFloat(paddingBottom) + parseFloat(borderBottomWidth);
 
   const innerWidth =
     boxSizing === 'border-box' ? parseFloat(width) - left - right : parseFloat(width);
