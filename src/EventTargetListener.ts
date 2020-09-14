@@ -158,6 +158,23 @@ export default class EventTargetListener<
 
     return this;
   }
+
+  removeAllListenersBut<K extends GetEventType<T>>(...types: K[]): this;
+
+  removeAllListenersBut(...types: string[]): this;
+
+  removeAllListenersBut(...types: string[]): this {
+    if (types.length === 0) return this.removeAllListeners();
+
+    Object.keys(this.normalListeners).forEach(
+      (k) => !types.includes(k) && this.removeAllListeners(k)
+    );
+    Object.keys(this.captureListeners).forEach(
+      (k) => !types.includes(k) && this.removeAllListeners(k)
+    );
+
+    return this;
+  }
 }
 
 // new ElementEventListener<HTMLVideoElement, HTMLMediaElementEventMap>({} as HTMLVideoElement).on(
