@@ -1,4 +1,6 @@
-export default function getInnerRect(element: Element): ClientRect {
+export default function getInnerRect(
+  elementOrComputedStyle: Element | CSSStyleDeclaration
+): ClientRect {
   const {
     boxSizing,
     paddingLeft,
@@ -11,7 +13,10 @@ export default function getInnerRect(element: Element): ClientRect {
     borderBottomWidth,
     width,
     height,
-  } = window.getComputedStyle(element);
+  } =
+    'tagName' in elementOrComputedStyle
+      ? window.getComputedStyle(elementOrComputedStyle)
+      : elementOrComputedStyle;
 
   const left = parseFloat(paddingLeft) + parseFloat(borderLeftWidth);
   const right = parseFloat(paddingRight) + parseFloat(borderRightWidth);
