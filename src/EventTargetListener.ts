@@ -15,19 +15,59 @@ type GetEventType<T extends EventTarget> = T['addEventListener'] extends {
   ? K
   : string;
 
+type EventListenersMap = Partial<
+  Record<string, Map<EventListenerOrEventListenerObject, EventListener>>
+>;
+
+type ListenerWrapper = (ev: Event, ...rest: any[]) => any;
+
+let passiveSupported = false;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const options: AddEventListenerOptions = Object.defineProperty({}, 'passive', {
+    get() {
+      passiveSupported = true;
+    },
+  });
+  window.addEventListener(
+    'test' as keyof WindowEventMap,
+    (null as unknown) as EventListener,
+    options
+  );
+  // eslint-disable-next-line no-empty
+} catch (err) {}
+
+function normalizeOptions(options: boolean | AddEventListenerOptions | undefined): typeof options {
+  if (options && typeof options === 'object') {
+    let result = options;
+    if ('passive' in options && !passiveSupported) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { passive, ...rest } = options;
+      result = rest;
+    }
+    // eslint-disable-next-line guard-for-in, no-restricted-syntax
+    for (const _ in result) {
+      // Non empty options
+      return result;
+    }
+    // Options is empty
+    return undefined;
+  }
+  return options;
+}
+
 export default class EventTargetListener<
   T extends EventTarget,
   M extends ElementEventMap = ElementEventMap
 > {
   private readonly target: T;
 
-  private readonly normalListeners: Partial<
-    Record<string, Map<EventListenerOrEventListenerObject, EventListener>>
-  > = {};
+  private readonly normalListeners: EventListenersMap = {};
 
-  private readonly captureListeners: Partial<
-    Record<string, Map<EventListenerOrEventListenerObject, EventListener>>
-  > = {};
+  private readonly captureListeners: EventListenersMap = {};
+
+  readonly passiveSupported = passiveSupported;
 
   constructor(target: T) {
     this.target = target;
@@ -37,15 +77,15 @@ export default class EventTargetListener<
     type: string,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
-  ): (ev: Event, ...rest: any[]) => any {
-    return (ev: Event, ...rest: any[]) => {
+  ): ListenerWrapper {
+    return (ev, ...rest) => {
       if (typeof options === 'object' && options.once) {
         this.off(type, listener, options);
       }
       if (typeof listener === 'object') {
-        (listener.handleEvent as (ev: Event, ...rest: any[]) => any)(ev, ...rest);
+        (listener.handleEvent as ListenerWrapper)(ev, ...rest);
       } else {
-        (listener as (ev: Event, ...rest: any[]) => any)(ev, ...rest);
+        (listener as ListenerWrapper)(ev, ...rest);
       }
     };
   }
@@ -74,7 +114,7 @@ export default class EventTargetListener<
       !map.has(listener) && map.set(listener, wrapper);
 
       this.captureListeners[type] = map;
-      this.target.addEventListener(type, wrapper, options);
+      this.target.addEventListener(type, wrapper, normalizeOptions(options));
     } else {
       const map =
         this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, EventListener>();
@@ -83,7 +123,7 @@ export default class EventTargetListener<
       !map.has(listener) && map.set(listener, wrapper);
 
       this.normalListeners[type] = map;
-      this.target.addEventListener(type, wrapper, options);
+      this.target.addEventListener(type, wrapper, normalizeOptions(options));
     }
 
     return this;
@@ -107,7 +147,7 @@ export default class EventTargetListener<
     options?: boolean | Omit<AddEventListenerOptions, 'once'>
   ): this {
     return this.on(type, listener, {
-      ...(typeof options === 'object' ? options : { capture: options === true }),
+      ...(typeof options === 'object' ? options : options != null && { capture: options }),
       once: true,
     });
   }
@@ -135,7 +175,7 @@ export default class EventTargetListener<
       if (useCapture) delete this.captureListeners[type];
       else delete this.normalListeners[type];
     }
-    this.target.removeEventListener(type, wrapper ?? listener, options);
+    this.target.removeEventListener(type, wrapper ?? listener, normalizeOptions(options));
 
     return this;
   }
@@ -148,14 +188,12 @@ export default class EventTargetListener<
     if (type) {
       const normalMap = this.normalListeners[type];
       normalMap && normalMap.forEach((_, wrapper) => this.off(type, wrapper));
-      //
       const captureMap = this.captureListeners[type];
       captureMap && captureMap.forEach((_, wrapper) => this.off(type, wrapper, true));
     } else {
       Object.keys(this.normalListeners).forEach((k) => this.removeAllListeners(k));
       Object.keys(this.captureListeners).forEach((k) => this.removeAllListeners(k));
     }
-
     return this;
   }
 
