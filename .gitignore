@@ -13,3 +13,5 @@ tmp
 # IDE
 .vscode/
 .history/
+
+src/EventTargetListener.ts.bak
