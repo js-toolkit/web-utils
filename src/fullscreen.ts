@@ -63,7 +63,7 @@ const eventNameMap: Record<FullscreenEventTypes, string | undefined> = {
   error: fullscreenFnNames?.errorEventName,
 };
 
-const getError = (): Error => new Error('Fullscreen is not available');
+export const getFullscreenUnavailableError = (): Error => new Error('Fullscreen is not available');
 
 export default {
   names: fullscreenFnNames,
@@ -74,19 +74,19 @@ export default {
   },
 
   get isFullscreen(): boolean {
-    if (!fullscreenFnNames) throw getError();
+    if (!fullscreenFnNames) throw getFullscreenUnavailableError();
     return Boolean(document[fullscreenFnNames.fullscreenElementName]);
   },
 
   get element(): Element {
-    if (!fullscreenFnNames) throw getError();
+    if (!fullscreenFnNames) throw getFullscreenUnavailableError();
     return document[fullscreenFnNames.fullscreenElementName] as Element;
   },
 
   request(element: Element, options?: FullscreenOptions): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!fullscreenFnNames) {
-        reject(getError);
+        reject(getFullscreenUnavailableError);
         return;
       }
 
@@ -113,7 +113,7 @@ export default {
         return;
       }
       if (!fullscreenFnNames) {
-        reject(getError);
+        reject(getFullscreenUnavailableError);
         return;
       }
 
@@ -151,9 +151,7 @@ export default {
     options?: boolean | AddEventListenerOptions
   ): void {
     const eventName = eventNameMap[type];
-    if (eventName) {
-      document.addEventListener(eventName, listener, options);
-    }
+    eventName && document.addEventListener(eventName, listener, options);
   },
 
   off(
@@ -162,8 +160,6 @@ export default {
     options?: boolean | EventListenerOptions
   ): void {
     const eventName = eventNameMap[type];
-    if (eventName) {
-      document.removeEventListener(eventName, listener, options);
-    }
+    eventName && document.removeEventListener(eventName, listener, options);
   },
 };
