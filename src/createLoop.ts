@@ -1,6 +1,7 @@
 export interface Loop {
   start: (callback: FrameRequestCallback, wait: number) => void;
-  stop: () => void;
+  stop: VoidFunction;
+  call: VoidFunction;
   isActive: () => boolean;
 }
 
@@ -32,6 +33,7 @@ export default function createLoop(): Loop {
         raf && cancelAnimationFrame(raf);
       }
     },
+    call: () => step(),
     isActive: (): boolean => activity,
   };
 
