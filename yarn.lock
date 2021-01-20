@@ -204,6 +204,11 @@
   resolved "https://registry.yarnpkg.com/@vzh/configs/-/configs-3.71.1.tgz#06a8c6c61fc1a9a344735869ffb87183429436a1"
   integrity sha512-6wnG0vra1X3e7wizfeQttAdRVMeuEWNp0aWtP4wZl11/VNhdZscLrjUov+H6+TBowcDVhOhhaGtugR7SuWYwPw==
 
+"@vzh/ts-utils@^1.18.0":
+  version "1.18.0"
+  resolved "https://registry.yarnpkg.com/@vzh/ts-utils/-/ts-utils-1.18.0.tgz#3517a0c3eceb21891775b8ff8b75a880b87ff63f"
+  integrity sha512-1VWKeZjX6A8CXYadzGRN/Z/6G8VUx1PTjagk6ax8ygHyz0LBsg/e8Jn1TInNuL3KXtU2FmXFrckqX/cz/XrnwQ==
+
 acorn-jsx@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-5.2.0.tgz#4c66069173d6fdd68ed85239fc256226182b2ebe"
