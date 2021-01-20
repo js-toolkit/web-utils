@@ -14,7 +14,7 @@ export enum FullscreenControllerEvent {
   Error = 'error',
 }
 
-export type FullscreenControllerEventsMap = {
+export type FullscreenControllerEventMap = {
   [FullscreenControllerEvent.Change]: [{ isFullscreen: boolean; video: boolean }];
   [FullscreenControllerEvent.Error]: [{ error: unknown; video: boolean }];
 };
@@ -23,7 +23,7 @@ export interface FullscreenRequestOptions extends FullscreenOptions {
   toggleNativeVideoSubtitles?: boolean;
 }
 
-export default class FullscreenController extends EventEmitter<FullscreenControllerEventsMap> {
+export default class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
   constructor(private readonly element: Element, private readonly video: WebkitHTMLVideoElement) {
     super();
     if (fullscreen.names) {
