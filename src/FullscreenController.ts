@@ -2,12 +2,21 @@ import EventEmitter from 'eventemitter3';
 import fullscreen, { getFullscreenUnavailableError } from './fullscreen';
 import toggleNativeSubtitles from './toggleNativeSubtitles';
 
-export interface WebkitHTMLVideoElement extends HTMLVideoElement {
-  webkitEnterFullscreen?: () => void;
-  webkitExitFullscreen?: () => void;
-  webkitDisplayingFullscreen?: boolean;
-  // webkitSupportsFullscreen?: boolean;
+declare global {
+  interface HTMLVideoElement {
+    webkitEnterFullscreen?: () => void;
+    webkitExitFullscreen?: () => void;
+    webkitDisplayingFullscreen?: boolean;
+    // webkitSupportsFullscreen?: boolean;
+  }
 }
+
+// export interface WebkitHTMLVideoElement extends HTMLVideoElement {
+//   webkitEnterFullscreen?: () => void;
+//   webkitExitFullscreen?: () => void;
+//   webkitDisplayingFullscreen?: boolean;
+//   // webkitSupportsFullscreen?: boolean;
+// }
 
 export enum FullscreenControllerEvent {
   Change = 'change',
@@ -24,7 +33,7 @@ export interface FullscreenRequestOptions extends FullscreenOptions {
 }
 
 export default class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
-  constructor(private readonly element: Element, private readonly video: WebkitHTMLVideoElement) {
+  constructor(private readonly element: Element, private readonly video: HTMLVideoElement) {
     super();
     if (fullscreen.names) {
       const { names } = fullscreen;
