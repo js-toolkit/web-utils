@@ -54,6 +54,7 @@ export default class FullscreenController extends EventEmitter<FullscreenControl
       this.video.removeEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
       this.video.removeEventListener('webkitendfullscreen', this.endFullscreenHandler);
     }
+    this.removeAllListeners();
   }
 
   get isFullscreen(): boolean {
