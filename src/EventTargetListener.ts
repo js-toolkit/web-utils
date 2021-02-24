@@ -59,7 +59,7 @@ function normalizeOptions(options: boolean | AddEventListenerOptions | undefined
 
 export default class EventTargetListener<
   T extends EventTarget,
-  M extends ElementEventMap = HTMLElementEventMap
+  M extends Record<string, any> = ElementEventMap
 > {
   private readonly normalListeners: EventListenersMap = {};
 

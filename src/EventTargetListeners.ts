@@ -3,7 +3,7 @@ import EventTargetListener from './EventTargetListener';
 export default class EventTargetListeners {
   private readonly listeners = new Map<EventTarget, EventTargetListener<any, any>>();
 
-  scope<T extends EventTarget, M extends ElementEventMap = ElementEventMap>(
+  scope<T extends EventTarget, M extends Record<string, any> = ElementEventMap>(
     target: T
   ): EventTargetListener<T, M> {
     const listener = this.listeners.get(target) ?? new EventTargetListener<T, M>(target);
