@@ -61,15 +61,13 @@ export default class EventTargetListener<
   T extends EventTarget,
   M extends ElementEventMap = HTMLElementEventMap
 > {
-  private readonly target: T;
-
   private readonly normalListeners: EventListenersMap = {};
 
   private readonly captureListeners: EventListenersMap = {};
 
   readonly passiveSupported = passiveSupported;
 
-  constructor(target: T) {
+  constructor(public readonly target: T) {
     this.target = target;
   }
 
