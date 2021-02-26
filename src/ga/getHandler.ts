@@ -1,4 +1,5 @@
 import iframeMessenger, { GAEventMessage } from './iframeMessenger';
+import './types';
 
 export interface GAEventData {
   eventCategory: string;
