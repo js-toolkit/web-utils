@@ -9,9 +9,15 @@ export default function loadImage(
       img.crossOrigin = crossOrigin;
     }
     img.onload = () => {
+      img.onload = null;
+      img.onerror = null;
       resolve(img);
     };
-    img.onerror = reject;
+    img.onerror = (event) => {
+      img.onload = null;
+      img.onerror = null;
+      reject(event);
+    };
     img.src = imageUrl;
   });
 }
