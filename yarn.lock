@@ -181,15 +181,15 @@
     "@typescript-eslint/types" "4.15.1"
     eslint-visitor-keys "^2.0.0"
 
-"@vzh/configs@^3.73.4":
-  version "3.73.4"
-  resolved "https://registry.yarnpkg.com/@vzh/configs/-/configs-3.73.4.tgz#7f58975a66e67adfee7c11009c71e998bc5ae2c7"
-  integrity sha512-in2bxahFVTJv5e9PwKEvBiLuqhxCTQKeEsbz/upcNurIZWP9hw6ErotrCQ1yIdaXq6k1SQXZvVC0b+8Y9+s8Kg==
+"@vlazh/configs@^3.73.4":
+  version "3.73.10"
+  resolved "https://npm.pkg.github.com/download/@vlazh/configs/3.73.10/02a9d4d03b572fc76583839fbd2d3d5befe82d3624f76a4ef247d4b3f49f74c3#2076acdf80514d69735220a994f521a86fdfde63"
+  integrity sha512-dYj7cg3jRdjzMQz8ax2ovZuxkm2U0A4hvY5XoW9xQNIc3rqC9vXvQ2mL/PqcpNN98pnWcbgnfiblIc+MRygekw==
 
-"@vzh/ts-utils@^1.24.0":
-  version "1.24.0"
-  resolved "https://registry.yarnpkg.com/@vzh/ts-utils/-/ts-utils-1.24.0.tgz#d1ca6d6bc581c557e93cc8ba195c4cc614ae7d3b"
-  integrity sha512-s4iuXoeAAzwjKGWMM68/QRqG+QRl6wjwYE1+jW51CfBx+0m1lUp6qvk7DR98A4d/B1PHLTdIzWW/WxHo7UgpTA==
+"@vlazh/ts-utils@^1.24.0":
+  version "1.26.2"
+  resolved "https://npm.pkg.github.com/download/@vlazh/ts-utils/1.26.2/bf6a7d085477841fb62a810bbdceafebafe1cbb22e1dd3c2a744abb6b41b4a38#0c2aa9f8b9566f3b74ed65b6de75245088871cba"
+  integrity sha512-+boWZoEAOdq5qjt8TzFShWLcC3n9ITJ6lOe3g00yEjVrTVSebMSzLUDikymI4pRKGCqq4YfUmS0WM7F52fvieQ==
 
 "@webassemblyjs/ast@1.11.0":
   version "1.11.0"

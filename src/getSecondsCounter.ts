@@ -1,4 +1,4 @@
-import toInt from '@vzh/ts-utils/toInt';
+import toInt from '@vlazh/ts-utils/toInt';
 
 export interface SecondsCounterOptions {
   onChange?: (data: { value: number; total: number }) => void;

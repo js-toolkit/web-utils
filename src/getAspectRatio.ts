@@ -1,5 +1,5 @@
-import gcd from '@vzh/ts-utils/gcd';
-import toInt from '@vzh/ts-utils/toInt';
+import gcd from '@vlazh/ts-utils/gcd';
+import toInt from '@vlazh/ts-utils/toInt';
 
 export interface AspectRatio {
   width: number;
