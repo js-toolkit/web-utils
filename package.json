@@ -1,12 +1,12 @@
 {
-  "name": "@vlazh/web-utils",
+  "name": "@js-toolkit/web-utils",
   "version": "1.18.1",
   "description": "Web utils",
   "author": "VZH",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vlazh/web-utils"
+    "url": "https://github.com/js-toolkit/web-utils"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
@@ -15,8 +15,8 @@
     "clean": "rimraf dist/*",
     "copy:configs": "copyfiles package.json .npmignore README.md LICENSE ./dist/",
     "build": "npm run clean && tsc --project ./tsconfig.json",
-    "build-to-tutoron": "tsc --project ./tsconfig.json --outDir '/home/vladimir/dev/sources/tutoron/node_modules/@vlazh/web-utils'",
-    "build-to-player": "tsc --project ./tsconfig.json --outDir '/home/vladimir/dev/sources/player/node_modules/@vlazh/web-utils'",
+    "build-to-tutoron": "tsc --project ./tsconfig.json --outDir '/home/vladimir/dev/sources/tutoron/node_modules/@js-toolkit/web-utils'",
+    "build-to-player": "tsc --project ./tsconfig.json --outDir '/home/vladimir/dev/sources/player/node_modules/@js-toolkit/web-utils'",
     "patch-publish": "npm run build && npm version patch && npm run copy:configs && npm publish ./dist/ && git push origin master --follow-tags",
     "minor-publish": "npm run build && npm version minor && npm run copy:configs && npm publish ./dist/ && git push origin master --follow-tags",
     "major-publish": "npm run build && npm version major && npm run copy:configs && npm publish ./dist/ && git push origin master --follow-tags"
@@ -24,8 +24,8 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.15.1",
     "@typescript-eslint/parser": "^4.15.1",
-    "@vlazh/configs": "^3.73.4",
-    "@vlazh/ts-utils": "^1.24.0",
+    "@js-toolkit/configs": "^3.73.4",
+    "@js-toolkit/ts-utils": "^1.24.0",
     "copyfiles": "^2.4.1",
     "eslint": "^7.20.0",
     "eslint-config-airbnb-base": "^14.2.1",
