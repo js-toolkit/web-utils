@@ -1,5 +1,5 @@
 module.exports = {
   root: true,
-  extends: require.resolve('@vzh/configs/eslint/common'),
+  extends: require.resolve('@js-toolkit/configs/eslint/common'),
   rules: {},
 };
