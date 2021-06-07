@@ -11,13 +11,6 @@ declare global {
   }
 }
 
-// export interface WebkitHTMLVideoElement extends HTMLVideoElement {
-//   webkitEnterFullscreen?: () => void;
-//   webkitExitFullscreen?: () => void;
-//   webkitDisplayingFullscreen?: boolean;
-//   // webkitSupportsFullscreen?: boolean;
-// }
-
 export enum FullscreenControllerEvent {
   Change = 'change',
   Error = 'error',
@@ -28,8 +21,9 @@ export type FullscreenControllerEventMap = {
   [FullscreenControllerEvent.Error]: [{ error: unknown; video: boolean }];
 };
 
-export interface FullscreenRequestOptions extends FullscreenOptions {
-  toggleNativeVideoSubtitles?: boolean;
+export interface FullscreenRequestOptions extends Readonly<FullscreenOptions> {
+  /** Uses for iOS */
+  readonly toggleNativeVideoSubtitles?: boolean;
 }
 
 export default class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
@@ -95,20 +89,28 @@ export default class FullscreenController extends EventEmitter<FullscreenControl
     this.emit(FullscreenControllerEvent.Change, { isFullscreen: false, video: true });
   };
 
-  request({ toggleNativeVideoSubtitles, ...rest }: FullscreenRequestOptions = {}): Promise<void> {
+  request(options: FullscreenRequestOptions = {}): Promise<void> {
+    const { toggleNativeVideoSubtitles, ...rest } = options;
+
     if (fullscreen.isEnabled) {
       return fullscreen.request(this.element, rest);
     }
 
     if (this.video.webkitEnterFullscreen) {
       return new Promise((resolve) => {
-        if (toggleNativeVideoSubtitles && this.video.textTracks.length > 0) {
-          toggleNativeSubtitles(true, this.video.textTracks);
-        }
-
         if (this.video.webkitDisplayingFullscreen) {
           resolve();
           return;
+        }
+
+        if (toggleNativeVideoSubtitles && this.video.textTracks.length > 0) {
+          toggleNativeSubtitles(true, this.video.textTracks);
+
+          const endFullscreenHandler = (): void => {
+            this.video.removeEventListener('webkitendfullscreen', endFullscreenHandler);
+            toggleNativeSubtitles(false, this.video.textTracks);
+          };
+          this.video.addEventListener('webkitendfullscreen', endFullscreenHandler);
         }
 
         const beginFullscreenHandler = (): void => {
