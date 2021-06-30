@@ -11,7 +11,5 @@
     "typeRoots": ["./@types", "./node_modules/@types"],
     "diagnostics": true
   },
-  "include": ["./src/**/*"],
-  "exclude": ["./src/detection/fixHls.ts", "./node_modules"],
-  "references": [{ "path": "./hls.tsconfig.json" }]
+  "include": ["./src/**/*"]
 }
