@@ -1,0 +1,17 @@
+{
+  "extends": "@js-toolkit/configs/ts/common.tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "strict": false,
+    "declaration": true,
+    "module": "ESNext",
+    "outDir": "./dist/detection",
+    "baseUrl": "./"
+  },
+  "include": [
+    "./src/detection/fixHls.ts",
+    "./node_modules/hls.js/src/is-supported.ts",
+    "./node_modules/hls.js/src/utils/mediasource-helper.ts",
+    "./node_modules/hls.js/src/types/buffer.ts"
+  ]
+}
