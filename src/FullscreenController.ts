@@ -39,16 +39,18 @@ export default class FullscreenController extends EventEmitter<FullscreenControl
     }
   }
 
-  destroy(): void {
-    if (fullscreen.names) {
-      const { names } = fullscreen;
-      this.element.removeEventListener(names.changeEventName, this.changeHandler);
-      this.element.removeEventListener(names.errorEventName, this.errorHandler);
-    } else {
-      this.video.removeEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
-      this.video.removeEventListener('webkitendfullscreen', this.endFullscreenHandler);
-    }
-    this.removeAllListeners();
+  destroy(): Promise<void> {
+    return this.exit().finally(() => {
+      if (fullscreen.names) {
+        const { names } = fullscreen;
+        this.element.removeEventListener(names.changeEventName, this.changeHandler);
+        this.element.removeEventListener(names.errorEventName, this.errorHandler);
+      } else {
+        this.video.removeEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
+        this.video.removeEventListener('webkitendfullscreen', this.endFullscreenHandler);
+      }
+      this.removeAllListeners();
+    });
   }
 
   get isFullscreen(): boolean {
