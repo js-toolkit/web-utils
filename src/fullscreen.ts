@@ -84,21 +84,28 @@ export default {
   },
 
   request(element: Element, options?: FullscreenOptions): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!fullscreenFnNames) {
-        reject(getFullscreenUnavailableError);
-        return;
-      }
+    if (!fullscreenFnNames) {
+      return Promise.reject(getFullscreenUnavailableError);
+    }
 
+    return new Promise((resolve, reject) => {
       const onFullScreenEntered = (): void => {
         this.off('change', onFullScreenEntered);
+        this.off('error', onFullScreenError); // eslint-disable-line no-use-before-define
         resolve();
+      };
+      const onFullScreenError = (event: unknown): void => {
+        this.off('change', onFullScreenEntered);
+        this.off('error', onFullScreenError);
+        reject(event);
       };
 
       this.on('change', onFullScreenEntered);
+      this.on('error', onFullScreenError);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const result = element[fullscreenFnNames.requestFullscreenName](options) as unknown;
+      const result = (element[fullscreenFnNames.requestFullscreenName] as AnyAsyncFunction)(
+        options
+      );
 
       if (result instanceof Promise) {
         result.then(onFullScreenEntered).catch(reject);
@@ -107,25 +114,29 @@ export default {
   },
 
   exit(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.isFullscreen) {
-        resolve();
-        return;
-      }
-      if (!fullscreenFnNames) {
-        reject(getFullscreenUnavailableError);
-        return;
-      }
+    if (!this.isFullscreen) {
+      return Promise.resolve();
+    }
+    if (!fullscreenFnNames) {
+      return Promise.reject(getFullscreenUnavailableError);
+    }
 
+    return new Promise((resolve, reject) => {
       const onFullScreenExit = (): void => {
         this.off('change', onFullScreenExit);
+        this.off('error', onFullScreenError); // eslint-disable-line no-use-before-define
         resolve();
+      };
+      const onFullScreenError = (event: unknown): void => {
+        this.off('change', onFullScreenExit);
+        this.off('error', onFullScreenError);
+        reject(event);
       };
 
       this.on('change', onFullScreenExit);
+      this.on('error', onFullScreenError);
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const result = document[fullscreenFnNames.exitFullscreenName]() as unknown;
+      const result = (document[fullscreenFnNames.exitFullscreenName] as AnyAsyncFunction)();
 
       if (result instanceof Promise) {
         result.then(onFullScreenExit).catch(reject);
