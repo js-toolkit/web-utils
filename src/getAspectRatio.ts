@@ -1,5 +1,4 @@
-import gcd from '@js-toolkit/ts-utils/gcd';
-import toInt from '@js-toolkit/ts-utils/toInt';
+import farey from '@js-toolkit/ts-utils/farey';
 
 export interface AspectRatio {
   /** Width ratio or width */
@@ -10,10 +9,9 @@ export interface AspectRatio {
   ratio: number;
 }
 
+/** Approximate aspect ratio */
 export default function getAspectRatio(width: number, height: number): AspectRatio {
-  const gcdValue = gcd(width, height);
-  const widthRatio = toInt(width / gcdValue);
-  const heightRatio = toInt(height / gcdValue);
   const ratio = width / height;
-  return { width: widthRatio, height: heightRatio, ratio };
+  const [rwidth, rheight] = farey(ratio, 50);
+  return { width: rwidth, height: rheight, ratio };
 }
