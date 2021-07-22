@@ -2,8 +2,11 @@ import gcd from '@js-toolkit/ts-utils/gcd';
 import toInt from '@js-toolkit/ts-utils/toInt';
 
 export interface AspectRatio {
+  /** Width ratio or width */
   width: number;
+  /** Height ratio or height */
   height: number;
+  /** Ratio value */
   ratio: number;
 }
 
