@@ -12,6 +12,7 @@ export interface AspectRatio {
 /** Approximate aspect ratio */
 export default function getAspectRatio(width: number, height: number): AspectRatio {
   const ratio = width / height;
+  // https://stackoverflow.com/a/43016456
   const [rwidth, rheight] = farey(ratio, 50);
   return { width: rwidth, height: rheight, ratio };
 }
