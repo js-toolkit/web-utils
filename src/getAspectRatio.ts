@@ -1,11 +1,11 @@
 import farey from '@js-toolkit/ts-utils/farey';
 
 export interface AspectRatio {
-  /** Width ratio or width */
+  /** Approximate width ratio */
   width: number;
-  /** Height ratio or height */
+  /** Approximate height ratio */
   height: number;
-  /** Ratio value */
+  /** Actual ratio value */
   ratio: number;
 }
 
