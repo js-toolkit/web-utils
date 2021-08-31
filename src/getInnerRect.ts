@@ -5,7 +5,7 @@ export interface InnerRect extends InnerXDimensions, InnerYDimensions {}
 
 export default function getInnerRect(
   elementOrComputedStyle: Element | CSSStyleDeclaration
-): ClientRect {
+): InnerRect {
   const computedStyle =
     'tagName' in elementOrComputedStyle
       ? window.getComputedStyle(elementOrComputedStyle)

@@ -1,7 +1,7 @@
 export default function toLocalPoint(
   coord: { clientX: number; clientY: number },
   targetOrClientRect: Element | Pick<ClientRect, 'left' | 'top'>
-): WebKitPoint {
+): Point {
   const rect =
     'tagName' in targetOrClientRect
       ? targetOrClientRect.getBoundingClientRect()
