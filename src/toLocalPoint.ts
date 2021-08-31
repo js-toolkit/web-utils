@@ -1,6 +1,6 @@
 export default function toLocalPoint(
   coord: { clientX: number; clientY: number },
-  targetOrClientRect: Element | Pick<ClientRect, 'left' | 'top'>
+  targetOrClientRect: Element | Pick<DOMRect, 'left' | 'top'>
 ): Point {
   const rect =
     'tagName' in targetOrClientRect
