@@ -84,11 +84,11 @@ export default {
   },
 
   request(element: Element, options?: FullscreenOptions): Promise<void> {
-    if (!fullscreenFnNames) {
-      return Promise.reject(getFullscreenUnavailableError);
-    }
-
     return new Promise((resolve, reject) => {
+      if (!fullscreenFnNames) {
+        throw getFullscreenUnavailableError();
+      }
+
       const onFullScreenEntered = (): void => {
         this.off('change', onFullScreenEntered);
         this.off('error', onFullScreenError); // eslint-disable-line no-use-before-define
@@ -114,14 +114,15 @@ export default {
   },
 
   exit(): Promise<void> {
-    if (!this.isFullscreen) {
-      return Promise.resolve();
-    }
-    if (!fullscreenFnNames) {
-      return Promise.reject(getFullscreenUnavailableError);
-    }
-
     return new Promise((resolve, reject) => {
+      if (!fullscreenFnNames) {
+        throw getFullscreenUnavailableError();
+      }
+      if (!this.isFullscreen) {
+        resolve();
+        return;
+      }
+
       const onFullScreenExit = (): void => {
         this.off('change', onFullScreenExit);
         this.off('error', onFullScreenError); // eslint-disable-line no-use-before-define
@@ -145,7 +146,7 @@ export default {
   },
 
   toggle(element: Element): Promise<void> {
-    return this.isFullscreen ? this.exit() : this.request(element);
+    return Promise.resolve().then(() => (this.isFullscreen ? this.exit() : this.request(element)));
   },
 
   onChange(listener: EventListenerOrEventListenerObject): void {
