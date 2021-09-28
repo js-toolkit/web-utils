@@ -108,7 +108,7 @@ export default {
       );
 
       if (result instanceof Promise) {
-        result.then(onFullScreenEntered).catch(reject);
+        result.then(onFullScreenEntered, onFullScreenError);
       }
     });
   },
@@ -140,7 +140,7 @@ export default {
       const result = (document[fullscreenFnNames.exitFullscreenName] as AnyAsyncFunction)();
 
       if (result instanceof Promise) {
-        result.then(onFullScreenExit).catch(reject);
+        result.then(onFullScreenExit, onFullScreenError);
       }
     });
   },
