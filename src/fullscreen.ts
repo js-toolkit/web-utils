@@ -78,7 +78,7 @@ export default {
     return Boolean(document[fullscreenFnNames.fullscreenElementName]);
   },
 
-  get element(): Element {
+  get element(): Element | null | undefined {
     if (!fullscreenFnNames) throw getFullscreenUnavailableError();
     return document[fullscreenFnNames.fullscreenElementName] as Element;
   },
