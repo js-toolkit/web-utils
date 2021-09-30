@@ -24,7 +24,7 @@
   "devDependencies": {
     "@js-toolkit/configs": "^3.80.0",
     "@js-toolkit/node-utils": "^1.1.4",
-    "@js-toolkit/ts-utils": "^1.37.4",
+    "@js-toolkit/utils": "^1.38.0",
     "@typescript-eslint/eslint-plugin": "^4.32.0",
     "@typescript-eslint/parser": "^4.32.0",
     "copyfiles": "^2.4.1",
