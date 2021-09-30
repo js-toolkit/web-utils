@@ -22,11 +22,11 @@
     "minor-publish": "npm run build && npm version minor && npm run copy:configs && npm publish ./dist/ && git push origin master --follow-tags"
   },
   "devDependencies": {
-    "@js-toolkit/configs": "^3.78.5",
+    "@js-toolkit/configs": "^3.80.0",
     "@js-toolkit/node-utils": "^1.1.4",
     "@js-toolkit/ts-utils": "^1.37.4",
-    "@typescript-eslint/eslint-plugin": "^4.30.0",
-    "@typescript-eslint/parser": "^4.30.0",
+    "@typescript-eslint/eslint-plugin": "^4.32.0",
+    "@typescript-eslint/parser": "^4.32.0",
     "copyfiles": "^2.4.1",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
@@ -34,11 +34,11 @@
     "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-prettier": "^4.0.0",
     "eventemitter3": "^4.0.7",
-    "prettier": "^2.3.2",
+    "prettier": "^2.4.1",
     "rimraf": "^3.0.2",
-    "terser": "^5.7.2",
-    "typescript": "^4.4.2",
-    "webpack": "^5.51.1",
-    "yargs": "^17.1.1"
+    "terser": "^5.9.0",
+    "typescript": "^4.4.3",
+    "webpack": "^5.55.1",
+    "yargs": "^17.2.1"
   }
 }
