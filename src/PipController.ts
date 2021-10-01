@@ -30,11 +30,11 @@ export class PipController extends EventEmitter<PipControllerEventMap> {
     );
   }
 
-  static get isEnabled(): boolean {
+  static isEnabled(video: HTMLVideoElement): boolean {
     return (
       this.isSupported ||
-      (!!HTMLVideoElement.prototype.webkitSupportsPresentationMode &&
-        HTMLVideoElement.prototype.webkitSupportsPresentationMode('picture-in-picture'))
+      (!!video.webkitSupportsPresentationMode &&
+        video.webkitSupportsPresentationMode('picture-in-picture'))
     );
   }
 
@@ -50,7 +50,7 @@ export class PipController extends EventEmitter<PipControllerEventMap> {
 
     this.listener = new EventTargetListener(video);
 
-    if (PipController.isEnabled) {
+    if (PipController.isEnabled(video)) {
       const enterPipHandler = (): void => {
         this.emit(PipControllerEvent.Change, { isPip: true });
       };
@@ -114,7 +114,7 @@ export class PipController extends EventEmitter<PipControllerEventMap> {
         return;
       }
 
-      if (!PipController.isEnabled) {
+      if (!PipController.isEnabled(this.listener.target)) {
         throw getPipUnavailableError();
       }
 
@@ -142,7 +142,7 @@ export class PipController extends EventEmitter<PipControllerEventMap> {
         return;
       }
 
-      if (!PipController.isEnabled) {
+      if (!PipController.isEnabled(this.listener.target)) {
         throw getPipUnavailableError();
       }
 
