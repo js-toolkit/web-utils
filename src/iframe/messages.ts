@@ -1,6 +1,6 @@
-export const IFRAME_PING = 'IFRAME_PING';
-export const IFRAME_HOST_READY = 'IFRAME_HOST_READY';
-export const IFRAME_CLIENT_READY = 'IFRAME_CLIENT_READY';
+export const IFRAME_PING = '@_IFRAME_PING';
+export const IFRAME_HOST_READY = '@_IFRAME_HOST_READY';
+export const IFRAME_CLIENT_READY = '@_IFRAME_CLIENT_READY';
 
 export interface IframeMessage<T extends string> {
   type: T;

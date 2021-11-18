@@ -26,17 +26,18 @@ function findIframeElement(source: Window): HTMLIFrameElement | undefined {
 interface AutoConnectHost {
   readonly start: VoidFunction;
   readonly stop: VoidFunction;
+  /** Send `ready` to iframe. */
   readonly ready: <T>(data: T, target: Window, origin?: string) => void;
 }
 
 interface AutoConnectHostOptions<T = AnyObject> {
-  readonly getData?: (iframe: HTMLIFrameElement, origin: string) => T;
+  readonly getSendReadyData?: (iframe: HTMLIFrameElement, origin: string) => T;
   readonly onConnect: (data: unknown, iframe: HTMLIFrameElement, origin: string) => void;
   readonly logger?: Pick<Console, 'warn' | 'debug'>;
 }
 
 export default function getAutoConnectHost<T>({
-  getData,
+  getSendReadyData,
   onConnect,
   logger = console,
 }: AutoConnectHostOptions<T>): AutoConnectHost {
@@ -84,7 +85,11 @@ export default function getAutoConnectHost<T>({
     }
     // Iframe ready
     else {
-      sendReady(getData ? getData(iframe, origin) : undefined, iframe.contentWindow, origin);
+      sendReady(
+        getSendReadyData ? getSendReadyData(iframe, origin) : undefined,
+        iframe.contentWindow,
+        origin
+      );
       onConnect(message.data.data, iframe, origin);
       logger.debug('Iframe Host connected.');
     }

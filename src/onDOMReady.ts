@@ -1,3 +1,4 @@
+/** @returns cancel wait function */
 export default function onDOMReady(callback: VoidFunction): VoidFunction {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', callback, { once: true });
