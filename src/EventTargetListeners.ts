@@ -1,17 +1,17 @@
-import EventTargetListener from './EventTargetListener';
+import EventTargetListener, { MinimalEventTarget } from './EventTargetListener';
 
 export default class EventTargetListeners {
-  private readonly listeners = new Map<EventTarget, EventTargetListener<any, any>>();
+  private readonly listeners = new Map<MinimalEventTarget, EventTargetListener<any, any>>();
 
-  scope<T extends EventTarget, M extends Record<string, any> = ElementEventMap>(
+  scope<T extends MinimalEventTarget, M extends Record<string, any> = ElementEventMap>(
     target: T
   ): EventTargetListener<T, M> {
     const listener = this.listeners.get(target) ?? new EventTargetListener<T, M>(target);
     !this.listeners.has(target) && this.listeners.set(target, listener);
-    return listener;
+    return listener as EventTargetListener<T, M>;
   }
 
-  removeAllListeners<T extends EventTarget>(target?: T): this {
+  removeAllListeners<T extends MinimalEventTarget>(target?: T): this {
     if (target) {
       // eslint-disable-next-line no-unused-expressions
       this.listeners.get(target)?.removeAllListeners();
