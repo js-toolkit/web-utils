@@ -1,0 +1,289 @@
+import isEmptyObject from '@js-toolkit/utils/isEmptyObject';
+
+type DomEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
+
+type EventEmitterTarget = {
+  on: (type: any, listener: AnyFunction, ...rest: any[]) => void;
+  once: (type: any, listener: AnyFunction, ...rest: any[]) => void;
+  off: (type: any, listener: AnyFunction, ...rest: any[]) => void;
+};
+
+export type EmitterTarget = DomEventTarget | EventEmitterTarget;
+
+function isDomEventTarget(target: EmitterTarget): target is DomEventTarget {
+  return (target as DomEventTarget).addEventListener !== undefined;
+}
+
+type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
+  ? T['addEventListener'] extends {
+      (type: infer K, listener: AnyFunction, options?: boolean | AddEventListenerOptions): void;
+      (
+        type: string,
+        listener: EventListenerOrEventListenerObject,
+        options?: boolean | AddEventListenerOptions
+      ): void;
+    }
+    ? K
+    : string
+  : T extends EventEmitterTarget
+  ? T['on'] extends {
+      (type: infer K, listener: AnyFunction, ...rest: unknown[]): void;
+    }
+    ? K
+    : string
+  : string;
+
+type GetEventListener<T extends EmitterTarget, K, M extends AnyObject> = T extends DomEventTarget
+  ? (ev: K extends keyof M ? M[K] : Event, ...rest: unknown[]) => unknown
+  : T extends EventEmitterTarget
+  ? (ev: K extends keyof M ? M[K] : AnyObject, ...rest: unknown[]) => unknown
+  : AnyFunction;
+
+type GetEventMap<T extends EmitterTarget> = T extends HTMLBodyElement
+  ? HTMLBodyElementEventMap
+  : T extends HTMLVideoElement
+  ? HTMLVideoElementEventMap
+  : T extends HTMLMediaElement
+  ? HTMLMediaElementEventMap
+  : T extends HTMLElement
+  ? HTMLElementEventMap
+  : T extends Element
+  ? ElementEventMap
+  : EmptyObject;
+
+type GetOnOptions<T extends EmitterTarget> = T extends DomEventTarget
+  ? boolean | AddEventListenerOptions
+  : undefined;
+
+type GetOnceOptions<T extends EmitterTarget> = T extends DomEventTarget
+  ? boolean | OmitStrict<AddEventListenerOptions, 'once'>
+  : undefined;
+
+type GetOffOptions<T extends EmitterTarget> = T extends DomEventTarget
+  ? boolean | EventListenerOptions
+  : undefined;
+
+type EventListenersMap = Partial<
+  Record<string, Map<EventListenerOrEventListenerObject, AnyFunction>>
+>;
+
+type ListenerWrapper = (ev: AnyObject, ...rest: unknown[]) => unknown;
+
+let passiveSupported = false;
+
+try {
+  const options: AddEventListenerOptions = Object.defineProperty({}, 'passive', {
+    get() {
+      passiveSupported = true;
+    },
+  });
+  window.addEventListener(
+    'test' as keyof WindowEventMap,
+    null as unknown as EventListener,
+    options
+  );
+  // eslint-disable-next-line no-empty
+} catch (err) {}
+
+function normalizeOptions(options: boolean | AddEventListenerOptions | undefined): typeof options {
+  if (options && typeof options === 'object') {
+    let result = options;
+    if ('passive' in options && !passiveSupported) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { passive, ...rest } = options;
+      result = rest;
+    }
+    return isEmptyObject(result) ? undefined : result;
+  }
+  return options;
+}
+
+export default class EventEmitterListener<
+  T extends EmitterTarget,
+  M extends AnyObject = GetEventMap<T>
+> {
+  private readonly normalListeners: EventListenersMap = {};
+
+  private readonly captureListeners: EventListenersMap = {};
+
+  readonly passiveSupported = passiveSupported;
+
+  constructor(public readonly target: T) {
+    this.target = target;
+  }
+
+  private createWrapper(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: GetOnOptions<T>
+  ): ListenerWrapper {
+    return (ev, ...rest) => {
+      if (typeof options === 'object' && options.once) {
+        this.off(type, listener, options as GetOffOptions<T>);
+      }
+      if (typeof listener === 'object') {
+        (listener.handleEvent as ListenerWrapper)(ev, ...rest);
+      } else {
+        (listener as ListenerWrapper)(ev, ...rest);
+      }
+    };
+  }
+
+  private createOnceWrapper(type: string, listener: AnyFunction): ListenerWrapper {
+    return (ev, ...rest) => {
+      this.off(type, listener);
+      (listener as ListenerWrapper)(ev, ...rest);
+    };
+  }
+
+  on<K extends GetEventType<T>>(
+    type: K,
+    listener: GetEventListener<T, K, M>,
+    options?: GetOnOptions<T>
+  ): this;
+
+  on(type: string, listener: EventListenerOrEventListenerObject, options?: GetOnOptions<T>): this;
+
+  on(type: string, listener: AnyFunction, options?: GetOnOptions<T>): this {
+    if (!isDomEventTarget(this.target)) {
+      const map =
+        this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
+
+      const handler = map.get(listener) ?? listener;
+      !map.has(listener) && map.set(listener, handler);
+
+      this.target.on(type, handler);
+      return this;
+    }
+
+    const useCapture =
+      options === true || (typeof options === 'object' && (options.capture ?? false));
+
+    if (useCapture) {
+      const map =
+        this.captureListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
+
+      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, options);
+      !map.has(listener) && map.set(listener, wrapper);
+
+      this.captureListeners[type] = map;
+      this.target.addEventListener(type, wrapper, normalizeOptions(options));
+    } else {
+      const map =
+        this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
+
+      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, options);
+      !map.has(listener) && map.set(listener, wrapper);
+
+      this.normalListeners[type] = map;
+      this.target.addEventListener(type, wrapper, normalizeOptions(options));
+    }
+
+    return this;
+  }
+
+  once<K extends GetEventType<T>>(
+    type: K,
+    listener: GetEventListener<T, K, M>,
+    options?: GetOnceOptions<T>
+  ): this;
+
+  once(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: GetOnceOptions<T>
+  ): this;
+
+  once(type: string, listener: AnyFunction, options?: GetOnceOptions<T>): this {
+    if (!isDomEventTarget(this.target)) {
+      const map =
+        this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
+
+      const wrapper = map.get(listener) ?? this.createOnceWrapper(type, listener);
+      !map.has(listener) && map.set(listener, wrapper);
+
+      this.target.once(type, wrapper);
+      return this;
+    }
+
+    return this.on(type, listener, {
+      ...(typeof options === 'object' ? options : options != null && { capture: options }),
+      once: true,
+    } as GetOnOptions<DomEventTarget> as GetOnOptions<T>);
+  }
+
+  off<K extends GetEventType<T>>(
+    type: K,
+    listener: GetEventListener<T, K, M>,
+    options?: GetOffOptions<T>
+  ): this;
+
+  off(type: string, listener: EventListenerOrEventListenerObject, options?: GetOffOptions<T>): this;
+
+  off(type: string, listener: AnyFunction, options?: GetOffOptions<T>): this {
+    if (!isDomEventTarget(this.target)) {
+      const map = this.normalListeners[type];
+      const wrapper = map?.get(listener);
+      map && wrapper && map.delete(listener);
+      if (map?.size === 0) {
+        delete this.normalListeners[type];
+      }
+
+      this.target.off(type, wrapper ?? listener);
+
+      return this;
+    }
+
+    const useCapture =
+      options === true || (typeof options === 'object' && (options.capture ?? false));
+
+    const map = useCapture ? this.captureListeners[type] : this.normalListeners[type];
+    const wrapper = map?.get(listener);
+    map && wrapper && map.delete(listener);
+    if (map?.size === 0) {
+      if (useCapture) delete this.captureListeners[type];
+      else delete this.normalListeners[type];
+    }
+    this.target.removeEventListener(type, wrapper ?? listener, normalizeOptions(options));
+
+    return this;
+  }
+
+  removeAllListeners<K extends GetEventType<T>>(type?: K): this;
+
+  removeAllListeners(type?: string): this;
+
+  removeAllListeners(type?: string): this {
+    if (type) {
+      const normalMap = this.normalListeners[type];
+      normalMap && normalMap.forEach((_, wrapper) => this.off(type, wrapper));
+      const captureMap = this.captureListeners[type];
+      captureMap &&
+        captureMap.forEach((_, wrapper) => this.off(type, wrapper, true as GetOffOptions<T>));
+    } else {
+      Object.keys(this.normalListeners).forEach((k) => this.removeAllListeners(k));
+      Object.keys(this.captureListeners).forEach((k) => this.removeAllListeners(k));
+    }
+    return this;
+  }
+
+  removeAllListenersBut<K extends GetEventType<T>>(...types: K[]): this;
+
+  removeAllListenersBut(...types: string[]): this;
+
+  removeAllListenersBut(...types: string[]): this {
+    if (types.length === 0) return this.removeAllListeners();
+
+    Object.keys(this.normalListeners).forEach(
+      (k) => !types.includes(k) && this.removeAllListeners(k)
+    );
+    Object.keys(this.captureListeners).forEach(
+      (k) => !types.includes(k) && this.removeAllListeners(k)
+    );
+
+    return this;
+  }
+}
+
+new EventEmitterListener({} as HTMLVideoElement).on('encrypted', (e) => e);
+new EventEmitterListener({} as HTMLVideoElement).removeAllListeners('sdff');
