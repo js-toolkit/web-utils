@@ -1,24 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import isEmptyObject from '@js-toolkit/utils/isEmptyObject';
-
-export type MinimalEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
-
-type GetEventType<T extends MinimalEventTarget> = T['addEventListener'] extends {
-  (
-    type: infer K,
-    listener: (this: T, ev: any) => any,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-  (
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-}
-  ? K
-  : string;
+import {
+  GetEventListener,
+  GetEventMap,
+  GetEventType,
+  isPassiveSupported,
+  normalizeOptions,
+} from './EventTargetListener.utils';
 
 type EventListenersMap = Partial<
   Record<string, Map<EventListenerOrEventListenerObject, EventListener>>
@@ -26,44 +15,15 @@ type EventListenersMap = Partial<
 
 type ListenerWrapper = (ev: AnyObject, ...rest: any[]) => any;
 
-let passiveSupported = false;
-
-try {
-  const options: AddEventListenerOptions = Object.defineProperty({}, 'passive', {
-    get() {
-      passiveSupported = true;
-    },
-  });
-  window.addEventListener(
-    'test' as keyof WindowEventMap,
-    null as unknown as EventListener,
-    options
-  );
-  // eslint-disable-next-line no-empty
-} catch (err) {}
-
-function normalizeOptions(options: boolean | AddEventListenerOptions | undefined): typeof options {
-  if (options && typeof options === 'object') {
-    let result = options;
-    if ('passive' in options && !passiveSupported) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { passive, ...rest } = options;
-      result = rest;
-    }
-    return isEmptyObject(result) ? undefined : result;
-  }
-  return options;
-}
-
 export default class EventTargetListener<
-  T extends MinimalEventTarget,
-  M extends Record<string, any> = ElementEventMap
+  T extends EventTarget,
+  M extends Record<string, any> = GetEventMap<T>
 > {
   private readonly normalListeners: EventListenersMap = {};
 
   private readonly captureListeners: EventListenersMap = {};
 
-  readonly passiveSupported = passiveSupported;
+  readonly passiveSupported = isPassiveSupported();
 
   constructor(public readonly target: T) {
     this.target = target;
@@ -86,9 +46,9 @@ export default class EventTargetListener<
     };
   }
 
-  on<K extends GetEventType<T>, E extends AnyObject = Event>(
+  on<K extends GetEventType<T>>(
     type: K,
-    listener: (this: T, ev: K extends keyof M ? M[K] : E, ...rest: any[]) => any,
+    listener: GetEventListener<K, M>,
     options?: boolean | AddEventListenerOptions
   ): this;
 
@@ -125,9 +85,9 @@ export default class EventTargetListener<
     return this;
   }
 
-  once<K extends GetEventType<T>, E extends AnyObject = Event>(
+  once<K extends GetEventType<T>>(
     type: K,
-    listener: (this: T, ev: K extends keyof M ? M[K] : E, ...rest: any[]) => any,
+    listener: GetEventListener<K, M>,
     options?: boolean | Omit<AddEventListenerOptions, 'once'>
   ): this;
 
@@ -148,9 +108,9 @@ export default class EventTargetListener<
     });
   }
 
-  off<K extends GetEventType<T>, E extends AnyObject = Event>(
+  off<K extends GetEventType<T>>(
     type: K,
-    listener: (this: T, ev: K extends keyof M ? M[K] : E, ...rest: any[]) => any,
+    listener: GetEventListener<K, M>,
     options?: boolean | EventListenerOptions
   ): this;
 
@@ -211,10 +171,7 @@ export default class EventTargetListener<
   }
 }
 
-// new EventTargetListener<HTMLVideoElement, HTMLMediaElementEventMap>({} as HTMLVideoElement).on(
-//   'click',
-//   (e) => e
-// );
+// new EventTargetListener({} as HTMLVideoElement).on('encrypted', (e) => e);
 // new EventTargetListener({} as HTMLVideoElement).removeAllListeners('sdff');
 
 // type GetEventListenerEventTypes<T extends Element> = T['addEventListener'] extends {

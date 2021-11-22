@@ -1,6 +1,13 @@
-import isEmptyObject from '@js-toolkit/utils/isEmptyObject';
+import {
+  GetEventMap,
+  GetEventType as GetDomEventType,
+  GetEventListener as GetDomEventListener,
+  isPassiveSupported,
+  normalizeOptions,
+} from './EventTargetListener.utils';
 
-type DomEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
+// type DomEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
+type DomEventTarget = EventTarget;
 
 type EventEmitterTarget = {
   on: (type: any, listener: AnyFunction, ...rest: any[]) => void;
@@ -15,16 +22,7 @@ function isDomEventTarget(target: EmitterTarget): target is DomEventTarget {
 }
 
 type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
-  ? T['addEventListener'] extends {
-      (type: infer K, listener: AnyFunction, options?: boolean | AddEventListenerOptions): void;
-      (
-        type: string,
-        listener: EventListenerOrEventListenerObject,
-        options?: boolean | AddEventListenerOptions
-      ): void;
-    }
-    ? K
-    : string
+  ? GetDomEventType<T>
   : T extends EventEmitterTarget
   ? T['on'] extends {
       (type: infer K, listener: AnyFunction, ...rest: unknown[]): void;
@@ -33,23 +31,11 @@ type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
     : string
   : string;
 
-type GetEventListener<T extends EmitterTarget, K, M extends AnyObject> = T extends DomEventTarget
-  ? (ev: K extends keyof M ? M[K] : Event, ...rest: unknown[]) => unknown
+type GetEventListener<T extends EmitterTarget, E, EM extends AnyObject> = T extends DomEventTarget
+  ? GetDomEventListener<E, EM>
   : T extends EventEmitterTarget
-  ? (ev: K extends keyof M ? M[K] : AnyObject, ...rest: unknown[]) => unknown
+  ? (ev: E extends keyof EM ? EM[E] : AnyObject, ...rest: unknown[]) => unknown
   : AnyFunction;
-
-type GetEventMap<T extends EmitterTarget> = T extends HTMLBodyElement
-  ? HTMLBodyElementEventMap
-  : T extends HTMLVideoElement
-  ? HTMLVideoElementEventMap
-  : T extends HTMLMediaElement
-  ? HTMLMediaElementEventMap
-  : T extends HTMLElement
-  ? HTMLElementEventMap
-  : T extends Element
-  ? ElementEventMap
-  : EmptyObject;
 
 type GetOnOptions<T extends EmitterTarget> = T extends DomEventTarget
   ? boolean | AddEventListenerOptions
@@ -69,35 +55,6 @@ type EventListenersMap = Partial<
 
 type ListenerWrapper = (ev: AnyObject, ...rest: unknown[]) => unknown;
 
-let passiveSupported = false;
-
-try {
-  const options: AddEventListenerOptions = Object.defineProperty({}, 'passive', {
-    get() {
-      passiveSupported = true;
-    },
-  });
-  window.addEventListener(
-    'test' as keyof WindowEventMap,
-    null as unknown as EventListener,
-    options
-  );
-  // eslint-disable-next-line no-empty
-} catch (err) {}
-
-function normalizeOptions(options: boolean | AddEventListenerOptions | undefined): typeof options {
-  if (options && typeof options === 'object') {
-    let result = options;
-    if ('passive' in options && !passiveSupported) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { passive, ...rest } = options;
-      result = rest;
-    }
-    return isEmptyObject(result) ? undefined : result;
-  }
-  return options;
-}
-
 export default class EventEmitterListener<
   T extends EmitterTarget,
   M extends AnyObject = GetEventMap<T>
@@ -106,7 +63,7 @@ export default class EventEmitterListener<
 
   private readonly captureListeners: EventListenersMap = {};
 
-  readonly passiveSupported = passiveSupported;
+  readonly passiveSupported = isPassiveSupported();
 
   constructor(public readonly target: T) {
     this.target = target;
@@ -285,5 +242,5 @@ export default class EventEmitterListener<
   }
 }
 
-new EventEmitterListener({} as HTMLVideoElement).on('encrypted', (e) => e);
-new EventEmitterListener({} as HTMLVideoElement).removeAllListeners('sdff');
+// new EventEmitterListener({} as HTMLVideoElement).on('encrypted', (e) => e);
+// new EventEmitterListener({} as HTMLVideoElement).removeAllListeners('sdff');
