@@ -3,8 +3,9 @@ import onDOMReady from './onDOMReady';
 export type LoadScriptOptions = Partial<Pick<HTMLScriptElement, 'id' | 'async' | 'defer'>>;
 
 function isScriptAdded(src: string): boolean {
+  const url = src.startsWith('//') ? window.location.protocol + src : src;
   for (let i = 0; i < document.scripts.length; i += 1) {
-    if (document.scripts[i].src === src) {
+    if (document.scripts[i].src === url) {
       return true;
     }
   }
