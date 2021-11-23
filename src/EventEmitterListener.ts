@@ -24,9 +24,7 @@ function isDomEventTarget(target: EmitterTarget): target is DomEventTarget {
 type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
   ? GetDomEventType<T>
   : T extends EventEmitterTarget
-  ? T['on'] extends {
-      (type: infer K, listener: AnyFunction, ...rest: unknown[]): void;
-    }
+  ? T['on'] extends { (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown }
     ? K
     : string
   : string;
