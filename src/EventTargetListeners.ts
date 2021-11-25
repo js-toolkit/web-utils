@@ -9,7 +9,7 @@ export default class EventTargetListeners {
   ): EventTargetListener<T, M> {
     const listener = this.listeners.get(target) ?? new EventTargetListener<T, M>(target);
     !this.listeners.has(target) && this.listeners.set(target, listener);
-    return listener as EventTargetListener<T, M>;
+    return listener;
   }
 
   removeAllListeners<T extends EventTarget>(target?: T): this {

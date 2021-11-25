@@ -20,7 +20,9 @@ export type GetEventListener<E, EM extends AnyObject> = (
   ...rest: unknown[]
 ) => unknown;
 
-export type GetEventMap<T> = T extends HTMLBodyElement
+export type GetEventMap<T> = T extends Document
+  ? DocumentEventMap
+  : T extends HTMLBodyElement
   ? HTMLBodyElementEventMap
   : T extends HTMLVideoElement
   ? HTMLVideoElementEventMap
