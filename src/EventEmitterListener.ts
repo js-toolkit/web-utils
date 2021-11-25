@@ -84,13 +84,6 @@ export default class EventEmitterListener<
     };
   }
 
-  private createOnceWrapper(type: string, listener: AnyFunction): ListenerWrapper {
-    return (ev, ...rest) => {
-      this.off(type, listener);
-      (listener as ListenerWrapper)(ev, ...rest);
-    };
-  }
-
   on<K extends GetEventType<T>>(
     type: K,
     listener: GetEventListener<T, K, M>,
@@ -154,7 +147,7 @@ export default class EventEmitterListener<
       const map =
         this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
 
-      const wrapper = map.get(listener) ?? this.createOnceWrapper(type, listener);
+      const wrapper = map.get(listener) ?? listener;
       !map.has(listener) && map.set(listener, wrapper);
 
       this.target.once(type, wrapper);
