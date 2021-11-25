@@ -28,10 +28,18 @@ export type GetEventMap<T> = T extends Document
   ? HTMLVideoElementEventMap
   : T extends HTMLMediaElement
   ? HTMLMediaElementEventMap
+  : T extends TextTrackList
+  ? TextTrackListEventMap
   : T extends HTMLElement
   ? HTMLElementEventMap
   : T extends Element
   ? ElementEventMap
+  : T extends Animation
+  ? AnimationEventMap
+  : T extends BroadcastChannel
+  ? BroadcastChannelEventMap
+  : T extends EventSource
+  ? EventSourceEventMap
   : EmptyObject;
 
 let passiveSupported = false;
