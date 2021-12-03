@@ -1,6 +1,9 @@
 import onDOMReady from './onDOMReady';
 
-export type LoadScriptOptions = Partial<Pick<HTMLScriptElement, 'id' | 'async' | 'defer'>>;
+export interface LoadScriptOptions
+  extends Partial<Pick<HTMLScriptElement, 'id' | 'async' | 'defer'>> {
+  keepScript?: boolean;
+}
 
 function isScriptAdded(src: string): boolean {
   const url = src.startsWith('//') ? window.location.protocol + src : src;
@@ -14,7 +17,7 @@ function isScriptAdded(src: string): boolean {
 
 export function loadScript(
   url: string,
-  { id, async = true, defer = false }: LoadScriptOptions = {}
+  { keepScript, id, async = true, defer = false }: LoadScriptOptions = {}
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const load = (): void => {
@@ -29,14 +32,23 @@ export function loadScript(
       }
 
       const scriptElement = document.createElement('script');
+
+      const done = (error?: unknown): void => {
+        if (!keepScript) scriptElement.remove();
+        if (error) reject(error);
+        else resolve();
+      };
+
       if (id) {
         scriptElement.id = id;
       }
       scriptElement.async = async;
       scriptElement.defer = defer;
       scriptElement.src = url;
-      scriptElement.addEventListener('load', () => resolve(), { once: true });
-      scriptElement.addEventListener('error', reject, { once: true });
+
+      scriptElement.addEventListener('load', () => done(), { once: true });
+      scriptElement.addEventListener('error', done, { once: true });
+
       document.head.appendChild(scriptElement);
     };
 
