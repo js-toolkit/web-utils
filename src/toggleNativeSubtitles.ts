@@ -1,10 +1,10 @@
-export default function toggleNativeSubtitles(enabled: boolean, textTracks: TextTrackList): void {
+export default function toggleNativeSubtitles(native: boolean, textTracks: TextTrackList): void {
   // console.log('toggleNativeSubtitles');
   for (let i = 0; i < textTracks.length; i += 1) {
     const track = textTracks[i];
-    if (enabled && track.mode === 'hidden') {
+    if (native && track.mode === 'hidden') {
       track.mode = 'showing';
-    } else if (!enabled && track.mode === 'showing') {
+    } else if (!native && track.mode === 'showing') {
       track.mode = 'hidden';
     }
     // console.log(track.label, track.mode);
