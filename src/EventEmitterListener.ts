@@ -100,6 +100,7 @@ export default class EventEmitterListener<
       const handler = map.get(listener) ?? listener;
       !map.has(listener) && map.set(listener, handler);
 
+      this.normalListeners[type] = map;
       this.target.on(type, handler);
       return this;
     }
@@ -150,6 +151,7 @@ export default class EventEmitterListener<
       const wrapper = map.get(listener) ?? listener;
       !map.has(listener) && map.set(listener, wrapper);
 
+      this.normalListeners[type] = map;
       this.target.once(type, wrapper);
       return this;
     }
