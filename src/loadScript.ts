@@ -20,7 +20,7 @@ export function loadScript(
   { keepScript, id, async = true, defer = false }: LoadScriptOptions = {}
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const load = (): void => {
+    onDOMReady(() => {
       try {
         if (id) {
           if (document.scripts.namedItem(id)) {
@@ -63,8 +63,6 @@ export function loadScript(
       } catch (ex) {
         reject(ex);
       }
-    };
-
-    onDOMReady(load);
+    });
   });
 }
