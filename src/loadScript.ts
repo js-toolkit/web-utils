@@ -21,35 +21,48 @@ export function loadScript(
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const load = (): void => {
-      if (id) {
-        if (document.scripts.namedItem(id)) {
+      try {
+        if (id) {
+          if (document.scripts.namedItem(id)) {
+            resolve();
+            return;
+          }
+        } else if (isScriptAdded(url)) {
           resolve();
           return;
         }
-      } else if (isScriptAdded(url)) {
-        resolve();
-        return;
+
+        const scriptElement = document.createElement('script');
+
+        const done = (error?: Event): void => {
+          if (!keepScript) {
+            scriptElement.remove();
+          }
+          if (error) {
+            const ex =
+              error instanceof ErrorEvent
+                ? error
+                : new Error('Script load error. See previous log messages.');
+            reject(ex);
+          } else {
+            resolve();
+          }
+        };
+
+        if (id) {
+          scriptElement.id = id;
+        }
+        scriptElement.async = async;
+        scriptElement.defer = defer;
+        scriptElement.src = url;
+
+        scriptElement.addEventListener('load', () => done(), { once: true });
+        scriptElement.addEventListener('error', done, { once: true });
+
+        document.head.appendChild(scriptElement);
+      } catch (ex) {
+        reject(ex);
       }
-
-      const scriptElement = document.createElement('script');
-
-      const done = (error?: unknown): void => {
-        if (!keepScript) scriptElement.remove();
-        if (error) reject(error);
-        else resolve();
-      };
-
-      if (id) {
-        scriptElement.id = id;
-      }
-      scriptElement.async = async;
-      scriptElement.defer = defer;
-      scriptElement.src = url;
-
-      scriptElement.addEventListener('load', () => done(), { once: true });
-      scriptElement.addEventListener('error', done, { once: true });
-
-      document.head.appendChild(scriptElement);
     };
 
     onDOMReady(load);
