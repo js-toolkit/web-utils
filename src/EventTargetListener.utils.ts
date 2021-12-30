@@ -49,16 +49,13 @@ export function isPassiveSupported(): boolean {
 }
 
 try {
-  const options: AddEventListenerOptions = Object.defineProperty({}, 'passive', {
-    get() {
+  const options: AddEventListenerOptions = {
+    get passive() {
       passiveSupported = true;
+      return undefined;
     },
-  });
-  window.addEventListener(
-    'test' as keyof WindowEventMap,
-    null as unknown as EventListener,
-    options
-  );
+  };
+  window.addEventListener('__testpassive__', null as unknown as EventListener, options);
   // eslint-disable-next-line no-empty
 } catch (err) {}
 
