@@ -27,6 +27,8 @@ export interface FullscreenRequestOptions extends Readonly<FullscreenOptions> {
 }
 
 export default class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
+  readonly Events = FullscreenControllerEvent;
+
   constructor(private readonly element: Element, private readonly video?: HTMLVideoElement) {
     super();
     if (fullscreen.names) {
@@ -51,6 +53,11 @@ export default class FullscreenController extends EventEmitter<FullscreenControl
         this.video.removeEventListener('webkitendfullscreen', this.endFullscreenHandler);
       }
     });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get isFullscreenSupported(): boolean {
+    return fullscreen.isEnabled;
   }
 
   get isFullscreen(): boolean {
