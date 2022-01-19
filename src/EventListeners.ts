@@ -1,5 +1,5 @@
 import EventEmitterListener, { EmitterTarget } from './EventEmitterListener';
-import { GetEventMap } from './EventTargetListener.utils';
+import type { GetEventMap } from './EventTargetListener.utils';
 
 export default class EventListeners {
   private readonly listeners = new Map<EmitterTarget, EventEmitterListener<any, any>>();
