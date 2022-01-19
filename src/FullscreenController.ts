@@ -22,18 +22,18 @@ export type FullscreenControllerEventMap = {
 };
 
 export interface FullscreenRequestOptions extends Readonly<FullscreenOptions> {
-  /** Uses for iOS */
+  /** Used for iOS */
   readonly toggleNativeVideoSubtitles?: boolean;
 }
 
 export default class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
-  constructor(private readonly element: Element, private readonly video: HTMLVideoElement) {
+  constructor(private readonly element: Element, private readonly video?: HTMLVideoElement) {
     super();
     if (fullscreen.names) {
       const { names } = fullscreen;
       element.addEventListener(names.changeEventName, this.changeHandler);
       element.addEventListener(names.errorEventName, this.errorHandler);
-    } else {
+    } else if (video) {
       video.addEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
       video.addEventListener('webkitendfullscreen', this.endFullscreenHandler);
     }
@@ -46,7 +46,7 @@ export default class FullscreenController extends EventEmitter<FullscreenControl
         const { names } = fullscreen;
         this.element.removeEventListener(names.changeEventName, this.changeHandler);
         this.element.removeEventListener(names.errorEventName, this.errorHandler);
-      } else {
+      } else if (this.video) {
         this.video.removeEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
         this.video.removeEventListener('webkitendfullscreen', this.endFullscreenHandler);
       }
@@ -56,13 +56,13 @@ export default class FullscreenController extends EventEmitter<FullscreenControl
   get isFullscreen(): boolean {
     return fullscreen.names
       ? document[fullscreen.names.fullscreenElementName] === this.element
-      : !!this.video.webkitDisplayingFullscreen;
+      : !!this.video?.webkitDisplayingFullscreen;
   }
 
   get currentElement(): Element | null {
     if (fullscreen.names) {
       if (document[fullscreen.names.fullscreenElementName] === this.element) return this.element;
-    } else if (this.video.webkitDisplayingFullscreen) {
+    } else if (this.video?.webkitDisplayingFullscreen) {
       return this.video;
     }
     return null;
@@ -105,33 +105,35 @@ export default class FullscreenController extends EventEmitter<FullscreenControl
         return;
       }
 
-      if (!this.video.webkitEnterFullscreen) {
+      const { video } = this;
+
+      if (!video?.webkitEnterFullscreen) {
         reject(getFullscreenUnavailableError());
         return;
       }
 
-      if (this.video.webkitDisplayingFullscreen) {
+      if (video.webkitDisplayingFullscreen) {
         resolve();
         return;
       }
 
-      if (toggleNativeVideoSubtitles && this.video.textTracks.length > 0) {
-        toggleNativeSubtitles(true, this.video.textTracks);
+      if (toggleNativeVideoSubtitles && video.textTracks.length > 0) {
+        toggleNativeSubtitles(true, video.textTracks);
 
         const endFullscreenHandler = (): void => {
-          this.video.removeEventListener('webkitendfullscreen', endFullscreenHandler);
-          toggleNativeSubtitles(false, this.video.textTracks);
+          video.removeEventListener('webkitendfullscreen', endFullscreenHandler);
+          toggleNativeSubtitles(false, video.textTracks);
         };
-        this.video.addEventListener('webkitendfullscreen', endFullscreenHandler);
+        video.addEventListener('webkitendfullscreen', endFullscreenHandler);
       }
 
       const beginFullscreenHandler = (): void => {
-        this.video.removeEventListener('webkitbeginfullscreen', beginFullscreenHandler);
+        video.removeEventListener('webkitbeginfullscreen', beginFullscreenHandler);
         resolve();
       };
 
-      this.video.addEventListener('webkitbeginfullscreen', beginFullscreenHandler);
-      this.video.webkitEnterFullscreen();
+      video.addEventListener('webkitbeginfullscreen', beginFullscreenHandler);
+      video.webkitEnterFullscreen();
     });
   }
 
@@ -147,23 +149,25 @@ export default class FullscreenController extends EventEmitter<FullscreenControl
         return;
       }
 
-      if (!this.video.webkitExitFullscreen) {
+      const { video } = this;
+
+      if (!video?.webkitExitFullscreen) {
         reject(getFullscreenUnavailableError());
         return;
       }
 
-      if (!this.video.webkitDisplayingFullscreen) {
+      if (!video.webkitDisplayingFullscreen) {
         resolve();
         return;
       }
 
       const endFullscreenHandler = (): void => {
-        this.video.removeEventListener('webkitendfullscreen', endFullscreenHandler);
+        video.removeEventListener('webkitendfullscreen', endFullscreenHandler);
         resolve();
       };
 
-      this.video.addEventListener('webkitendfullscreen', endFullscreenHandler);
-      this.video.webkitExitFullscreen();
+      video.addEventListener('webkitendfullscreen', endFullscreenHandler);
+      video.webkitExitFullscreen();
     });
   }
 }
