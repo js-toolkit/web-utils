@@ -1,177 +1,189 @@
-export interface FullscreenFnNames {
-  readonly requestFullscreenName: string;
-  readonly exitFullscreenName: string;
-  readonly fullscreenElementName: string;
-  readonly fullscreenEnabledName: string;
-  readonly changeEventName: string;
-  readonly errorEventName: string;
+import es5ErrorCompat from '@js-toolkit/utils/es5ErrorCompat';
+
+export class FullscreenUnavailableError extends Error {
+  constructor() {
+    super('Fullscreen is not available');
+    es5ErrorCompat.call(this, FullscreenUnavailableError);
+  }
 }
 
-const fullscreenFnNames: FullscreenFnNames | undefined = (() => {
-  const fnNames: FullscreenFnNames[] = [
-    {
-      requestFullscreenName: 'requestFullscreen',
-      exitFullscreenName: 'exitFullscreen',
-      fullscreenElementName: 'fullscreenElement',
-      fullscreenEnabledName: 'fullscreenEnabled',
-      changeEventName: 'fullscreenchange',
-      errorEventName: 'fullscreenerror',
-    },
-    // New WebKit
-    {
-      requestFullscreenName: 'webkitRequestFullscreen',
-      exitFullscreenName: 'webkitExitFullscreen',
-      fullscreenElementName: 'webkitFullscreenElement',
-      fullscreenEnabledName: 'webkitFullscreenEnabled',
-      changeEventName: 'webkitfullscreenchange',
-      errorEventName: 'webkitfullscreenerror',
-    },
-    // Old WebKit
-    {
-      requestFullscreenName: 'webkitRequestFullScreen',
-      exitFullscreenName: 'webkitCancelFullScreen',
-      fullscreenElementName: 'webkitCurrentFullScreenElement',
-      fullscreenEnabledName: 'webkitCancelFullScreen',
-      changeEventName: 'webkitfullscreenchange',
-      errorEventName: 'webkitfullscreenerror',
-    },
-    {
-      requestFullscreenName: 'mozRequestFullScreen',
-      exitFullscreenName: 'mozCancelFullScreen',
-      fullscreenElementName: 'mozFullScreenElement',
-      fullscreenEnabledName: 'mozFullScreenEnabled',
-      changeEventName: 'mozfullscreenchange',
-      errorEventName: 'mozfullscreenerror',
-    },
-    {
-      requestFullscreenName: 'msRequestFullscreen',
-      exitFullscreenName: 'msExitFullscreen',
-      fullscreenElementName: 'msFullscreenElement',
-      fullscreenEnabledName: 'msFullscreenEnabled',
-      changeEventName: 'MSFullscreenChange',
-      errorEventName: 'MSFullscreenError',
-    },
-  ];
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace fullscreen {
+  interface FnNames {
+    readonly requestFullscreenName: string;
+    readonly exitFullscreenName: string;
+    readonly fullscreenElementName: string;
+    readonly fullscreenEnabledName: string;
+    readonly changeEventName: string;
+    readonly errorEventName: string;
+  }
 
-  return fnNames.find(({ exitFullscreenName }) => exitFullscreenName in document);
-})();
+  export const names: FnNames | undefined = (() => {
+    const fnNames: FnNames[] = [
+      {
+        requestFullscreenName: 'requestFullscreen',
+        exitFullscreenName: 'exitFullscreen',
+        fullscreenElementName: 'fullscreenElement',
+        fullscreenEnabledName: 'fullscreenEnabled',
+        changeEventName: 'fullscreenchange',
+        errorEventName: 'fullscreenerror',
+      },
+      // New WebKit
+      {
+        requestFullscreenName: 'webkitRequestFullscreen',
+        exitFullscreenName: 'webkitExitFullscreen',
+        fullscreenElementName: 'webkitFullscreenElement',
+        fullscreenEnabledName: 'webkitFullscreenEnabled',
+        changeEventName: 'webkitfullscreenchange',
+        errorEventName: 'webkitfullscreenerror',
+      },
+      // Old WebKit
+      {
+        requestFullscreenName: 'webkitRequestFullScreen',
+        exitFullscreenName: 'webkitCancelFullScreen',
+        fullscreenElementName: 'webkitCurrentFullScreenElement',
+        fullscreenEnabledName: 'webkitCancelFullScreen',
+        changeEventName: 'webkitfullscreenchange',
+        errorEventName: 'webkitfullscreenerror',
+      },
+      {
+        requestFullscreenName: 'mozRequestFullScreen',
+        exitFullscreenName: 'mozCancelFullScreen',
+        fullscreenElementName: 'mozFullScreenElement',
+        fullscreenEnabledName: 'mozFullScreenEnabled',
+        changeEventName: 'mozfullscreenchange',
+        errorEventName: 'mozfullscreenerror',
+      },
+      {
+        requestFullscreenName: 'msRequestFullscreen',
+        exitFullscreenName: 'msExitFullscreen',
+        fullscreenElementName: 'msFullscreenElement',
+        fullscreenEnabledName: 'msFullscreenEnabled',
+        changeEventName: 'MSFullscreenChange',
+        errorEventName: 'MSFullscreenError',
+      },
+    ];
 
-export type FullscreenEventTypes = 'change' | 'error';
+    return fnNames.find(({ exitFullscreenName }) => exitFullscreenName in document);
+  })();
 
-const eventNameMap: Record<FullscreenEventTypes, string | undefined> = {
-  change: fullscreenFnNames?.changeEventName,
-  error: fullscreenFnNames?.errorEventName,
-};
+  export type EventType = 'change' | 'error';
 
-export const getFullscreenUnavailableError = (): Error => new Error('Fullscreen is not available');
+  const eventNameMap: Record<EventType, string | undefined> = {
+    change: names?.changeEventName,
+    error: names?.errorEventName,
+  };
 
-export default {
-  names: fullscreenFnNames,
+  export const UnavailableError = FullscreenUnavailableError;
 
-  get isEnabled(): boolean {
+  export function isSupported(): boolean {
+    return !!names;
+  }
+
+  export function isEnabled(): boolean {
     // Coerce to boolean in case of old WebKit
-    return !!fullscreenFnNames && Boolean(document[fullscreenFnNames.fullscreenEnabledName]);
-  },
+    return !!names && Boolean(document[names.fullscreenEnabledName]);
+  }
 
-  get isFullscreen(): boolean {
-    if (!fullscreenFnNames) throw getFullscreenUnavailableError();
-    return Boolean(document[fullscreenFnNames.fullscreenElementName]);
-  },
+  export function isFullscreen(): boolean {
+    if (!names) throw new UnavailableError();
+    return Boolean(document[names.fullscreenElementName]);
+  }
 
-  get element(): Element | null | undefined {
-    if (!fullscreenFnNames) throw getFullscreenUnavailableError();
-    return document[fullscreenFnNames.fullscreenElementName] as Element;
-  },
+  export function getElement(): Element | null | undefined {
+    if (!names) throw new UnavailableError();
+    return document[names.fullscreenElementName] as Element;
+  }
 
-  request(element: Element, options?: FullscreenOptions): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!fullscreenFnNames) {
-        throw getFullscreenUnavailableError();
-      }
-
-      const onFullScreenEntered = (): void => {
-        this.off('change', onFullScreenEntered);
-        this.off('error', onFullScreenError); // eslint-disable-line no-use-before-define
-        resolve();
-      };
-      const onFullScreenError = (event: unknown): void => {
-        this.off('change', onFullScreenEntered);
-        this.off('error', onFullScreenError);
-        reject(event);
-      };
-
-      this.on('change', onFullScreenEntered);
-      this.on('error', onFullScreenError);
-
-      const result = (element[fullscreenFnNames.requestFullscreenName] as AnyAsyncFunction)(
-        options
-      );
-
-      if (result instanceof Promise) {
-        result.then(onFullScreenEntered, onFullScreenError);
-      }
-    });
-  },
-
-  exit(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!fullscreenFnNames) {
-        throw getFullscreenUnavailableError();
-      }
-      if (!this.isFullscreen) {
-        resolve();
-        return;
-      }
-
-      const onFullScreenExit = (): void => {
-        this.off('change', onFullScreenExit);
-        this.off('error', onFullScreenError); // eslint-disable-line no-use-before-define
-        resolve();
-      };
-      const onFullScreenError = (event: unknown): void => {
-        this.off('change', onFullScreenExit);
-        this.off('error', onFullScreenError);
-        reject(event);
-      };
-
-      this.on('change', onFullScreenExit);
-      this.on('error', onFullScreenError);
-
-      const result = (document[fullscreenFnNames.exitFullscreenName] as AnyAsyncFunction)();
-
-      if (result instanceof Promise) {
-        result.then(onFullScreenExit, onFullScreenError);
-      }
-    });
-  },
-
-  toggle(element: Element): Promise<void> {
-    return Promise.resolve().then(() => (this.isFullscreen ? this.exit() : this.request(element)));
-  },
-
-  onChange(listener: EventListenerOrEventListenerObject): void {
-    this.on('change', listener);
-  },
-
-  onError(listener: EventListenerOrEventListenerObject): void {
-    this.on('error', listener);
-  },
-
-  on(
-    type: FullscreenEventTypes,
+  export function on(
+    type: EventType,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | AddEventListenerOptions
   ): void {
     const eventName = eventNameMap[type];
     eventName && document.addEventListener(eventName, listener, options);
-  },
+  }
 
-  off(
-    type: FullscreenEventTypes,
+  export function off(
+    type: EventType,
     listener: EventListenerOrEventListenerObject,
     options?: boolean | EventListenerOptions
   ): void {
     const eventName = eventNameMap[type];
     eventName && document.removeEventListener(eventName, listener, options);
-  },
-};
+  }
+
+  export function request(elem: Element, options?: FullscreenOptions): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!names) {
+        throw new UnavailableError();
+      }
+
+      const onFullScreenEntered = (): void => {
+        off('change', onFullScreenEntered);
+        off('error', onFullScreenError); // eslint-disable-line no-use-before-define
+        resolve();
+      };
+      const onFullScreenError = (event: unknown): void => {
+        off('change', onFullScreenEntered);
+        off('error', onFullScreenError);
+        reject(event);
+      };
+
+      on('change', onFullScreenEntered);
+      on('error', onFullScreenError);
+
+      const result = (elem[names.requestFullscreenName] as AnyAsyncFunction)(options);
+
+      if (result instanceof Promise) {
+        result.then(onFullScreenEntered, onFullScreenError);
+      }
+    });
+  }
+
+  export function exit(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!names) {
+        throw new UnavailableError();
+      }
+      if (!isFullscreen) {
+        resolve();
+        return;
+      }
+
+      const onFullScreenExit = (): void => {
+        off('change', onFullScreenExit);
+        off('error', onFullScreenError); // eslint-disable-line no-use-before-define
+        resolve();
+      };
+      const onFullScreenError = (event: unknown): void => {
+        off('change', onFullScreenExit);
+        off('error', onFullScreenError);
+        reject(event);
+      };
+
+      on('change', onFullScreenExit);
+      on('error', onFullScreenError);
+
+      const result = (document[names.exitFullscreenName] as AnyAsyncFunction)();
+
+      if (result instanceof Promise) {
+        result.then(onFullScreenExit, onFullScreenError);
+      }
+    });
+  }
+
+  export function toggle(elem: Element): Promise<void> {
+    return Promise.resolve().then(() => (isFullscreen() ? exit() : request(elem)));
+  }
+
+  export function onChange(listener: EventListenerOrEventListenerObject): void {
+    on('change', listener);
+  }
+
+  export function onError(listener: EventListenerOrEventListenerObject): void {
+    on('error', listener);
+  }
+}
+
+export default fullscreen;
