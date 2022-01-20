@@ -29,12 +29,55 @@ export interface FullscreenRequestOptions extends Readonly<FullscreenOptions> {
   readonly pseudoFullscreenFallback?: boolean;
 }
 
+export function enterPseudoFullscreen(element: Element & ElementCSSInlineStyle): VoidFunction {
+  let originStyle:
+    | Pick<
+        CSSStyleDeclaration,
+        'position' | 'left' | 'top' | 'width' | 'height' | 'maxWidth' | 'maxHeight' | 'zIndex'
+      >
+    | undefined;
+  let currentEl: (Element & ElementCSSInlineStyle) | undefined;
+
+  originStyle = {
+    position: element.style.position,
+    left: element.style.left,
+    top: element.style.top,
+    width: element.style.width,
+    height: element.style.height,
+    maxWidth: element.style.maxWidth,
+    maxHeight: element.style.maxHeight,
+    zIndex: element.style.zIndex,
+  };
+  currentEl = element;
+  currentEl.style.position = 'fixed';
+  currentEl.style.left = '0px';
+  currentEl.style.top = '0px';
+  currentEl.style.width = '100vw';
+  currentEl.style.height = '100vh';
+  currentEl.style.maxWidth = '100vw';
+  currentEl.style.maxHeight = '100vh';
+  currentEl.style.zIndex = '99999';
+
+  return () => {
+    if (originStyle && currentEl) {
+      currentEl.style.position = originStyle.position;
+      currentEl.style.left = originStyle.left;
+      currentEl.style.top = originStyle.top;
+      currentEl.style.width = originStyle.width;
+      currentEl.style.height = originStyle.height;
+      currentEl.style.maxWidth = originStyle.maxWidth;
+      currentEl.style.maxHeight = originStyle.maxHeight;
+      currentEl.style.zIndex = originStyle.zIndex;
+    }
+    originStyle = undefined;
+    currentEl = undefined;
+  };
+}
+
 class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
   readonly Events = FullscreenControllerEvent;
 
-  private pseudo:
-    | Pick<CSSStyleDeclaration, 'position' | 'left' | 'top' | 'width' | 'height' | 'zIndex'>
-    | undefined = undefined;
+  private exitPseudoFullscreen: ReturnType<typeof enterPseudoFullscreen> | undefined;
 
   constructor(private readonly element: Element, private readonly video?: HTMLVideoElement) {
     super();
@@ -72,7 +115,7 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
   }
 
   get isPseudoFullscreen(): boolean {
-    return this.isFullscreen && !!this.pseudo;
+    return this.isFullscreen && !!this.exitPseudoFullscreen;
   }
 
   get currentElement(): Element | null {
@@ -80,7 +123,7 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
       if (fullscreen.getElement() === this.element) return this.element;
     } else if (this.video?.webkitDisplayingFullscreen) {
       return this.video;
-    } else if (this.pseudo) {
+    } else if (this.exitPseudoFullscreen) {
       return this.element;
     }
     return null;
@@ -118,11 +161,6 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
 
       const { video } = this;
       if (video?.webkitEnterFullscreen) {
-        if (video.webkitDisplayingFullscreen) {
-          resolve();
-          return;
-        }
-
         if (toggleNativeVideoSubtitles && video.textTracks.length > 0) {
           toggleNativeSubtitles(true, video.textTracks);
 
@@ -145,29 +183,8 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
       }
 
       if (pseudoFullscreenFallback) {
-        if (this.pseudo) {
-          resolve();
-          return;
-        }
-
-        const el = this.element as HTMLElement;
-        this.pseudo = {
-          position: el.style.position,
-          left: el.style.left,
-          top: el.style.top,
-          width: el.style.width,
-          height: el.style.height,
-          zIndex: el.style.zIndex,
-        };
-        el.style.position = 'fixed';
-        el.style.left = '0px';
-        el.style.top = '0px';
-        el.style.width = '100vw';
-        el.style.height = '100vh';
-        el.style.zIndex = '99999';
-
+        this.exitPseudoFullscreen = enterPseudoFullscreen(this.element as HTMLElement);
         this.emit(FullscreenControllerEvent.Change, { isFullscreen: true, pseudo: true });
-
         resolve();
         return;
       }
@@ -190,11 +207,6 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
 
       const { video } = this;
       if (video?.webkitExitFullscreen) {
-        if (!video.webkitDisplayingFullscreen) {
-          resolve();
-          return;
-        }
-
         const endFullscreenHandler = (): void => {
           video.removeEventListener('webkitendfullscreen', endFullscreenHandler);
           resolve();
@@ -206,18 +218,10 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
         return;
       }
 
-      if (this.pseudo) {
-        const el = this.element as HTMLElement;
-        el.style.position = this.pseudo.position;
-        el.style.left = this.pseudo.left;
-        el.style.top = this.pseudo.top;
-        el.style.width = this.pseudo.width;
-        el.style.height = this.pseudo.height;
-        el.style.zIndex = this.pseudo.zIndex;
-        this.pseudo = undefined;
-
+      if (this.exitPseudoFullscreen) {
+        this.exitPseudoFullscreen();
+        this.exitPseudoFullscreen = undefined;
         this.emit(FullscreenControllerEvent.Change, { isFullscreen: false, pseudo: true });
-
         resolve();
         return;
       }
