@@ -106,8 +106,12 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  get isFullscreenSupported(): boolean {
+  get isFullscreenEnabled(): boolean {
     return fullscreen.isEnabled();
+  }
+
+  get isAnyFullscreenEnabled(): boolean {
+    return this.isFullscreenEnabled || !!this.video?.webkitEnterFullscreen;
   }
 
   get isFullscreen(): boolean {
