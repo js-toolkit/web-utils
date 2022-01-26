@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 interface GTMEventData {
   event: string;
 }

@@ -17,9 +17,7 @@ type GALibType = 'gtm' | 'gtag' | 'ga' | 'iframe' | 'auto';
 export type GAEventDataTransformer<
   D extends GAEventData,
   L extends Extract<GALibType, 'gtm' | 'iframe'>
-> = (
-  data: D
-) => {
+> = (data: D) => {
   gtm: GTMEventData;
   // gtag: GTagEventData;
   // ga: GAObjectEventData;
