@@ -52,10 +52,10 @@ export function enterPseudoFullscreen(element: Element & ElementCSSInlineStyle):
   currentEl.style.position = 'fixed';
   currentEl.style.left = '0px';
   currentEl.style.top = '0px';
-  currentEl.style.width = '100vw';
-  currentEl.style.height = '100vh';
-  currentEl.style.maxWidth = '100vw';
-  currentEl.style.maxHeight = '100vh';
+  currentEl.style.width = '100%';
+  currentEl.style.height = '100%';
+  currentEl.style.maxWidth = '100%';
+  currentEl.style.maxHeight = '100%';
   currentEl.style.zIndex = '99999';
 
   return () => {
