@@ -1,6 +1,10 @@
+export function isPageReady(): boolean {
+  return document.readyState === 'complete';
+}
+
 /** @returns cancel wait function */
-export default function onPageReady(callback: VoidFunction): VoidFunction {
-  if (document.readyState === 'complete') {
+export function onPageReady(callback: VoidFunction): VoidFunction {
+  if (isPageReady()) {
     callback();
   } else {
     window.addEventListener('load', callback, { once: true });
