@@ -8,34 +8,32 @@ export interface Loop {
 export default function createLoop(): Loop {
   let timer: number | undefined;
   let raf: number | undefined;
-  let activity = false;
+  let active = false;
   let rafCallback: FrameRequestCallback | undefined;
 
-  const step = (): void => {
-    if (activity && rafCallback) {
+  const call = (): void => {
+    if (active && rafCallback) {
       raf && cancelAnimationFrame(raf);
       raf = requestAnimationFrame(rafCallback);
     }
   };
 
-  const result: Loop = {
+  return {
     start: (callback, wait) => {
       rafCallback = callback;
-      if (!activity) {
-        activity = true;
-        timer = window.setInterval(step, wait);
+      if (!active) {
+        active = true;
+        timer = window.setInterval(call, wait);
       }
     },
     stop: () => {
-      if (activity) {
-        activity = false;
+      if (active) {
+        active = false;
         window.clearInterval(timer);
         raf && cancelAnimationFrame(raf);
       }
     },
-    call: () => step(),
-    isActive: (): boolean => activity,
+    call,
+    isActive: (): boolean => active,
   };
-
-  return result;
 }
