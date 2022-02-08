@@ -1,37 +1,58 @@
+export interface RafLoopStartOptions {
+  readonly suspendTimeout?: number;
+  readonly scope?: AnimationFrameProvider;
+}
+
 export interface RafLoop {
-  start: (callback: FrameRequestCallback) => void;
+  start: (callback: FrameRequestCallback, options?: RafLoopStartOptions) => void;
   stop: () => void;
   isActive: () => boolean;
 }
 
-export default function createRafLoop(): RafLoop {
+export function createRafLoop(): RafLoop {
+  let active = false;
+  let timer: number | undefined;
   let raf: number | undefined;
-  let rafActivity = false;
+  let suspendTimeout = 0;
+  let scope: AnimationFrameProvider = window;
   let rafCallback: FrameRequestCallback | undefined;
 
+  const call = (): void => {
+    // eslint-disable-next-line no-use-before-define
+    raf = scope.requestAnimationFrame(step);
+  };
+
   const step = (time: number): void => {
-    if (rafActivity && rafCallback) {
+    if (active && rafCallback) {
       rafCallback(time);
-      raf = requestAnimationFrame(step);
+      if (suspendTimeout > 0) {
+        timer = window.setTimeout(call, suspendTimeout);
+      } else {
+        call();
+      }
     }
   };
 
-  const result: RafLoop = {
-    start: (callback: FrameRequestCallback) => {
+  return {
+    start: (callback, { suspendTimeout: _suspendTimeout = 0, scope: _scope = window } = {}) => {
       rafCallback = callback;
-      if (!rafActivity) {
-        rafActivity = true;
-        raf = requestAnimationFrame(step);
+      suspendTimeout = _suspendTimeout;
+      scope = _scope;
+      if (!active) {
+        active = true;
+        call();
       }
     },
     stop: () => {
-      if (rafActivity) {
-        rafActivity = false;
+      if (active) {
+        active = false;
+        window.clearTimeout(timer);
         raf && cancelAnimationFrame(raf);
+        raf = undefined;
+        suspendTimeout = 0;
+        timer = undefined;
       }
     },
-    isActive: (): boolean => rafActivity,
+    isActive: (): boolean => active,
   };
-
-  return result;
 }
