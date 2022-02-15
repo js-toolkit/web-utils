@@ -11,7 +11,7 @@ type DomEventTarget = EventTarget;
 
 type EventEmitterTarget = {
   on: (type: any, listener: AnyFunction, ...rest: any[]) => void;
-  once: (type: any, listener: AnyFunction, ...rest: any[]) => void;
+  once?: (type: any, listener: AnyFunction, ...rest: any[]) => void;
   off: (type: any, listener: AnyFunction, ...rest: any[]) => void;
 };
 
@@ -32,7 +32,10 @@ type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
 type GetEventListener<T extends EmitterTarget, E, EM extends AnyObject> = T extends DomEventTarget
   ? GetDomEventListener<E, EM>
   : T extends EventEmitterTarget
-  ? (ev: E extends keyof EM ? EM[E] : AnyObject, ...rest: unknown[]) => unknown
+  ? (
+      ev: IfExtends<EM, EmptyObject, AnyObject, E extends keyof EM ? EM[E] : AnyObject>,
+      ...rest: unknown[]
+    ) => unknown
   : AnyFunction;
 
 type GetOnOptions<T extends EmitterTarget> = T extends DomEventTarget
@@ -51,7 +54,8 @@ type EventListenersMap = Partial<
   Record<string, Map<EventListenerOrEventListenerObject, AnyFunction>>
 >;
 
-type ListenerWrapper = (ev: AnyObject, ...rest: unknown[]) => unknown;
+// type ListenerWrapper = (ev: AnyObject, ...rest: unknown[]) => unknown;
+type ListenerWrapper = (...args: unknown[]) => unknown;
 
 export default class EventEmitterListener<
   T extends EmitterTarget,
@@ -70,16 +74,16 @@ export default class EventEmitterListener<
   private createWrapper(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: GetOnOptions<T>
+    options?: boolean | AddEventListenerOptions
   ): ListenerWrapper {
-    return (ev, ...rest) => {
+    return (...params) => {
       if (typeof options === 'object' && options.once) {
         this.off(type, listener, options as GetOffOptions<T>);
       }
       if (typeof listener === 'object') {
-        (listener.handleEvent as ListenerWrapper)(ev, ...rest);
+        (listener.handleEvent as ListenerWrapper)(...params);
       } else {
-        (listener as ListenerWrapper)(ev, ...rest);
+        (listener as ListenerWrapper)(...params);
       }
     };
   }
@@ -105,6 +109,7 @@ export default class EventEmitterListener<
       return this;
     }
 
+    // DOM
     const useCapture =
       options === true || (typeof options === 'object' && (options.capture ?? false));
 
@@ -147,15 +152,22 @@ export default class EventEmitterListener<
     if (!isDomEventTarget(this.target)) {
       const map =
         this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
-
-      const wrapper = map.get(listener) ?? listener;
-      !map.has(listener) && map.set(listener, wrapper);
-
       this.normalListeners[type] = map;
-      this.target.once(type, wrapper);
+
+      if (this.target.once) {
+        const wrapper = map.get(listener) ?? listener;
+        !map.has(listener) && map.set(listener, wrapper);
+        this.target.once(type, wrapper);
+      } else {
+        const wrapper = map.get(listener) ?? this.createWrapper(type, listener, { once: true });
+        !map.has(listener) && map.set(listener, wrapper);
+        this.target.on(type, wrapper);
+      }
+
       return this;
     }
 
+    // DOM
     return this.on(type, listener, {
       ...(typeof options === 'object' ? options : options != null && { capture: options }),
       once: true,
@@ -184,6 +196,7 @@ export default class EventEmitterListener<
       return this;
     }
 
+    // DOM
     const useCapture =
       options === true || (typeof options === 'object' && (options.capture ?? false));
 
