@@ -33,8 +33,8 @@ type GetEventListener<T extends EmitterTarget, E, EM extends AnyObject> = T exte
   ? GetDomEventListener<E, EM>
   : T extends EventEmitterTarget
   ? (
-      ev: IfExtends<EM, EmptyObject, AnyObject, E extends keyof EM ? EM[E] : AnyObject>,
-      ...rest: unknown[]
+      ev: IfExtends<EM, EmptyObject, unknown, E extends keyof EM ? EM[E] : unknown>,
+      ...rest: any[]
     ) => unknown
   : AnyFunction;
 
@@ -73,7 +73,7 @@ export default class EventEmitterListener<
 
   private createWrapper(
     type: string,
-    listener: EventListenerOrEventListenerObject,
+    listener: EventListenerObject | ListenerWrapper,
     options?: boolean | AddEventListenerOptions
   ): ListenerWrapper {
     return (...params) => {
@@ -83,7 +83,7 @@ export default class EventEmitterListener<
       if (typeof listener === 'object') {
         (listener.handleEvent as ListenerWrapper)(...params);
       } else {
-        (listener as ListenerWrapper)(...params);
+        listener(...params);
       }
     };
   }
