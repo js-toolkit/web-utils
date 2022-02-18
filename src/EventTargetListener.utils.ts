@@ -1,6 +1,8 @@
 import isEmptyObject from '@js-toolkit/utils/isEmptyObject';
 
-export type GetEventType<T extends EventTarget> = T['addEventListener'] extends {
+export type DomEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
+
+export type GetEventType<T extends DomEventTarget> = T['addEventListener'] extends {
   (
     type: infer K,
     listener: (this: T, ev: any) => any,

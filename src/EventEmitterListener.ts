@@ -1,13 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   GetEventMap,
   GetEventType as GetDomEventType,
   GetEventListener as GetDomEventListener,
   isPassiveSupported,
   normalizeOptions,
+  DomEventTarget,
 } from './EventTargetListener.utils';
-
-// type DomEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
-type DomEventTarget = EventTarget;
 
 type EventEmitterTarget = {
   on: (type: any, listener: AnyFunction, ...rest: any[]) => void;
@@ -18,7 +17,10 @@ type EventEmitterTarget = {
 export type EmitterTarget = DomEventTarget | EventEmitterTarget;
 
 function isDomEventTarget(target: EmitterTarget): target is DomEventTarget {
-  return (target as DomEventTarget).addEventListener !== undefined;
+  return (
+    (target as DomEventTarget).addEventListener !== undefined &&
+    (target as DomEventTarget).removeEventListener !== undefined
+  );
 }
 
 type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
