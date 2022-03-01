@@ -3,7 +3,7 @@ import es5ErrorCompat from '@js-toolkit/utils/es5ErrorCompat';
 export class FullscreenUnavailableError extends Error {
   constructor() {
     super('Fullscreen is not available');
-    es5ErrorCompat.call(this, FullscreenUnavailableError);
+    es5ErrorCompat(this, FullscreenUnavailableError);
   }
 }
 
