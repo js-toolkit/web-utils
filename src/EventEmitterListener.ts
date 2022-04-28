@@ -221,10 +221,10 @@ export default class EventEmitterListener<
   removeAllListeners(type?: string): this {
     if (type) {
       const normalMap = this.normalListeners[type];
-      normalMap && normalMap.forEach((_, wrapper) => this.off(type, wrapper));
+      normalMap && normalMap.forEach((_, listener) => this.off(type, listener));
       const captureMap = this.captureListeners[type];
       captureMap &&
-        captureMap.forEach((_, wrapper) => this.off(type, wrapper, true as GetOffOptions<T>));
+        captureMap.forEach((_, listener) => this.off(type, listener, true as GetOffOptions<T>));
     } else {
       Object.keys(this.normalListeners).forEach((k) => this.removeAllListeners(k));
       Object.keys(this.captureListeners).forEach((k) => this.removeAllListeners(k));
