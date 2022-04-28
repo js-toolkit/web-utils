@@ -59,6 +59,11 @@ type EventListenersMap = Partial<
 // type ListenerWrapper = (ev: AnyObject, ...rest: unknown[]) => unknown;
 type ListenerWrapper = (...args: unknown[]) => unknown;
 
+interface GetListenersOptions {
+  event?: string;
+  type?: 'normal' | 'capture';
+}
+
 export default class EventEmitterListener<
   T extends EmitterTarget,
   M extends AnyObject = GetEventMap<T>
@@ -88,6 +93,51 @@ export default class EventEmitterListener<
         listener(...params);
       }
     };
+  }
+
+  getListenerList<L = unknown>({ event, type }: GetListenersOptions = {}): L[] {
+    const map =
+      (type === 'normal' && this.normalListeners) ||
+      (type === 'capture' && this.captureListeners) ||
+      undefined;
+    if (map) {
+      const entries = event ? map[event] && { [event]: map[event] } : map;
+      if (!entries) return [];
+      return Object.values(entries).flatMap(
+        (m) => (m ? Array.from(m.keys()) : []) as unknown as L[]
+      );
+    }
+    return this.getListenerList<L>({ event, type: 'normal' }).concat(
+      this.getListenerList<L>({ event, type: 'capture' })
+    );
+  }
+
+  getListeners<L = unknown>({ event, type }: GetListenersOptions = {}): Record<string, L[]> {
+    const map =
+      (type === 'normal' && this.normalListeners) ||
+      (type === 'capture' && this.captureListeners) ||
+      undefined;
+
+    if (!map) {
+      const normal = this.getListeners<L>({ event, type: 'normal' });
+      const capture = this.getListeners<L>({ event, type: 'capture' });
+      const acc: Record<string, L[]> = {};
+      const callback = ([type, l]: [string, L[]]): void => {
+        const list = acc[type];
+        acc[type] = list ? list.concat(l) : l;
+      };
+      Object.entries(normal).forEach(callback);
+      Object.entries(capture).forEach(callback);
+      return acc;
+    }
+
+    const entries = event ? map[event] && { [event]: map[event] } : map;
+    if (!entries) return {};
+    return Object.entries(entries).reduce((acc, [type, m]) => {
+      const listeners = m ? Array.from(m.keys()) : [];
+      if (listeners.length > 0) acc[type] = listeners;
+      return acc;
+    }, {});
   }
 
   on<K extends GetEventType<T>>(
