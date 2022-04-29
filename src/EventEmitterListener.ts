@@ -152,11 +152,11 @@ export default class EventEmitterListener<
     if (!isDomEventTarget(this.target)) {
       const map =
         this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
+      this.normalListeners[type] = map;
 
       const handler = map.get(listener) ?? listener;
       !map.has(listener) && map.set(listener, handler);
 
-      this.normalListeners[type] = map;
       this.target.on(type, handler);
       return this;
     }
@@ -168,20 +168,20 @@ export default class EventEmitterListener<
     if (useCapture) {
       const map =
         this.captureListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
+      this.captureListeners[type] = map;
 
       const wrapper = map.get(listener) ?? this.createWrapper(type, listener, options);
       !map.has(listener) && map.set(listener, wrapper);
 
-      this.captureListeners[type] = map;
       this.target.addEventListener(type, wrapper, normalizeOptions(options));
     } else {
       const map =
         this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
+      this.normalListeners[type] = map;
 
       const wrapper = map.get(listener) ?? this.createWrapper(type, listener, options);
       !map.has(listener) && map.set(listener, wrapper);
 
-      this.normalListeners[type] = map;
       this.target.addEventListener(type, wrapper, normalizeOptions(options));
     }
 
@@ -206,13 +206,11 @@ export default class EventEmitterListener<
         this.normalListeners[type] ?? new Map<EventListenerOrEventListenerObject, AnyFunction>();
       this.normalListeners[type] = map;
 
+      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, { once: true });
+      !map.has(listener) && map.set(listener, wrapper);
       if (this.target.once) {
-        const wrapper = map.get(listener) ?? listener;
-        !map.has(listener) && map.set(listener, wrapper);
         this.target.once(type, wrapper);
       } else {
-        const wrapper = map.get(listener) ?? this.createWrapper(type, listener, { once: true });
-        !map.has(listener) && map.set(listener, wrapper);
         this.target.on(type, wrapper);
       }
 
