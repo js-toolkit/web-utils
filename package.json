@@ -1,5 +1,5 @@
 {
-  "name": "@js-toolkit/web-utils",
+  "name": "@jstoolkit/web-utils",
   "version": "1.32.3",
   "description": "Web utils",
   "author": "VZH",
@@ -8,29 +8,28 @@
     "type": "git",
     "url": "https://github.com/js-toolkit/web-utils"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
   "scripts": {
     "clean": "rimraf dist/*",
     "copy:configs": "copyfiles package.json .npmignore README.md LICENSE ./dist/",
     "minify": "node-utils-minify --replace ./dist",
     "build": "npm run clean && tsc --build ./tsconfig.json && npm run minify",
-    "build-to-tutoron": "tsc --build ./tsconfig.json && copyfiles -u 1 './dist/**/*' '../../../tutoron/node_modules/@js-toolkit/web-utils'",
+    "build-to-tutoron": "tsc --build ./tsconfig.json && copyfiles -u 1 './dist/**/*' '../../../tutoron/node_modules/@jstoolkit/web-utils'",
     "build-to-player": "tsc --build ./tsconfig.json && npm run minify && copyfiles -e './dist/*(package.json|README.md|LICENSE)' -u 1 './dist/**/*' '../../../player/modules/web-utils'",
-    "build-to-react-hooks": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../react-hooks/node_modules/@js-toolkit/web-utils'",
-    "build-to-player-utils": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../player-utils/node_modules/@js-toolkit/web-utils'",
-    "patch-publish": "npm run build && npm version patch && npm run copy:configs && npm publish ./dist/ && git push origin master --follow-tags",
-    "minor-publish": "npm run build && npm version minor && npm run copy:configs && npm publish ./dist/ && git push origin master --follow-tags"
+    "build-to-react-hooks": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../react-hooks/node_modules/@jstoolkit/web-utils'",
+    "build-to-player-utils": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../player-utils/node_modules/@jstoolkit/web-utils'",
+    "patch-publish": "npm run build && npm version patch && npm run copy:configs && npm publish ./dist/ --access public && git push origin master --follow-tags",
+    "minor-publish": "npm run build && npm version minor && npm run copy:configs && npm publish ./dist/ --access public && git push origin master --follow-tags"
+  },
+  "optionalDependencies": {
+    "@js-toolkit/node-utils": "^1.1.4"
   },
   "devDependencies": {
-    "@js-toolkit/configs": "^3.84.4",
-    "@js-toolkit/node-utils": "^1.1.4",
-    "@js-toolkit/utils": "^1.43.0",
-    "@typescript-eslint/eslint-plugin": "^5.21.0",
-    "@typescript-eslint/parser": "^5.21.0",
+    "@jstoolkit/configs": "^3.84.6",
+    "@jstoolkit/utils": "^1.43.1",
+    "@typescript-eslint/eslint-plugin": "^5.23.0",
+    "@typescript-eslint/parser": "^5.23.0",
     "copyfiles": "^2.4.1",
-    "eslint": "^8.14.0",
+    "eslint": "^8.15.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
@@ -38,9 +37,9 @@
     "eventemitter3": "^4.0.7",
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
-    "terser": "^5.13.0",
+    "terser": "^5.13.1",
     "typescript": "^4.6.4",
-    "webpack": "^5.72.0",
+    "webpack": "^5.72.1",
     "yargs": "^17.4.1"
   }
 }

@@ -1,4 +1,4 @@
-import toInt from '@js-toolkit/utils/toInt';
+import toInt from '@jstoolkit/utils/toInt';
 
 export interface SecondsCounterOptions {
   onChange?: (data: { value: number; total: number }) => void;

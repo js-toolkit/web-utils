@@ -10,8 +10,8 @@
 // To learn more about the benefits of this model and instructions on how to
 // opt-in, read https://cra.link/PWA
 
-import appEnv from '@js-toolkit/configs/appEnv';
-import buildConfig from '@js-toolkit/configs/buildConfig';
+import appEnv from '@jstoolkit/configs/appEnv';
+import buildConfig from '@jstoolkit/configs/buildConfig';
 
 export interface Config {
   onUpdate?(registration: ServiceWorkerRegistration): void;

@@ -1,4 +1,4 @@
-import isEmptyObject from '@js-toolkit/utils/isEmptyObject';
+import isEmptyObject from '@jstoolkit/utils/isEmptyObject';
 
 export type DomEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
 

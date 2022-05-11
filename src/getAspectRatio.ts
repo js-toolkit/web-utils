@@ -1,4 +1,4 @@
-import farey from '@js-toolkit/utils/farey';
+import farey from '@jstoolkit/utils/farey';
 
 export interface AspectRatio {
   /** Approximate width ratio */
