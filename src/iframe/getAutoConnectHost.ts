@@ -86,8 +86,11 @@ export default function getAutoConnectHost<T>({
     // Iframe ready
     else {
       sendReady(onSendData ? onSendData(iframe, origin) : undefined, iframe.contentWindow, origin);
-      onConnect(message.data.data, iframe, origin);
-      logger.debug('Iframe Host connected.');
+      const { data } = message.data;
+      setTimeout(() => {
+        onConnect(data, iframe, origin);
+        logger.debug('Iframe Host connected.');
+      }, 0);
     }
   };
 
