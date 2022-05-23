@@ -24,20 +24,20 @@ function findIframeElement(source: Window): HTMLIFrameElement | undefined {
 }
 
 interface AutoConnectHost {
-  readonly start: VoidFunction;
+  readonly start: (...iframes: HTMLIFrameElement[]) => void;
   readonly stop: VoidFunction;
   /** Send `ready` to iframe. */
   readonly ready: <T>(data: T, target: Window, origin?: string) => void;
 }
 
 interface AutoConnectHostOptions<T = AnyObject> {
-  readonly getSendReadyData?: (iframe: HTMLIFrameElement, origin: string) => T;
+  readonly onSendData?: (iframe: HTMLIFrameElement, origin: string) => T;
   readonly onConnect: (data: unknown, iframe: HTMLIFrameElement, origin: string) => void;
   readonly logger?: Pick<Console, 'warn' | 'debug'>;
 }
 
 export default function getAutoConnectHost<T>({
-  getSendReadyData,
+  onSendData,
   onConnect,
   logger = console,
 }: AutoConnectHostOptions<T>): AutoConnectHost {
@@ -85,23 +85,22 @@ export default function getAutoConnectHost<T>({
     }
     // Iframe ready
     else {
-      sendReady(
-        getSendReadyData ? getSendReadyData(iframe, origin) : undefined,
-        iframe.contentWindow,
-        origin
-      );
+      sendReady(onSendData ? onSendData(iframe, origin) : undefined, iframe.contentWindow, origin);
       onConnect(message.data.data, iframe, origin);
       logger.debug('Iframe Host connected.');
     }
   };
 
-  const start = (): void => {
-    if (disposer) return;
+  const start = (...iframes: HTMLIFrameElement[]): void => {
+    if (disposer) {
+      logger.warn('Already started. You should first call `stop`.');
+      return;
+    }
 
     const cancel = onDOMReady(() => {
       window.addEventListener('message', onReceiveMessage);
       // Post message to all iframes
-      const frames = selectFrames();
+      const frames = iframes.length > 0 ? iframes : selectFrames();
       for (let i = 0; i < frames.length; i += 1) {
         const frame = frames[i];
         frame.contentWindow && sendPing(frame.contentWindow);
