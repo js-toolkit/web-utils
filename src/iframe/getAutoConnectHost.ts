@@ -46,14 +46,14 @@ export default function getAutoConnectHost<T>({
   const post = <M extends IframeMessage<string>>(
     message: M,
     target: Window,
-    origin = '*'
+    origin: string
   ): void => {
     if (window === target) return;
     target.postMessage(message, origin);
     logger.debug(`Post message to iframe (origin=${origin}):`, message);
   };
 
-  const sendPing = (target: Window, origin = '*'): void => {
+  const sendPing = (target: Window, origin: string): void => {
     post<IframePingMessage>({ type: IFRAME_PING }, target, origin);
   };
 
@@ -103,7 +103,7 @@ export default function getAutoConnectHost<T>({
       const frames = iframes.length > 0 ? iframes : selectFrames();
       for (let i = 0; i < frames.length; i += 1) {
         const frame = frames[i];
-        frame.contentWindow && sendPing(frame.contentWindow);
+        frame.contentWindow && sendPing(frame.contentWindow, '*');
       }
     });
 

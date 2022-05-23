@@ -27,7 +27,7 @@ export default function getAutoConnectClient<T = unknown>({
 }: AutoConnectClientOptions<T>): AutoConnectClient {
   // let readySent = false;
 
-  const post = <M extends IframeMessage<string>>(message: M, origin = '*'): void => {
+  const post = <M extends IframeMessage<string>>(message: M, origin: string): void => {
     if (window === window.parent) return;
     window.parent.postMessage(message, origin);
     logger.debug(`Post message to parent window (origin=${origin}):`, message);
@@ -37,7 +37,7 @@ export default function getAutoConnectClient<T = unknown>({
     post<IframePingMessage>({ type: IFRAME_PING }, origin);
   };
 
-  const sendReady = (readyData: T, origin = '*'): void => {
+  const sendReady = (readyData: T, origin: string): void => {
     post<IframeClientReadyMessage<T>>({ type: IFRAME_CLIENT_READY, data: readyData }, origin);
     // readySent = true;
   };
