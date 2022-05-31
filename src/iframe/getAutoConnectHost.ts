@@ -10,19 +10,6 @@ import {
   isPingMessage,
 } from './messages';
 
-function selectFrames(): HTMLCollectionOf<HTMLIFrameElement> {
-  return document.getElementsByTagName('iframe');
-}
-
-function findIframeElement(source: Window): HTMLIFrameElement | undefined {
-  const items = selectFrames();
-  for (let i = 0; i < items.length; i += 1) {
-    const frame = items[i];
-    if (frame.contentWindow === source) return frame;
-  }
-  return undefined;
-}
-
 interface AutoConnectHost {
   readonly start: (...iframes: HTMLIFrameElement[]) => void;
   readonly stop: VoidFunction;
@@ -36,12 +23,32 @@ interface AutoConnectHostOptions<T = AnyObject> {
   readonly logger?: Pick<Console, 'warn' | 'debug'>;
 }
 
+function selectFrames(): HTMLCollectionOf<HTMLIFrameElement> {
+  return document.getElementsByTagName('iframe');
+}
+
+function findIframeElement(
+  source: Window,
+  iframes: ArrayLike<HTMLIFrameElement> = selectFrames(),
+  logger: AutoConnectHostOptions['logger'] = console
+): HTMLIFrameElement | undefined {
+  for (let i = 0; i < iframes.length; i += 1) {
+    const frame = iframes[i];
+    if (frame.contentWindow === source) return frame;
+    if (frame.contentWindow == null) {
+      logger.warn(`Search iframe: <iframe>(#${frame.id}) contentWindow is undefined.`);
+    }
+  }
+  return undefined;
+}
+
 export default function getAutoConnectHost<T>({
   onSendData,
   onConnect,
   logger = console,
 }: AutoConnectHostOptions<T>): AutoConnectHost {
   let disposer: VoidFunction | undefined;
+  let specialIframes: HTMLIFrameElement[] | undefined;
 
   const post = <M extends IframeMessage<string>>(
     message: M,
@@ -67,7 +74,7 @@ export default function getAutoConnectHost<T>({
     // if (!isIframeClientReadyMessage(message.data)) return;
     logger.debug(`Receive message from iframe (origin=${message.origin}):`, message.data);
 
-    const iframe = findIframeElement(message.source as Window);
+    const iframe = findIframeElement(message.source as Window, specialIframes, logger);
     if (!iframe) {
       logger.warn('Could not find <iframe> by message.source.');
       return;
@@ -100,10 +107,12 @@ export default function getAutoConnectHost<T>({
       return;
     }
 
+    specialIframes = iframes.length > 0 ? iframes : undefined;
+
     const cancel = onDOMReady(() => {
       window.addEventListener('message', onReceiveMessage);
       // Post message to all iframes
-      const frames = iframes.length > 0 ? iframes : selectFrames();
+      const frames = specialIframes || selectFrames();
       for (let i = 0; i < frames.length; i += 1) {
         const frame = frames[i];
         frame.contentWindow && sendPing(frame.contentWindow, '*');
@@ -113,6 +122,7 @@ export default function getAutoConnectHost<T>({
     disposer = () => {
       cancel();
       window.removeEventListener('message', onReceiveMessage);
+      specialIframes = undefined;
     };
   };
 
