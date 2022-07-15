@@ -38,10 +38,22 @@ export type GetEventMap<T> = T extends Document
   ? ElementEventMap
   : T extends Animation
   ? AnimationEventMap
+  : T extends AbortSignal
+  ? AbortSignalEventMap
   : T extends BroadcastChannel
   ? BroadcastChannelEventMap
+  : T extends WebSocket
+  ? WebSocketEventMap
+  : T extends MediaStreamTrack
+  ? MediaStreamTrackEventMap
+  : T extends MediaStream
+  ? MediaStreamEventMap
   : T extends EventSource
   ? EventSourceEventMap
+  : T extends SourceBuffer
+  ? SourceBufferEventMap
+  : T extends SourceBufferList
+  ? SourceBufferListEventMap
   : EmptyObject;
 
 let passiveSupported = false;
