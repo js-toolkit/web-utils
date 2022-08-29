@@ -26,11 +26,11 @@
   },
   "devDependencies": {
     "@jstoolkit/configs": "^3.84.7",
-    "@jstoolkit/utils": "^1.44.2",
-    "@typescript-eslint/eslint-plugin": "^5.33.0",
-    "@typescript-eslint/parser": "^5.33.0",
+    "@jstoolkit/utils": "^1.44.5",
+    "@typescript-eslint/eslint-plugin": "^5.35.1",
+    "@typescript-eslint/parser": "^5.35.1",
     "copyfiles": "^2.4.1",
-    "eslint": "^8.21.0",
+    "eslint": "^8.23.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
@@ -38,8 +38,8 @@
     "eventemitter3": "^4.0.7",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
-    "terser": "^5.14.2",
-    "typescript": "^4.7.4",
+    "terser": "^5.15.0",
+    "typescript": "^4.8.2",
     "webpack": "^5.74.0",
     "yargs": "^17.5.1"
   }
