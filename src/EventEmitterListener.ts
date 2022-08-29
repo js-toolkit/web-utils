@@ -138,11 +138,11 @@ export default class EventEmitterListener<
   private createWrapper(
     type: string,
     listener: GetEventListener<T, string, M>,
+    once: boolean,
     ...rest: unknown[]
   ): ListenerWrapper {
-    const options = rest[0] as boolean | AddEventListenerOptions | undefined;
     return (...params) => {
-      if (typeof options === 'object' && options.once) {
+      if (once) {
         this.off(...([type, listener, ...rest] as GetOffParameters<T, string, M>));
       }
       // if (typeof listener === 'object') {
@@ -234,12 +234,13 @@ export default class EventEmitterListener<
     const options = rest[0] as boolean | AddEventListenerOptions | undefined;
     const useCapture =
       options === true || (options && typeof options === 'object' && (options.capture ?? false));
+    const once = (options && typeof options === 'object' && options.once) ?? false;
 
     if (useCapture) {
       const map = this.captureListeners[type] ?? (new Map() as ListenersMap);
       this.captureListeners[type] = map;
 
-      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, options);
+      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, once, options);
       !map.has(listener) && map.set(listener, wrapper);
 
       this.target.addEventListener(type, wrapper, normalizeOptions(options));
@@ -247,7 +248,7 @@ export default class EventEmitterListener<
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
       this.normalListeners[type] = map;
 
-      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, options);
+      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, once, options);
       !map.has(listener) && map.set(listener, wrapper);
 
       this.target.addEventListener(type, wrapper, normalizeOptions(options));
@@ -277,12 +278,7 @@ export default class EventEmitterListener<
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
       this.normalListeners[type] = map;
 
-      const wrapper =
-        map.get(listener) ??
-        this.createWrapper(type, listener, { once: true } as RequiredSome<
-          AddEventListenerOptions,
-          'once'
-        >);
+      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, true, ...rest);
       !map.has(listener) && map.set(listener, wrapper);
 
       if (isEventTargetLike(this.target)) {
