@@ -18,19 +18,19 @@
     "build-to-react-hooks": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../react-hooks/node_modules/@jstoolkit/web-utils'",
     "build-to-player-utils": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../player-utils/node_modules/@jstoolkit/web-utils'",
     "build-to-styled-components": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../styled-components/node_modules/@jstoolkit/web-utils'",
-    "patch-publish": "npm run build && npm version patch && npm run copy:configs && npm publish ./dist/ --access public && git push origin master --follow-tags",
-    "minor-publish": "npm run build && npm version minor && npm run copy:configs && npm publish ./dist/ --access public && git push origin master --follow-tags"
+    "patch-publish": "npm run build && npm version patch --no-workspaces-update -m 'v%s' && npm run copy:configs && cd ./dist && npm publish --access public && git push origin master --follow-tags",
+    "minor-publish": "npm run build && npm version minor --no-workspaces-update -m 'v%s' && npm run copy:configs && cd ./dist && npm publish --access public && git push origin master --follow-tags"
   },
   "optionalDependencies": {
     "@js-toolkit/node-utils": "^1.1.4"
   },
   "devDependencies": {
     "@jstoolkit/configs": "^3.84.7",
-    "@jstoolkit/utils": "^1.44.5",
-    "@typescript-eslint/eslint-plugin": "^5.35.1",
-    "@typescript-eslint/parser": "^5.35.1",
+    "@jstoolkit/utils": "^1.45.6",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
     "copyfiles": "^2.4.1",
-    "eslint": "^8.23.0",
+    "eslint": "^8.27.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
@@ -38,9 +38,9 @@
     "eventemitter3": "^4.0.7",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
-    "terser": "^5.15.0",
-    "typescript": "^4.8.2",
+    "terser": "^5.15.1",
+    "typescript": "^4.8.4",
     "webpack": "^5.74.0",
-    "yargs": "^17.5.1"
+    "yargs": "^17.6.2"
   }
 }
