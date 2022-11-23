@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import onDOMReady from './onDOMReady';
 
 export interface LoadScriptOptions
@@ -34,19 +35,26 @@ export function loadScript(
 
         const scriptElement = document.createElement('script');
 
-        const done = (error?: Event): void => {
+        const done = (): void => {
+          scriptElement.removeEventListener('load', onLoad);
+          scriptElement.removeEventListener('error', onError);
           if (!keepScript) {
             scriptElement.remove();
           }
-          if (error) {
-            const ex =
-              error instanceof ErrorEvent
-                ? error
-                : new Error('Script load error. See previous log messages.');
-            reject(ex);
-          } else {
-            resolve();
-          }
+        };
+
+        const onLoad = (): void => {
+          done();
+          resolve();
+        };
+
+        const onError = (error: Event): void => {
+          done();
+          const ex =
+            error instanceof ErrorEvent
+              ? error
+              : new Error('Script load error. See previous log messages.');
+          reject(ex);
         };
 
         if (id) {
@@ -56,8 +64,8 @@ export function loadScript(
         scriptElement.defer = defer;
         scriptElement.src = url;
 
-        scriptElement.addEventListener('load', () => done(), { once: true });
-        scriptElement.addEventListener('error', done, { once: true });
+        scriptElement.addEventListener('load', onLoad, { once: true });
+        scriptElement.addEventListener('error', onError, { once: true });
 
         document.head.appendChild(scriptElement);
       } catch (ex) {
