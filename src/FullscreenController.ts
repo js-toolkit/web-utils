@@ -1,4 +1,4 @@
-import EventEmitter, { EventListener } from 'eventemitter3';
+import EventEmitter from 'eventemitter3';
 import fullscreen from './fullscreen';
 import toggleNativeSubtitles from './toggleNativeSubtitles';
 
@@ -9,24 +9,6 @@ declare global {
     webkitDisplayingFullscreen?: boolean;
     // webkitSupportsFullscreen?: boolean;
   }
-}
-
-export enum FullscreenControllerEvent {
-  Change = 'change',
-  Error = 'error',
-}
-
-type FullscreenControllerEventMap = {
-  [FullscreenControllerEvent.Change]: [
-    { isFullscreen: boolean; video?: boolean; pseudo?: boolean }
-  ];
-  [FullscreenControllerEvent.Error]: [{ error: unknown; video?: boolean; pseudo?: boolean }];
-};
-
-export interface FullscreenRequestOptions extends Readonly<FullscreenOptions> {
-  /** Used for iOS */
-  readonly toggleNativeVideoSubtitles?: boolean;
-  readonly pseudoFullscreenFallback?: boolean;
 }
 
 export function enterPseudoFullscreen(element: Element & ElementCSSInlineStyle): VoidFunction {
@@ -74,8 +56,12 @@ export function enterPseudoFullscreen(element: Element & ElementCSSInlineStyle):
   };
 }
 
-class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
-  readonly Events = FullscreenControllerEvent;
+// eslint-disable-next-line no-use-before-define
+export class FullscreenController extends EventEmitter<FullscreenController.EventMap> {
+  // eslint-disable-next-line class-methods-use-this
+  get Events(): typeof FullscreenController.Events {
+    return FullscreenController.Events;
+  }
 
   private exitPseudoFullscreen: ReturnType<typeof enterPseudoFullscreen> | undefined;
 
@@ -134,22 +120,22 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
   }
 
   private changeHandler = (): void => {
-    this.emit(FullscreenControllerEvent.Change, { isFullscreen: this.isFullscreen });
+    this.emit(this.Events.Change, { isFullscreen: this.isFullscreen });
   };
 
   private errorHandler = (event: Event): void => {
-    this.emit(FullscreenControllerEvent.Error, { error: event });
+    this.emit(this.Events.Error, { error: event });
   };
 
   private beginFullscreenHandler = (): void => {
-    this.emit(FullscreenControllerEvent.Change, { isFullscreen: true, video: true });
+    this.emit(this.Events.Change, { isFullscreen: true, video: true });
   };
 
   private endFullscreenHandler = (): void => {
-    this.emit(FullscreenControllerEvent.Change, { isFullscreen: false, video: true });
+    this.emit(this.Events.Change, { isFullscreen: false, video: true });
   };
 
-  request(options: FullscreenRequestOptions = {}): Promise<void> {
+  request(options: FullscreenController.RequestOptions = {}): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.isFullscreen) {
         resolve();
@@ -188,7 +174,7 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
 
       if (pseudoFullscreenFallback) {
         this.exitPseudoFullscreen = enterPseudoFullscreen(this.element as HTMLElement);
-        this.emit(FullscreenControllerEvent.Change, { isFullscreen: true, pseudo: true });
+        this.emit(this.Events.Change, { isFullscreen: true, pseudo: true });
         resolve();
         return;
       }
@@ -225,7 +211,7 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
       if (this.exitPseudoFullscreen) {
         this.exitPseudoFullscreen();
         this.exitPseudoFullscreen = undefined;
-        this.emit(FullscreenControllerEvent.Change, { isFullscreen: false, pseudo: true });
+        this.emit(this.Events.Change, { isFullscreen: false, pseudo: true });
         resolve();
         return;
       }
@@ -236,13 +222,29 @@ class FullscreenController extends EventEmitter<FullscreenControllerEventMap> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-namespace FullscreenController {
-  export type EventMap = FullscreenControllerEventMap;
-  export type EventHandler<T extends FullscreenControllerEvent = FullscreenControllerEvent> =
-    EventListener<EventMap, T>;
-  export type EventHandlerMap<T extends FullscreenControllerEvent = FullscreenControllerEvent> = {
+export namespace FullscreenController {
+  export enum Events {
+    Change = 'change',
+    Error = 'error',
+  }
+
+  export type EventMap = DefineAll<
+    Events,
+    {
+      [Events.Change]: [{ isFullscreen: boolean; video?: boolean; pseudo?: boolean }];
+      [Events.Error]: [{ error: unknown; video?: boolean; pseudo?: boolean }];
+    }
+  >;
+
+  export interface RequestOptions extends Readonly<FullscreenOptions> {
+    /** Used for iOS */
+    readonly toggleNativeVideoSubtitles?: boolean;
+    readonly pseudoFullscreenFallback?: boolean;
+  }
+
+  export type EventHandler<T extends Events = Events> = EventEmitter.EventListener<EventMap, T>;
+
+  export type EventHandlerMap<T extends Events = Events> = {
     [P in T]: EventHandler<P>;
   };
 }
-
-export default FullscreenController;
