@@ -1,4 +1,4 @@
-import EventEmitter from 'eventemitter3';
+import { EventEmitter } from 'eventemitter3';
 import EventTargetListener from './EventTargetListener';
 
 declare global {
@@ -11,17 +11,10 @@ declare global {
   }
 }
 
-export enum PipControllerEvent {
-  Change = 'change',
-}
-
-export type PipControllerEventMap = {
-  [PipControllerEvent.Change]: [{ isPip: boolean }];
-};
-
 const getPipUnavailableError = (): Error => new Error('PiP is not available');
 
-export class PipController extends EventEmitter<PipControllerEventMap> {
+// eslint-disable-next-line no-use-before-define
+export class PipController extends EventEmitter<PipController.EventMap> {
   private static get isSupported(): boolean {
     return (
       !!HTMLVideoElement.prototype.requestPictureInPicture &&
@@ -39,8 +32,8 @@ export class PipController extends EventEmitter<PipControllerEventMap> {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  get Events(): typeof PipControllerEvent {
-    return PipControllerEvent;
+  get Events(): typeof PipController.Events {
+    return PipController.Events;
   }
 
   private readonly listener: EventTargetListener<HTMLVideoElement>;
@@ -52,11 +45,11 @@ export class PipController extends EventEmitter<PipControllerEventMap> {
 
     if (PipController.isEnabled(video)) {
       const enterPipHandler = (): void => {
-        this.emit(PipControllerEvent.Change, { isPip: true });
+        this.emit(this.Events.Change, { isPip: true });
       };
 
       const exitPipHandler = (): void => {
-        this.emit(PipControllerEvent.Change, { isPip: false });
+        this.emit(this.Events.Change, { isPip: false });
       };
 
       if (PipController.isSupported) {
@@ -157,4 +150,15 @@ export class PipController extends EventEmitter<PipControllerEventMap> {
       this.listener.target.webkitSetPresentationMode('inline');
     });
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace PipController {
+  export enum Events {
+    Change = 'change',
+  }
+
+  export type EventMap = {
+    [Events.Change]: [{ isPip: boolean }];
+  };
 }
