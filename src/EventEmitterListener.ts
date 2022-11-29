@@ -198,6 +198,34 @@ export default class EventEmitterListener<
     }, {});
   }
 
+  has<K extends GetEventType<T>>(
+    type: K,
+    listener: GetEventListener<T, K, M>,
+    ...rest: [...(T extends DomEventTarget ? [options?: GetOffOptions<T>] : []), ...unknown[]]
+  ): boolean;
+
+  has(
+    type: string,
+    listener: GetEventListener<T, string, M>,
+    ...rest: [...(T extends DomEventTarget ? [options?: GetOffOptions<T>] : []), ...unknown[]]
+  ): boolean;
+
+  has(
+    type: string,
+    listener: GetEventListener<T, string, M>,
+    ...rest: [...(T extends DomEventTarget ? [options?: GetOffOptions<T>] : []), ...unknown[]]
+  ): boolean {
+    if (!isDomEventTarget(this.target)) {
+      return !!this.normalListeners[type]?.has(listener);
+    }
+    // DOM
+    const options = rest[0] as boolean | EventListenerOptions | undefined;
+    const useCapture =
+      options === true || (options && typeof options === 'object' && (options.capture ?? false));
+    const map = useCapture ? this.captureListeners[type] : this.normalListeners[type];
+    return !!map?.has(listener);
+  }
+
   on<K extends GetEventType<T>>(
     type: K,
     listener: GetEventListener<T, K, M>,
@@ -341,7 +369,7 @@ export default class EventEmitterListener<
     }
 
     // DOM
-    const options = rest[0] as boolean | AddEventListenerOptions | undefined;
+    const options = rest[0] as boolean | EventListenerOptions | undefined;
     const useCapture =
       options === true || (options && typeof options === 'object' && (options.capture ?? false));
 
