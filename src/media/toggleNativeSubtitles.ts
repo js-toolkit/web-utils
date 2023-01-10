@@ -4,7 +4,7 @@ declare global {
   }
 }
 
-export default function toggleNativeSubtitles(native: boolean, textTracks: TextTrackList): void {
+export function toggleNativeSubtitles(native: boolean, textTracks: TextTrackList): void {
   // console.log('toggleNativeSubtitles');
   for (let i = 0; i < textTracks.length; i += 1) {
     const track = textTracks[i];

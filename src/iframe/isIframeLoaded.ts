@@ -3,7 +3,7 @@ export interface Options {
   complete?: boolean;
 }
 
-export default function isIframeLoaded(
+export function isIframeLoaded(
   iframe: HTMLIFrameElement,
   { blank, complete }: Options = {}
 ): boolean {

@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3';
 import fullscreen from './fullscreen';
-import toggleNativeSubtitles from './toggleNativeSubtitles';
+import { toggleNativeSubtitles } from './media/toggleNativeSubtitles';
 
 declare global {
   interface HTMLVideoElement {
