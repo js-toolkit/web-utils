@@ -3,7 +3,7 @@ import fullscreen from './fullscreen';
 import { toggleNativeSubtitles } from './media/toggleNativeSubtitles';
 
 declare global {
-  interface HTMLVideoElement {
+  interface HTMLMediaElement {
     webkitEnterFullscreen?: () => void;
     webkitExitFullscreen?: () => void;
     webkitDisplayingFullscreen?: boolean;
