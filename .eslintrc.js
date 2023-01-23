@@ -3,5 +3,6 @@ module.exports = {
   extends: require.resolve('@jstoolkit/configs/eslint/common'),
   rules: {
     'no-shadow': 'off',
+    'no-use-before-define': 'off'
   },
 };
