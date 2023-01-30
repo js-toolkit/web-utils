@@ -1,10 +1,10 @@
 export interface RafLoopStartOptions {
-  readonly suspendTimeout?: number;
-  readonly scope?: AnimationFrameProvider;
+  readonly suspendTimeout?: number | undefined;
+  readonly scope?: AnimationFrameProvider | undefined;
 }
 
 export interface RafLoop {
-  start: (callback: FrameRequestCallback, options?: RafLoopStartOptions) => void;
+  start: (callback: FrameRequestCallback, options?: RafLoopStartOptions | undefined) => void;
   stop: () => void;
   isActive: () => boolean;
 }
@@ -18,7 +18,6 @@ export function createRafLoop(): RafLoop {
   let rafCallback: FrameRequestCallback | undefined;
 
   const call = (): void => {
-    // eslint-disable-next-line no-use-before-define
     raf = scope.requestAnimationFrame(step);
   };
 

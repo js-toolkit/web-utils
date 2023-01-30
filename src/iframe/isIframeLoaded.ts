@@ -1,6 +1,6 @@
 export interface Options {
-  blank?: boolean;
-  complete?: boolean;
+  blank?: boolean | undefined;
+  complete?: boolean | undefined;
 }
 
 export function isIframeLoaded(

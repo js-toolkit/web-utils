@@ -1,6 +1,6 @@
 export default function preventDefault(event: {
-  preventDefault: () => void;
-  cancelable?: boolean;
+  preventDefault: VoidFunction;
+  cancelable?: boolean | undefined;
 }): void {
   if (event.cancelable == null || event.cancelable) {
     event.preventDefault();

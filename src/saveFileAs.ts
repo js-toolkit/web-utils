@@ -1,7 +1,7 @@
 export default function saveFileAs(
   filename: string,
   url: string,
-  attrs?: Record<string, string>
+  attrs?: Record<string, string> | undefined
 ): void {
   const link = document.createElement('a');
   link.setAttribute('href', url);

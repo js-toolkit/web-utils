@@ -32,7 +32,7 @@ export default class EventTargetListener<
   private createWrapper(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions | undefined
   ): ListenerWrapper {
     return (ev, ...rest) => {
       if (typeof options === 'object' && options.once) {
@@ -49,16 +49,16 @@ export default class EventTargetListener<
   on<K extends GetEventType<T>>(
     type: K,
     listener: GetEventListener<K, M>,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions | undefined
   ): this;
 
   on(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions | undefined
   ): this;
 
-  on(type: string, listener: any, options?: boolean | AddEventListenerOptions): this {
+  on(type: string, listener: any, options?: boolean | AddEventListenerOptions | undefined): this {
     const useCapture =
       options === true || (typeof options === 'object' && (options.capture ?? false));
 
@@ -88,19 +88,19 @@ export default class EventTargetListener<
   once<K extends GetEventType<T>>(
     type: K,
     listener: GetEventListener<K, M>,
-    options?: boolean | Omit<AddEventListenerOptions, 'once'>
+    options?: boolean | Omit<AddEventListenerOptions, 'once'> | undefined
   ): this;
 
   once(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | Omit<AddEventListenerOptions, 'once'>
+    options?: boolean | Omit<AddEventListenerOptions, 'once'> | undefined
   ): this;
 
   once(
     type: string,
     listener: any,
-    options?: boolean | Omit<AddEventListenerOptions, 'once'>
+    options?: boolean | Omit<AddEventListenerOptions, 'once'> | undefined
   ): this {
     return this.on(type, listener, {
       ...(typeof options === 'object' ? options : options != null && { capture: options }),
@@ -111,16 +111,16 @@ export default class EventTargetListener<
   off<K extends GetEventType<T>>(
     type: K,
     listener: GetEventListener<K, M>,
-    options?: boolean | EventListenerOptions
+    options?: boolean | EventListenerOptions | undefined
   ): this;
 
   off(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions
+    options?: boolean | EventListenerOptions | undefined
   ): this;
 
-  off(type: string, listener: any, options?: boolean | EventListenerOptions): this {
+  off(type: string, listener: any, options?: boolean | EventListenerOptions | undefined): this {
     const useCapture =
       options === true || (typeof options === 'object' && (options.capture ?? false));
 
@@ -136,11 +136,11 @@ export default class EventTargetListener<
     return this;
   }
 
-  removeAllListeners<K extends GetEventType<T>>(type?: K): this;
+  removeAllListeners<K extends GetEventType<T>>(type?: K | undefined): this;
 
-  removeAllListeners(type?: string): this;
+  removeAllListeners(type?: string | undefined): this;
 
-  removeAllListeners(type?: string): this {
+  removeAllListeners(type?: string | undefined): this {
     if (type) {
       const normalMap = this.normalListeners[type];
       normalMap && normalMap.forEach((_, wrapper) => this.off(type, wrapper));
@@ -178,12 +178,12 @@ export default class EventTargetListener<
 //   (
 //     type: any,
 //     listener: (this: T, ev: infer E) => any,
-//     options?: boolean | AddEventListenerOptions
+//     options?: boolean | AddEventListenerOptions | undefined
 //   ): void;
 //   (
 //     type: string,
 //     listener: EventListenerOrEventListenerObject,
-//     options?: boolean | AddEventListenerOptions
+//     options?: boolean | AddEventListenerOptions | undefined
 //   ): void;
 // }
 //   ? E

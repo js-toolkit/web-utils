@@ -1,9 +1,8 @@
-/* eslint-disable no-use-before-define */
 import onDOMReady from './onDOMReady';
 
 export interface LoadScriptOptions
   extends Partial<Pick<HTMLScriptElement, 'id' | 'async' | 'defer'>> {
-  keepScript?: boolean;
+  keepScript?: boolean | undefined;
 }
 
 function isScriptAdded(src: string): boolean {

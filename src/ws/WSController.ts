@@ -14,11 +14,12 @@ function getNotConnectedError(): Error {
   return new Error('The object is not connected yet.');
 }
 
-export interface WSControllerOptions extends Options, Partial<Pick<WebSocket, 'binaryType'>> {
-  readonly protocols?: ConstructorParameters<typeof ReconnectingWebSocket>['1'];
+export interface WSControllerOptions
+  extends OptionalToUndefined<Options & Partial<Pick<WebSocket, 'binaryType'>>> {
+  readonly protocols?: ConstructorParameters<typeof ReconnectingWebSocket>['1'] | undefined;
   /** Reconnecting after an idle timeout (no message events). Default 30_000. */
-  readonly idleTimeout?: number;
-  readonly logger?: Pick<Console, 'warn' | 'debug'>;
+  readonly idleTimeout?: number | undefined;
+  readonly logger?: Pick<Console, 'warn' | 'debug'> | undefined;
 }
 
 export class WSController<TData = unknown> extends DataEventEmitter<
@@ -35,20 +36,13 @@ export class WSController<TData = unknown> extends DataEventEmitter<
   private readonly reconnectOnIdle: delayed.Func<VoidFunction> | undefined;
   private closeInvoked = false;
 
-  constructor(url: UrlProvider, options?: WSControllerOptions) {
+  constructor(url: UrlProvider, options?: WSControllerOptions | undefined) {
     super();
-    const {
-      logger,
-      protocols,
-      binaryType,
-      idleTimeout = 30_000,
-      maxRetries,
-      ...rest
-    } = options ?? {};
+    const { logger, protocols, binaryType, idleTimeout = 30_000, ...rest } = options ?? {};
 
     this.logger = logger ?? console;
 
-    const ws = new ReconnectingWebSocket(url, protocols, { maxRetries, ...rest });
+    const ws = new ReconnectingWebSocket(url, protocols, rest as Options);
     this.ws = ws;
 
     if (binaryType != null) {
@@ -68,9 +62,13 @@ export class WSController<TData = unknown> extends DataEventEmitter<
 
     ws.onclose = ({ code }) => {
       this.reconnectOnIdle?.cancel();
-      if (maxRetries != null && ws.readyState === ws.CLOSED && ws.retryCount === maxRetries) {
+      if (
+        options?.maxRetries != null &&
+        ws.readyState === ws.CLOSED &&
+        ws.retryCount === options.maxRetries
+      ) {
         // Without this call ws will constantly try to reconnect
-        this.close(code, `Failed to connect after ${maxRetries} attempts.`);
+        this.close(code, `Failed to connect after ${options.maxRetries} attempts.`);
       }
     };
 
@@ -103,7 +101,7 @@ export class WSController<TData = unknown> extends DataEventEmitter<
     this.ws.send(data);
   }
 
-  close(code?: number, reason?: string): void {
+  close(code?: number | undefined, reason?: string | undefined): void {
     if (this.closeInvoked) return;
     this.closeInvoked = true;
     const hasWS = !!this.ws;

@@ -5,7 +5,7 @@ declare global {
   type VideoPresentationMode = 'inline' | 'picture-in-picture' | 'fullscreen';
 
   interface HTMLVideoElement {
-    webkitSupportsPresentationMode?: (mode: VideoPresentationMode) => boolean;
+    webkitSupportsPresentationMode?: ((mode: VideoPresentationMode) => boolean) | undefined;
     webkitPresentationMode: VideoPresentationMode;
     webkitSetPresentationMode: (mode: VideoPresentationMode) => void;
   }
@@ -13,7 +13,6 @@ declare global {
 
 const getPipUnavailableError = (): Error => new Error('PiP is not available');
 
-// eslint-disable-next-line no-use-before-define
 export class PipController extends EventEmitter<PipController.EventMap> {
   private static get isSupported(): boolean {
     return (

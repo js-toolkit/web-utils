@@ -2,8 +2,10 @@
 export default function loadImage(
   src:
     | string
-    | PartialBut<Pick<HTMLImageElement, 'src' | 'srcset' | 'crossOrigin' | 'sizes'>, 'src'>
-  // crossOrigin?: HTMLImageElement['crossOrigin']
+    | OptionalToUndefined<
+        PartialBut<Pick<HTMLImageElement, 'src' | 'srcset' | 'crossOrigin' | 'sizes'>, 'src'>
+      >
+  // crossOrigin?: HTMLImageElement['crossOrigin'] | undefined
 ): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();

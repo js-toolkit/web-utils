@@ -17,7 +17,7 @@ interface AutoConnectClient {
 interface AutoConnectClientOptions<T = unknown> {
   readonly data: T;
   readonly onConnect: (data: unknown, origin: string) => void;
-  readonly logger?: Pick<Console, 'debug'>;
+  readonly logger?: Pick<Console, 'debug'> | undefined;
 }
 
 export default function getAutoConnectClient<T = unknown>({

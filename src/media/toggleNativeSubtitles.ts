@@ -1,6 +1,6 @@
 declare global {
   interface TextTrack {
-    ignoreChange?: boolean;
+    ignoreChange?: boolean | undefined;
   }
 }
 

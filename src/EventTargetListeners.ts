@@ -12,7 +12,7 @@ export default class EventTargetListeners {
     return listener;
   }
 
-  removeAllListeners<T extends EventTarget>(target?: T): this {
+  removeAllListeners<T extends EventTarget>(target?: T | undefined): this {
     if (target) {
       this.listeners.get(target)?.removeAllListeners();
       this.listeners.delete(target);
