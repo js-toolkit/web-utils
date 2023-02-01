@@ -1,5 +1,5 @@
 export interface GeoLocalityOptions extends Pick<GeolocationCoordinates, 'longitude' | 'latitude'> {
-  lang?: string;
+  lang?: string | undefined;
 }
 
 export default function getGeoLocality({

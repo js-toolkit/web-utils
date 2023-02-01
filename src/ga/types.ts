@@ -31,7 +31,7 @@ interface GATracker {
 }
 
 interface GAObject {
-  readonly loaded?: boolean;
+  readonly loaded?: boolean | undefined;
   getAll(): GATracker[];
   (...params: GACommandParams): void;
   (readyCallback: VoidFunction): void;
@@ -39,11 +39,11 @@ interface GAObject {
 
 interface Window {
   /** Universal Analytics object name, default `ga`. */
-  GoogleAnalyticsObject?: string;
+  GoogleAnalyticsObject?: string | undefined;
   /** Universal Analytics without gtag. */
-  ga?: GAObject;
+  ga?: GAObject | undefined;
   /** Global Site Tag */
-  gtag?: (...params: GTagParams) => void;
+  gtag?: ((...params: GTagParams) => void) | undefined;
   /** Google Tag Manager */
-  dataLayer?: GTMDataLayer<GTMEventData>;
+  dataLayer?: GTMDataLayer<GTMEventData> | undefined;
 }

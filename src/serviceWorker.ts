@@ -31,7 +31,7 @@ const isLocalhost = Boolean(
     )
 );
 
-function registerValidSW(swUrl: string, config?: Config): void {
+function registerValidSW(swUrl: string, config?: Config | undefined): void {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
@@ -83,7 +83,7 @@ function registerValidSW(swUrl: string, config?: Config): void {
     });
 }
 
-function checkValidServiceWorker(swUrl: string, config?: Config): Promise<void> {
+function checkValidServiceWorker(swUrl: string, config?: Config | undefined): Promise<void> {
   // Check if the service worker can be found. If it can't reload the page.
   return fetch(swUrl, { headers: { 'Service-Worker': 'script' } })
     .then((response) => {
@@ -106,7 +106,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config): Promise<void> 
     });
 }
 
-export function register(config?: Config): void {
+export function register(config?: Config | undefined): void {
   if (appEnv.prod && 'serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
     const clientBuildConfig = buildConfig.client || buildConfig.default.client;

@@ -7,12 +7,12 @@ export type GetEventType<T extends DomEventTarget> = T['addEventListener'] exten
   (
     type: infer K,
     listener: (this: T, ev: any) => any,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions | undefined
   ): void;
   (
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions | undefined
   ): void;
 }
   ? K
@@ -67,7 +67,7 @@ try {
   const options: AddEventListenerOptions = {
     get passive() {
       passiveSupported = true;
-      return undefined;
+      return false;
     },
   };
   window.addEventListener('__testpassive__', null as unknown as EventListener, options);

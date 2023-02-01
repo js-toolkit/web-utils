@@ -14,13 +14,13 @@ interface AutoConnectHost {
   readonly start: (...iframes: HTMLIFrameElement[]) => void;
   readonly stop: VoidFunction;
   /** Send `ready` to iframe. */
-  readonly ready: <T>(data: T, target: Window, origin?: string) => void;
+  readonly ready: <T>(data: T, target: Window, origin?: string | undefined) => void;
 }
 
 interface AutoConnectHostOptions<T = AnyObject> {
-  readonly onSendData?: (iframe: HTMLIFrameElement, origin: string) => T;
+  readonly onSendData?: ((iframe: HTMLIFrameElement, origin: string) => T) | undefined;
   readonly onConnect: (data: unknown, iframe: HTMLIFrameElement, origin: string) => void;
-  readonly logger?: Pick<Console, 'warn' | 'debug'>;
+  readonly logger?: Pick<Console, 'warn' | 'debug'> | undefined;
 }
 
 function selectFrames(): HTMLCollectionOf<HTMLIFrameElement> {

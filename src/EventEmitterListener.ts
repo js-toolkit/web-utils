@@ -10,7 +10,7 @@ import {
 
 type EventEmitterTarget = {
   on: (type: any, listener: AnyFunction, ...rest: any[]) => void;
-  once?: (type: any, listener: AnyFunction, ...rest: any[]) => void;
+  once?: ((type: any, listener: AnyFunction, ...rest: any[]) => void) | undefined;
   off: (type: any, listener: AnyFunction, ...rest: any[]) => void;
 };
 
@@ -84,7 +84,7 @@ type GetOffOptions<T extends EmitterTarget> = T extends DomEventTarget
 // > = [
 //   type: GetEventType<T>,
 //   listener: GetEventListener<T, E, EM>,
-//   ...optionsOrParam: T extends DomEventTarget ? [options?: GetOnOptions<T>] : [],
+//   ...optionsOrParam: T extends DomEventTarget ? [options?: GetOnOptions<T> | undefined] : [],
 //   ...rest: unknown[]
 // ];
 
@@ -95,7 +95,7 @@ type GetOnceParameters<
 > = [
   type: GetEventType<T>,
   listener: GetEventListener<T, E, EM>,
-  ...optionsOrParam: T extends DomEventTarget ? [options?: GetOnceOptions<T>] : [],
+  ...optionsOrParam: T extends DomEventTarget ? [options?: GetOnceOptions<T> | undefined] : [],
   ...rest: unknown[]
 ];
 
@@ -106,7 +106,7 @@ type GetOffParameters<
 > = [
   type: GetEventType<T>,
   listener: GetEventListener<T, E, EM>,
-  ...optionsOrParam: T extends DomEventTarget ? [options?: GetOffOptions<T>] : [],
+  ...optionsOrParam: T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : [],
   ...rest: unknown[]
 ];
 
@@ -117,8 +117,8 @@ type EventListenersMap = Partial<Record<string, ListenersMap>>;
 type ListenerWrapper = (...args: unknown[]) => unknown;
 
 interface GetListenersOptions {
-  event?: string;
-  type?: 'normal' | 'capture';
+  event?: string | undefined;
+  type?: 'normal' | 'capture' | undefined;
 }
 
 export default class EventEmitterListener<
@@ -201,19 +201,28 @@ export default class EventEmitterListener<
   has<K extends GetEventType<T>>(
     type: K,
     listener: GetEventListener<T, K, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOffOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): boolean;
 
   has(
     type: string,
     listener: GetEventListener<T, string, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOffOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): boolean;
 
   has(
     type: string,
     listener: GetEventListener<T, string, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOffOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): boolean {
     if (!isDomEventTarget(this.target)) {
       return !!this.normalListeners[type]?.has(listener);
@@ -229,19 +238,28 @@ export default class EventEmitterListener<
   on<K extends GetEventType<T>>(
     type: K,
     listener: GetEventListener<T, K, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOnOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOnOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): this;
 
   on(
     type: string,
     listener: GetEventListener<T, string, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOnOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOnOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): this;
 
   on(
     type: string,
     listener: GetEventListener<T, string, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOnOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOnOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): this {
     if (!isDomEventTarget(this.target)) {
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
@@ -288,19 +306,28 @@ export default class EventEmitterListener<
   once<K extends GetEventType<T>>(
     type: K,
     listener: GetEventListener<T, K, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOnceOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOnceOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): this;
 
   once(
     type: string,
     listener: GetEventListener<T, string, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOnceOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOnceOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): this;
 
   once(
     type: string,
     listener: GetEventListener<T, string, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOnceOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOnceOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): this {
     if (!isDomEventTarget(this.target)) {
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
@@ -337,19 +364,28 @@ export default class EventEmitterListener<
   off<K extends GetEventType<T>>(
     type: K,
     listener: GetEventListener<T, K, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOffOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): this;
 
   off(
     type: string,
     listener: GetEventListener<T, string, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOffOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): this;
 
   off(
     type: string,
     listener: GetEventListener<T, string, M>,
-    ...rest: [...(T extends DomEventTarget ? [options?: GetOffOptions<T>] : []), ...unknown[]]
+    ...rest: [
+      ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
+      ...unknown[]
+    ]
   ): this {
     if (!isDomEventTarget(this.target)) {
       const map = this.normalListeners[type];
@@ -389,11 +425,11 @@ export default class EventEmitterListener<
     return this;
   }
 
-  removeAllListeners<K extends GetEventType<T>>(type?: K): this;
+  removeAllListeners<K extends GetEventType<T>>(type?: K | undefined): this;
 
-  removeAllListeners(type?: string): this;
+  removeAllListeners(type?: string | undefined): this;
 
-  removeAllListeners(type?: string): this {
+  removeAllListeners(type?: string | undefined): this {
     if (type) {
       const normalMap = this.normalListeners[type];
       normalMap &&

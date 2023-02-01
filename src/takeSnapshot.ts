@@ -15,10 +15,10 @@ const getDefaultHeight = (element: CanvasImageSource): number => {
 };
 
 export interface TakeSnapshotOptions {
-  width?: number;
-  height?: number;
-  type?: string;
-  quality?: number;
+  width?: number | undefined;
+  height?: number | undefined;
+  type?: string | undefined;
+  quality?: number | undefined;
 }
 
 export function takeSnapshot(

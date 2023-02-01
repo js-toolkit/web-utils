@@ -4,10 +4,10 @@ import { toggleNativeSubtitles } from './media/toggleNativeSubtitles';
 
 declare global {
   interface HTMLMediaElement {
-    webkitEnterFullscreen?: () => void;
-    webkitExitFullscreen?: () => void;
-    webkitDisplayingFullscreen?: boolean;
-    // webkitSupportsFullscreen?: boolean;
+    webkitEnterFullscreen?: VoidFunction | undefined;
+    webkitExitFullscreen?: VoidFunction | undefined;
+    webkitDisplayingFullscreen?: boolean | undefined;
+    // webkitSupportsFullscreen?: boolean | undefined;
   }
 }
 
@@ -56,7 +56,6 @@ export function enterPseudoFullscreen(element: Element & ElementCSSInlineStyle):
   };
 }
 
-// eslint-disable-next-line no-use-before-define
 export class FullscreenController extends EventEmitter<FullscreenController.EventMap> {
   // eslint-disable-next-line class-methods-use-this
   get Events(): typeof FullscreenController.Events {
@@ -65,7 +64,10 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
 
   private exitPseudoFullscreen: ReturnType<typeof enterPseudoFullscreen> | undefined;
 
-  constructor(private readonly element: Element, private readonly video?: HTMLVideoElement) {
+  constructor(
+    private readonly element: Element,
+    private readonly video?: HTMLVideoElement | undefined
+  ) {
     super();
     if (fullscreen.names) {
       const { names } = fullscreen;
@@ -231,15 +233,19 @@ export namespace FullscreenController {
   export type EventMap = DefineAll<
     Events,
     {
-      [Events.Change]: [{ isFullscreen: boolean; video?: boolean; pseudo?: boolean }];
-      [Events.Error]: [{ error: unknown; video?: boolean; pseudo?: boolean }];
+      [Events.Change]: [
+        { isFullscreen: boolean; video?: boolean | undefined; pseudo?: boolean | undefined }
+      ];
+      [Events.Error]: [
+        { error: unknown; video?: boolean | undefined; pseudo?: boolean | undefined }
+      ];
     }
   >;
 
   export interface RequestOptions extends Readonly<FullscreenOptions> {
     /** Used for iOS */
-    readonly toggleNativeVideoSubtitles?: boolean;
-    readonly pseudoFullscreenFallback?: boolean;
+    readonly toggleNativeVideoSubtitles?: boolean | undefined;
+    readonly pseudoFullscreenFallback?: boolean | undefined;
   }
 
   export type EventHandler<T extends Events = Events> = EventEmitter.EventListener<EventMap, T>;

@@ -29,7 +29,7 @@ export function removeTrack(mediaStream: MediaStream, track: MediaStreamTrack): 
 export function addTrack(
   mediaStream: MediaStream,
   track: MediaStreamTrack,
-  onEnded?: () => void
+  onEnded?: VoidFunction | undefined
 ): void {
   mediaStream.addTrack(track);
   // Dispatch event manually because on local stream it not fired
@@ -76,7 +76,7 @@ export class MediaStreamController {
     removeTrack(this.mediaStream, track);
   }
 
-  addTrack(track: MediaStreamTrack, onEnded?: () => void): void {
+  addTrack(track: MediaStreamTrack, onEnded?: VoidFunction | undefined): void {
     addTrack(this.mediaStream, track, () => {
       this.removeTrack(track);
       onEnded && onEnded();
