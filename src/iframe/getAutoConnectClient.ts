@@ -11,7 +11,7 @@ import {
 
 interface AutoConnectClient {
   readonly dispose: VoidFunction;
-  readonly ready: () => void;
+  readonly ready: VoidFunction;
 }
 
 interface AutoConnectClientOptions<T = unknown> {
