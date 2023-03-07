@@ -37,47 +37,50 @@ export class WSController<TData = unknown> extends DataEventEmitter<
       binaryType,
       idleTimeout = 30_000,
       halfOpenDetection,
+      startClosed,
       ...rest
     } = options ?? {};
 
     this.logger = logger ?? console;
 
-    const ws = new ReconnectingWebSocket(url, protocols, rest as BaseOptions);
-    this.ws = ws;
+    this.ws = new ReconnectingWebSocket(url, protocols, {
+      ...(rest as BaseOptions),
+      startClosed: true,
+    });
 
     if (binaryType != null) {
-      ws.binaryType = binaryType;
+      this.ws.binaryType = binaryType;
     }
 
     if (idleTimeout && idleTimeout > 0) {
       this.reconnectOnIdle = delayed(() => {
         this.logger.debug(`WS connection reconnecting after ${idleTimeout}ms due to inactivity.`);
-        ws.reconnect();
+        this.ws.reconnect();
       }, idleTimeout);
     }
 
-    ws.onopen = () => {
+    this.ws.onopen = () => {
       this.emit(this.Events.Connected);
     };
 
-    ws.onclose = ({ code }) => {
+    this.ws.onclose = ({ code }) => {
       this.reconnectOnIdle?.cancel();
       if (
         options?.maxRetries != null &&
-        ws.readyState === ws.CLOSED &&
-        ws.retryCount === options.maxRetries
+        this.ws.readyState === this.ws.CLOSED &&
+        this.ws.retryCount === options.maxRetries
       ) {
         // Without this call ws will constantly try to reconnect
         this.close(code, `Failed to connect after ${options.maxRetries} attempts.`);
       }
     };
 
-    ws.onmessage = (event: MessageEvent) => {
+    this.ws.onmessage = (event: MessageEvent) => {
       this.reconnectOnIdle && this.reconnectOnIdle();
       this.emit(this.Events.Message, event);
     };
 
-    ws.onerror = ({ error, message }: ErrorEvent) => {
+    this.ws.onerror = ({ error, message }: ErrorEvent) => {
       this.emit(this.Events.Error, { error, message });
     };
 
@@ -129,6 +132,10 @@ export class WSController<TData = unknown> extends DataEventEmitter<
       if (this.isConnected() || this.ws.readyState === this.ws.CONNECTING) {
         heartbeat();
       }
+    }
+
+    if (!startClosed) {
+      this.ws.reconnect();
     }
   }
 
