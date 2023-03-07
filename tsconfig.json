@@ -3,13 +3,13 @@
   "compilerOptions": {
     "module": "es2015",
     "isolatedModules": false,
-    "outDir": "./dist",
-    "baseUrl": "./src",
+    "outDir": "dist",
+    "baseUrl": "src",
     "exactOptionalPropertyTypes": true,
     "declaration": true,
     "sourceMap": false,
     "incremental": true,
     "diagnostics": true
   },
-  "include": ["./src/**/*"]
+  "include": ["src"]
 }

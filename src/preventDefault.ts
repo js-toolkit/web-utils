@@ -1,7 +1,9 @@
-export default function preventDefault(event: {
-  preventDefault: VoidFunction;
-  cancelable?: boolean | undefined;
-}): void {
+export default function preventDefault<
+  T extends {
+    readonly preventDefault: VoidFunction;
+    readonly cancelable?: boolean | undefined;
+  }
+>(event: T): void {
   if (event.cancelable == null || event.cancelable) {
     event.preventDefault();
   }

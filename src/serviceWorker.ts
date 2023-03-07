@@ -153,6 +153,6 @@ export function unregister(): void {
   }
 }
 
-export function addUpdateListener(callback: () => void): void {
+export function addUpdateListener(callback: VoidFunction): void {
   window.addEventListener(UpdateEventType, callback);
 }
