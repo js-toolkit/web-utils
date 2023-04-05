@@ -1,12 +1,12 @@
 import onDOMReady from '../onDOMReady';
 import getOriginFromMessage from './getOriginFromMessage';
 import {
-  IframeHostReadyMessage,
-  IframePingMessage,
+  type IframeHostReadyMessage,
+  type IframePingMessage,
+  type IframeMessage,
   isIframeClientReadyMessage,
   IFRAME_HOST_READY,
   IFRAME_PING,
-  IframeMessage,
   isPingMessage,
 } from './messages';
 

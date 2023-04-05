@@ -1,12 +1,12 @@
 import ReconnectingWebSocket, {
-  ErrorEvent,
-  Message,
-  Options as BaseOptions,
-  UrlProvider,
+  type ErrorEvent,
+  type Message,
+  type Options as BaseOptions,
+  type UrlProvider,
 } from 'reconnecting-websocket';
 import DataEventEmitter, {
-  DataEventListener,
-  DataEventMap,
+  type DataEventListener,
+  type DataEventMap,
 } from '@jstoolkit/utils/DataEventEmitter';
 import delayed from '@jstoolkit/utils/delayed';
 
@@ -31,15 +31,8 @@ export class WSController<TData = unknown> extends DataEventEmitter<
 
   constructor(url: UrlProvider, options?: WSController.Options | undefined) {
     super();
-    const {
-      logger,
-      protocols,
-      binaryType,
-      idleTimeout = 30_000,
-      halfOpenDetection,
-      startClosed,
-      ...rest
-    } = options ?? {};
+    const { logger, protocols, binaryType, idleTimeout, halfOpenDetection, startClosed, ...rest } =
+      options ?? {};
 
     this.logger = logger ?? console;
 

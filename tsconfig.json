@@ -1,13 +1,11 @@
 {
   "extends": "@jstoolkit/configs/ts/common.tsconfig.json",
   "compilerOptions": {
-    "module": "es2015",
-    "isolatedModules": false,
     "outDir": "dist",
     "baseUrl": "src",
     "exactOptionalPropertyTypes": true,
-    "declaration": true,
     "sourceMap": false,
+    "declaration": true,
     "incremental": true,
     "diagnostics": true
   },

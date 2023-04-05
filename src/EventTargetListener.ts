@@ -2,9 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
-  GetEventListener,
-  GetEventMap,
-  GetEventType,
+  type GetEventListener,
+  type GetEventMap,
+  type GetEventType,
   isPassiveSupported,
   normalizeOptions,
 } from './EventTargetListener.utils';

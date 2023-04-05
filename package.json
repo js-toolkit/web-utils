@@ -13,11 +13,6 @@
     "copy:configs": "copyfiles package.json .npmignore README.md LICENSE ./dist/",
     "minify": "node-utils-minify --replace ./dist",
     "build": "npm run clean && tsc --build ./tsconfig.json && npm run minify",
-    "build-to-tutoron": "tsc --build ./tsconfig.json && copyfiles -u 1 './dist/**/*' '../../../tutoron/node_modules/@jstoolkit/web-utils'",
-    "build-to-player": "tsc --build ./tsconfig.json && npm run minify && copyfiles -e './dist/*(package.json|README.md|LICENSE)' -u 1 './dist/**/*' '../../../player/modules/web-utils'",
-    "build-to-react-hooks": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../react-hooks/node_modules/@jstoolkit/web-utils'",
-    "build-to-player-utils": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../player-utils/node_modules/@jstoolkit/web-utils'",
-    "build-to-styled-components": "tsc --build ./tsconfig.json && npm run minify && copyfiles -u 1 './dist/**/*' '../styled-components/node_modules/@jstoolkit/web-utils'",
     "patch-publish": "npm run build && npm version patch --no-workspaces-update -m 'v%s' && npm run copy:configs && cd ./dist && npm publish --access public && git push origin master --follow-tags",
     "minor-publish": "npm run build && npm version minor --no-workspaces-update -m 'v%s' && npm run copy:configs && cd ./dist && npm publish --access public && git push origin master --follow-tags"
   },
@@ -25,23 +20,23 @@
     "@js-toolkit/node-utils": "^1.1.4"
   },
   "devDependencies": {
-    "@jstoolkit/configs": "^3.85.0",
-    "@jstoolkit/utils": "^1.46.1",
-    "@typescript-eslint/eslint-plugin": "^5.49.0",
-    "@typescript-eslint/parser": "^5.49.0",
+    "@jstoolkit/configs": "^3.86.0",
+    "@jstoolkit/utils": "^1.48.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
     "copyfiles": "^2.4.1",
-    "eslint": "^8.33.0",
+    "eslint": "^8.37.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^8.6.0",
+    "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
     "eventemitter3": "^5.0.0",
-    "prettier": "^2.8.3",
+    "prettier": "^2.8.7",
     "reconnecting-websocket": "^4.4.0",
-    "rimraf": "^4.1.2",
-    "terser": "^5.16.1",
-    "typescript": "^4.9.4",
-    "webpack": "^5.75.0",
-    "yargs": "^17.6.2"
+    "rimraf": "^4.4.1",
+    "terser": "^5.16.8",
+    "typescript": "^5.0.3",
+    "webpack": "^5.77.0",
+    "yargs": "^17.7.1"
   }
 }

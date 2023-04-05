@@ -1,8 +1,8 @@
 import getOriginFromMessage from './getOriginFromMessage';
 import {
-  IframeClientReadyMessage,
-  IframePingMessage,
-  IframeMessage,
+  type IframeClientReadyMessage,
+  type IframePingMessage,
+  type IframeMessage,
   IFRAME_CLIENT_READY,
   IFRAME_PING,
   isIframeHostReadyMessage,

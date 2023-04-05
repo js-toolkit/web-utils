@@ -1,6 +1,6 @@
 import DataEventEmitter, {
-  DataEventListener,
-  DataEventMap,
+  type DataEventListener,
+  type DataEventMap,
 } from '@jstoolkit/utils/DataEventEmitter';
 import getErrorMessage from '@jstoolkit/utils/getErrorMessage';
 import { hasIn } from '@jstoolkit/utils/hasIn';

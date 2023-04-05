@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  DomEventTarget,
-  GetEventMap as GetDomEventMap,
-  GetEventType as GetDomEventType,
-  GetEventListener as GetDomEventListener,
+  type DomEventTarget,
+  type GetEventMap as GetDomEventMap,
+  type GetEventType as GetDomEventType,
+  type GetEventListener as GetDomEventListener,
   isPassiveSupported,
   normalizeOptions,
 } from './EventTargetListener.utils';
@@ -195,7 +195,7 @@ export default class EventEmitterListener<
       const listeners = m ? Array.from(m.keys()) : [];
       if (listeners.length > 0) acc[type] = listeners;
       return acc;
-    }, {});
+    }, {} as AnyObject);
   }
 
   has<K extends GetEventType<T>>(

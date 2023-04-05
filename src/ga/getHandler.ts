@@ -1,4 +1,4 @@
-import iframeMessenger, { GAEventMessage } from './iframeMessenger';
+import iframeMessenger, { type GAEventMessage } from './iframeMessenger';
 import './types';
 
 export interface GAEventData {
@@ -51,7 +51,7 @@ function gaHandler<D extends GAEventData>(
   trackerCache: Record<string, GATracker>,
   data: D
 ): void {
-  const ga = window[gaObjectName] as GAObject | undefined;
+  const ga = window[gaObjectName as 'ga'];
   if (!ga) return;
 
   const { action, eventCategory, trackingId, label } = data;
@@ -92,7 +92,10 @@ export default function getHandler<D extends GAEventData, L extends GALibType>(
     case 'auto': {
       if (window.gtag) return getHandler('gtag', undefined);
 
-      if ((window.GoogleAnalyticsObject && window[window.GoogleAnalyticsObject]) || window.ga)
+      if (
+        (window.GoogleAnalyticsObject && window[window.GoogleAnalyticsObject as 'ga']) ||
+        window.ga
+      )
         return getHandler('ga', undefined);
 
       if (window.dataLayer)
@@ -122,7 +125,7 @@ export default function getHandler<D extends GAEventData, L extends GALibType>(
     }
     case 'ga': {
       const propName = window.GoogleAnalyticsObject || 'ga';
-      const obj = window[propName] as GAObject | undefined;
+      const obj = window[propName as 'ga'];
       return obj ? gaHandler.bind(undefined, propName, {}) : undefined;
     }
     default: {

@@ -1,6 +1,10 @@
-import getHandler, { GAEventData, GADataHandler, GAEventDataTransformerMap } from './getHandler';
+import getHandler, {
+  type GAEventData,
+  type GADataHandler,
+  type GAEventDataTransformerMap,
+} from './getHandler';
 
-export { GAEventData };
+export type { GAEventData };
 
 export default class DataLayerProxy<D extends GAEventData> {
   private readonly handler: GADataHandler<D>;

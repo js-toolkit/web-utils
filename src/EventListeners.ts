@@ -1,4 +1,4 @@
-import EventEmitterListener, { EmitterTarget } from './EventEmitterListener';
+import EventEmitterListener, { type EmitterTarget } from './EventEmitterListener';
 import type { GetEventMap } from './EventTargetListener.utils';
 
 export default class EventListeners {
@@ -9,7 +9,7 @@ export default class EventListeners {
   ): EventEmitterListener<T, M> {
     const listener = this.listeners.get(target) ?? new EventEmitterListener<T, M>(target);
     !this.listeners.has(target) && this.listeners.set(target, listener);
-    return listener;
+    return listener as EventEmitterListener<T, M>;
   }
 
   removeAllListeners<T extends EmitterTarget>(target?: T | undefined): this {

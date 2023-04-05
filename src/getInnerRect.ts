@@ -1,5 +1,5 @@
-import getInnerXDimensions, { InnerXDimensions } from './getInnerXDimensions';
-import getInnerYDimensions, { InnerYDimensions } from './getInnerYDimensions';
+import getInnerXDimensions, { type InnerXDimensions } from './getInnerXDimensions';
+import getInnerYDimensions, { type InnerYDimensions } from './getInnerYDimensions';
 
 export interface InnerRect extends InnerXDimensions, InnerYDimensions {}
 
