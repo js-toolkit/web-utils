@@ -8,7 +8,7 @@ export class FullscreenUnavailableError extends Error {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-namespace fullscreen {
+export namespace fullscreen {
   interface FnNames {
     readonly requestFullscreenName: string;
     readonly exitFullscreenName: string;

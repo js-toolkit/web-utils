@@ -1,4 +1,4 @@
-export default function toLocalPoint(
+export function toLocalPoint(
   coord: { clientX: number; clientY: number },
   targetOrClientRect: Element | Pick<DOMRect, 'left' | 'top'>
 ): Point {
@@ -11,3 +11,5 @@ export default function toLocalPoint(
     y: coord.clientY - rect.top,
   };
 }
+
+export default toLocalPoint;

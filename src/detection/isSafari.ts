@@ -1,3 +1,5 @@
-export default function isSafari(): boolean {
+export function isSafari(): boolean {
   return !!window.WebKitPlaybackTargetAvailabilityEvent;
 }
+
+export default isSafari;

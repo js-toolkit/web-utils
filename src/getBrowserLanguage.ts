@@ -4,7 +4,7 @@ declare global {
   }
 }
 
-export default function getBrowserLanguage(): string | undefined {
+export function getBrowserLanguage(): string | undefined {
   if (typeof window !== 'undefined' && 'navigator' in window) {
     const language =
       navigator.languages && navigator.languages.length > 0
@@ -14,3 +14,5 @@ export default function getBrowserLanguage(): string | undefined {
   }
   return undefined;
 }
+
+export default getBrowserLanguage;

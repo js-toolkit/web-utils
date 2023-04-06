@@ -1,5 +1,5 @@
 // https://stackoverflow.com/a/12300351
-export default function dataUrlToBlob(dataUrl: string): Blob {
+export function dataUrlToBlob(dataUrl: string): Blob {
   const [type, base64] = dataUrl.split(',');
   const byteString = window.atob(base64);
   const mimeString = type.split(':')[1].split(';')[0];
@@ -12,3 +12,5 @@ export default function dataUrlToBlob(dataUrl: string): Blob {
 
   return new Blob([ab], { type: mimeString });
 }
+
+export default dataUrlToBlob;

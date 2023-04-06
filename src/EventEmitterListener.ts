@@ -6,7 +6,7 @@ import {
   type GetEventListener as GetDomEventListener,
   isPassiveSupported,
   normalizeOptions,
-} from './EventTargetListener.utils';
+} from './EventEmitterListener.utils';
 
 type EventEmitterTarget = {
   on: (type: any, listener: AnyFunction, ...rest: any[]) => void;
@@ -121,7 +121,7 @@ interface GetListenersOptions {
   type?: 'normal' | 'capture' | undefined;
 }
 
-export default class EventEmitterListener<
+export class EventEmitterListener<
   T extends EmitterTarget,
   M extends AnyObject = GetDomEventMap<T>
 > {
@@ -465,6 +465,8 @@ export default class EventEmitterListener<
     return this;
   }
 }
+
+export default EventEmitterListener;
 
 // new EventEmitterListener({} as HTMLVideoElement).on('encrypted0', (e) => e, {});
 // new EventEmitterListener({} as HTMLVideoElement).removeAllListeners('sdff');

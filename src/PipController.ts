@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
-import EventTargetListener from './EventTargetListener';
+import { EventEmitterListener } from './EventEmitterListener';
 
 declare global {
   type VideoPresentationMode = 'inline' | 'picture-in-picture' | 'fullscreen';
@@ -35,12 +35,12 @@ export class PipController extends EventEmitter<PipController.EventMap> {
     return PipController.Events;
   }
 
-  private readonly listener: EventTargetListener<HTMLVideoElement>;
+  private readonly listener: EventEmitterListener<HTMLVideoElement>;
 
   constructor(video: HTMLVideoElement) {
     super();
 
-    this.listener = new EventTargetListener(video);
+    this.listener = new EventEmitterListener(video);
 
     if (PipController.isEnabled(video)) {
       const enterPipHandler = (): void => {

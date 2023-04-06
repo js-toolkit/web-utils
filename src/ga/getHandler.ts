@@ -84,7 +84,7 @@ export type GAEventDataTransformerMap<
   L extends Extract<GALibType, 'gtm' | 'iframe'> = Extract<GALibType, 'gtm' | 'iframe'>
 > = L extends L ? Record<L, GAEventDataTransformer<D, L>> : never;
 
-export default function getHandler<D extends GAEventData, L extends GALibType>(
+export function getHandler<D extends GAEventData, L extends GALibType>(
   gaLib: L,
   transformers: L extends 'auto' | 'gtm' | 'iframe' ? GAEventDataTransformerMap<D> : undefined
 ): GADataHandler<D> | undefined {
@@ -133,3 +133,5 @@ export default function getHandler<D extends GAEventData, L extends GALibType>(
     }
   }
 }
+
+export default getHandler;

@@ -10,7 +10,7 @@ class Semver {
 
 let memo: Semver | null | undefined;
 
-export default function getIOSVersion(): Semver | undefined {
+export function getIOSVersion(): Semver | undefined {
   if (memo === undefined) {
     const version = isIOS() && /OS (\d+)_(\d+)_?(\d+)?/.exec(navigator.userAgent);
     if (version) {
@@ -26,3 +26,5 @@ export default function getIOSVersion(): Semver | undefined {
 
   return memo ?? undefined;
 }
+
+export default getIOSVersion;

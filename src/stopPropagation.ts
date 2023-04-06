@@ -1,5 +1,5 @@
-export default function stopPropagation<T extends { stopPropagation: VoidFunction }>(
-  event: T
-): void {
+export function stopPropagation<T extends { stopPropagation: VoidFunction }>(event: T): void {
   event.stopPropagation();
 }
+
+export default stopPropagation;

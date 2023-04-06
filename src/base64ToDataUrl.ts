@@ -1,3 +1,5 @@
-export default function base64ToDataUrl(base64: string, type = 'image/png'): string {
+export function base64ToDataUrl(base64: string, type = 'image/png'): string {
   return `data:${type};base64,${base64}`;
 }
+
+export default base64ToDataUrl;

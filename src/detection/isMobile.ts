@@ -1,8 +1,10 @@
 let memo: boolean;
 
-export default function isMobile(): boolean {
+export function isMobile(): boolean {
   if (memo == null) {
     memo = /Mobile/i.test(navigator.userAgent);
   }
   return memo;
 }
+
+export default isMobile;

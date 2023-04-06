@@ -4,7 +4,7 @@ export interface InnerXDimensions {
   right: number;
 }
 
-export default function getInnerXDimensions(
+export function getInnerXDimensions(
   elementOrComputedStyle: Element | CSSStyleDeclaration
 ): InnerXDimensions {
   const { boxSizing, paddingLeft, paddingRight, borderLeftWidth, borderRightWidth, width } =
@@ -20,3 +20,5 @@ export default function getInnerXDimensions(
 
   return { width: innerWidth, left, right };
 }
+
+export default getInnerXDimensions;

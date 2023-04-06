@@ -1,4 +1,4 @@
-export default function saveFileAs(
+export function saveFileAs(
   filename: string,
   url: string,
   attrs?: Record<string, string> | undefined
@@ -17,6 +17,8 @@ export default function saveFileAs(
   }
   link.click();
 }
+
+export default saveFileAs;
 
 // if (document.createEvent) {
 //   const event = document.createEvent('MouseEvents');

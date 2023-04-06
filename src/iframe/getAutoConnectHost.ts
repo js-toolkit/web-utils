@@ -42,7 +42,7 @@ function findIframeElement(
   return undefined;
 }
 
-export default function getAutoConnectHost<T>({
+export function getAutoConnectHost<T>({
   onSendData,
   onConnect,
   logger = console,
@@ -139,3 +139,5 @@ export default function getAutoConnectHost<T>({
     ready: sendReady,
   };
 }
+
+export default getAutoConnectHost;
