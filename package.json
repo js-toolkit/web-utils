@@ -22,6 +22,7 @@
   "devDependencies": {
     "@jstoolkit/configs": "^3.86.0",
     "@jstoolkit/utils": "^1.48.0",
+    "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
     "copyfiles": "^2.4.1",
@@ -36,6 +37,7 @@
     "rimraf": "^5.0.0",
     "terser": "^5.16.9",
     "typescript": "^5.0.4",
+    "ua-parser-js": "^1.0.35",
     "webpack": "^5.78.0",
     "yargs": "^17.7.1"
   }

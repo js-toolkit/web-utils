@@ -1,5 +1,12 @@
+import { getUAParserResult } from './getUAParserResult';
+
 export function isSafari(): boolean {
-  return !!window.WebKitPlaybackTargetAvailabilityEvent;
+  const browser = getUAParserResult().browser.name;
+  return (
+    browser === 'Safari' ||
+    browser === 'Mobile Safari' ||
+    !!window.WebKitPlaybackTargetAvailabilityEvent
+  );
 }
 
 export default isSafari;

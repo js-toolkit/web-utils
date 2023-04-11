@@ -1,10 +1,8 @@
-let memo: boolean;
+import { getUAParserResult } from './getUAParserResult';
 
 export function isAndroid(): boolean {
-  if (memo == null) {
-    memo = /Android/i.test(navigator.userAgent);
-  }
-  return memo;
+  const os = getUAParserResult().os.name;
+  return os === 'Android' || os === 'Android-x86';
 }
 
 export default isAndroid;
