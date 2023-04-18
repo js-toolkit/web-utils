@@ -1,11 +1,9 @@
-import getInnerXDimensions, { InnerXDimensions } from './getInnerXDimensions';
-import getInnerYDimensions, { InnerYDimensions } from './getInnerYDimensions';
+import getInnerXDimensions, { type InnerXDimensions } from './getInnerXDimensions';
+import getInnerYDimensions, { type InnerYDimensions } from './getInnerYDimensions';
 
 export interface InnerRect extends InnerXDimensions, InnerYDimensions {}
 
-export default function getInnerRect(
-  elementOrComputedStyle: Element | CSSStyleDeclaration
-): InnerRect {
+export function getInnerRect(elementOrComputedStyle: Element | CSSStyleDeclaration): InnerRect {
   const computedStyle =
     'tagName' in elementOrComputedStyle
       ? window.getComputedStyle(elementOrComputedStyle)
@@ -13,3 +11,5 @@ export default function getInnerRect(
 
   return Object.assign(getInnerXDimensions(computedStyle), getInnerYDimensions(computedStyle));
 }
+
+export default getInnerRect;

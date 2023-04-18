@@ -1,6 +1,6 @@
 import DataEventEmitter, {
-  DataEventListener,
-  DataEventMap,
+  type DataEventListener,
+  type DataEventMap,
 } from '@jstoolkit/utils/DataEventEmitter';
 import getErrorMessage from '@jstoolkit/utils/getErrorMessage';
 import { hasIn } from '@jstoolkit/utils/hasIn';
@@ -45,6 +45,7 @@ export class PeerConnection extends DataEventEmitter<PeerConnection.EventMap, Pe
       };
     }
 
+    // All tracks must be in one stream for controlling adding/removing tracks.
     pc.ontrack = ({ streams, track }) => {
       this.logger.debug('Remote stream received.', streams.length, track.kind);
       if (streams.length === 0) return;

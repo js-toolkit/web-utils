@@ -8,7 +8,7 @@ export class FullscreenUnavailableError extends Error {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
-namespace fullscreen {
+export namespace fullscreen {
   interface FnNames {
     readonly requestFullscreenName: string;
     readonly exitFullscreenName: string;
@@ -82,17 +82,17 @@ namespace fullscreen {
 
   export function isEnabled(): boolean {
     // Coerce to boolean in case of old WebKit
-    return !!names && Boolean(document[names.fullscreenEnabledName]);
+    return !!names && Boolean((document as AnyObject)[names.fullscreenEnabledName]);
   }
 
   export function isFullscreen(): boolean {
     if (!names) throw new UnavailableError();
-    return Boolean(document[names.fullscreenElementName]);
+    return Boolean((document as AnyObject)[names.fullscreenElementName]);
   }
 
   export function getElement(): Element | null | undefined {
     if (!names) throw new UnavailableError();
-    return document[names.fullscreenElementName] as Element;
+    return (document as AnyObject)[names.fullscreenElementName] as Element;
   }
 
   export function on(
@@ -133,7 +133,9 @@ namespace fullscreen {
       on('change', onFullScreenEntered);
       on('error', onFullScreenError);
 
-      const result = (elem[names.requestFullscreenName] as AnyAsyncFunction)(options);
+      const result = ((elem as AnyObject)[names.requestFullscreenName] as AnyAsyncFunction)(
+        options
+      );
 
       if (result instanceof Promise) {
         result.then(onFullScreenEntered, onFullScreenError);
@@ -153,7 +155,7 @@ namespace fullscreen {
 
       const onFullScreenExit = (): void => {
         off('change', onFullScreenExit);
-        off('error', onFullScreenError); // eslint-disable-line no-use-before-define
+        off('error', onFullScreenError);
         resolve();
       };
       const onFullScreenError = (event: unknown): void => {
@@ -165,7 +167,7 @@ namespace fullscreen {
       on('change', onFullScreenExit);
       on('error', onFullScreenError);
 
-      const result = (document[names.exitFullscreenName] as AnyAsyncFunction)();
+      const result = ((document as AnyObject)[names.exitFullscreenName] as AnyAsyncFunction)();
 
       if (result instanceof Promise) {
         result.then(onFullScreenExit, onFullScreenError);

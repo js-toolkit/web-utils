@@ -4,7 +4,7 @@ export interface InnerYDimensions {
   bottom: number;
 }
 
-export default function getInnerYDimensions(
+export function getInnerYDimensions(
   elementOrComputedStyle: Element | CSSStyleDeclaration
 ): InnerYDimensions {
   const { boxSizing, paddingTop, paddingBottom, borderTopWidth, borderBottomWidth, height } =
@@ -20,3 +20,5 @@ export default function getInnerYDimensions(
 
   return { height: innerHeight, top, bottom };
 }
+
+export default getInnerYDimensions;

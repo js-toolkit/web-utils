@@ -1,14 +1,16 @@
 import ReconnectingWebSocket, {
-  ErrorEvent,
-  Message,
-  Options as BaseOptions,
-  UrlProvider,
+  type ErrorEvent,
+  type Message,
+  type Options as BaseOptions,
+  type UrlProvider,
 } from 'reconnecting-websocket';
+import type { WebSocketEventMap } from 'reconnecting-websocket/dist/events';
 import DataEventEmitter, {
-  DataEventListener,
-  DataEventMap,
+  type DataEventListener,
+  type DataEventMap,
 } from '@jstoolkit/utils/DataEventEmitter';
 import delayed from '@jstoolkit/utils/delayed';
+import { EventEmitterListener } from '../EventEmitterListener';
 
 function getNotConnectedError(): Error {
   return new Error('The object is not connected yet.');
@@ -25,21 +27,21 @@ export class WSController<TData = unknown> extends DataEventEmitter<
 
   readonly logger: NonNullable<WSController.Options['logger']>;
   protected readonly ws: ReconnectingWebSocket;
+  private readonly listener: EventEmitterListener<ReconnectingWebSocket, WebSocketEventMap>;
   private readonly reconnectOnIdle: delayed.Func<VoidFunction> | undefined;
-  private readonly reconnectOnHalfOpen: delayed.Func<VoidFunction> | undefined;
-  private closeInvoked = false;
+  private readonly halfOpen:
+    | {
+        heartbeat: VoidFunction;
+        cancel: VoidFunction;
+        onMessage: NonNullable<ReconnectingWebSocket['onmessage']>;
+      }
+    | undefined;
+  // private closeInvoked = false;
 
   constructor(url: UrlProvider, options?: WSController.Options | undefined) {
     super();
-    const {
-      logger,
-      protocols,
-      binaryType,
-      idleTimeout = 30_000,
-      halfOpenDetection,
-      startClosed,
-      ...rest
-    } = options ?? {};
+    const { logger, protocols, binaryType, idleTimeout, halfOpenDetection, startClosed, ...rest } =
+      options ?? {};
 
     this.logger = logger ?? console;
 
@@ -52,57 +54,36 @@ export class WSController<TData = unknown> extends DataEventEmitter<
       this.ws.binaryType = binaryType;
     }
 
+    this.listener = new EventEmitterListener(this.ws);
+
+    // reconnect on idle
     if (idleTimeout && idleTimeout > 0) {
       this.reconnectOnIdle = delayed(() => {
-        this.logger.debug(`WS connection reconnecting after ${idleTimeout}ms due to inactivity.`);
+        this.logger.info(`WS connection reconnecting after ${idleTimeout}ms due to inactivity.`);
         this.ws.reconnect();
       }, idleTimeout);
     }
 
-    this.ws.onopen = () => {
-      this.emit(this.Events.Connected);
-    };
+    // reconnect on half-open
+    this.halfOpen = (() => {
+      if (!halfOpenDetection) return undefined;
 
-    this.ws.onclose = ({ code }) => {
-      this.reconnectOnIdle?.cancel();
-      if (
-        options?.maxRetries != null &&
-        this.ws.readyState === this.ws.CLOSED &&
-        this.ws.retryCount === options.maxRetries
-      ) {
-        // Without this call ws will constantly try to reconnect
-        this.close(code, `Failed to connect after ${options.maxRetries} attempts.`);
-      }
-    };
-
-    this.ws.onmessage = (event: MessageEvent) => {
-      this.reconnectOnIdle && this.reconnectOnIdle();
-      this.emit(this.Events.Message, event);
-    };
-
-    this.ws.onerror = ({ error, message }: ErrorEvent) => {
-      this.emit(this.Events.Error, { error, message });
-    };
-
-    if (halfOpenDetection) {
       const {
         pingTimeout = 12_000,
         outMessage = () => JSON.stringify({ type: 'pong' }),
-        inMessageFilter = (message: any) => message.type === 'ping', // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+        inMessageFilter = (message) =>
+          message && typeof message === 'object' && (message as AnyObject).type === 'ping',
       } = halfOpenDetection;
 
       const reconnectOnHalfOpen = delayed(() => {
-        this.logger.debug(
+        this.logger.info(
           `WS connection reconnecting after ${pingTimeout}ms due to the probability of a half-open connection.`
         );
         this.ws.reconnect();
       }, pingTimeout);
-      this.reconnectOnHalfOpen = reconnectOnHalfOpen;
 
       const heartbeat = (): void => {
         // console.log('heartbeat');
-        onClose();
-        // pingTimer = window.setTimeout(() => this.ws.reconnect(), pingTimeout);
         reconnectOnHalfOpen();
         this.ws.send(
           typeof outMessage === 'function' && !(outMessage instanceof Blob)
@@ -111,31 +92,47 @@ export class WSController<TData = unknown> extends DataEventEmitter<
         );
       };
 
-      const onClose = (): void => reconnectOnHalfOpen.cancel();
-
       const onMessage = ({ data }: MessageEvent): void => {
-        inMessageFilter(data) && heartbeat();
+        if (inMessageFilter(data)) heartbeat();
+        else reconnectOnHalfOpen(); // Any message signals that the connection still alive.
       };
 
-      this.ws.addEventListener('open', heartbeat);
-      this.ws.addEventListener('close', onClose);
-      this.ws.addEventListener('message', onMessage);
+      return { heartbeat, cancel: () => reconnectOnHalfOpen.cancel(), onMessage };
+    })();
 
-      const closeOrigin = this.ws.close.bind(this.ws);
-      this.ws.close = (...args) => {
-        closeOrigin(...args);
-        this.ws.removeEventListener('open', heartbeat);
-        this.ws.removeEventListener('close', onClose);
-        this.ws.removeEventListener('message', onMessage);
-      };
+    this.listener
+      .on('open', () => {
+        this.reconnectOnIdle && this.reconnectOnIdle();
+        this.halfOpen?.heartbeat();
+        this.emit(this.Events.Connected);
+      })
+      .on('close', ({ code }) => {
+        this.reconnectOnIdle?.cancel();
+        this.halfOpen?.cancel();
+        if (
+          options?.maxRetries != null &&
+          this.ws.readyState === this.ws.CLOSED &&
+          this.ws.retryCount === options.maxRetries
+        ) {
+          // Without this call ws will constantly try to reconnect
+          this.close(code, `Failed to connect after ${options.maxRetries} attempts.`);
+        }
+      })
+      .on('message', (event: MessageEvent) => {
+        this.reconnectOnIdle && this.reconnectOnIdle();
+        this.halfOpen?.onMessage(event);
+        this.emit(this.Events.Message, event);
+      })
+      .on('error', ({ error, message }: ErrorEvent) => {
+        this.emit(this.Events.Error, { error, message });
+      });
 
-      if (this.isConnected() || this.ws.readyState === this.ws.CONNECTING) {
-        heartbeat();
-      }
+    if (this.halfOpen && (this.isConnected() || this.ws.readyState === this.ws.CONNECTING)) {
+      this.halfOpen.heartbeat();
     }
 
     if (!startClosed) {
-      this.ws.reconnect();
+      this.connect();
     }
   }
 
@@ -148,8 +145,8 @@ export class WSController<TData = unknown> extends DataEventEmitter<
   }
 
   connect(): void {
-    this.close();
-    this.closeInvoked = false;
+    // this.close()
+    // this.closeInvoked = false;
     this.ws.reconnect();
   }
 
@@ -159,15 +156,15 @@ export class WSController<TData = unknown> extends DataEventEmitter<
   }
 
   close(code?: number | undefined, reason?: string | undefined): void {
-    if (this.closeInvoked) return;
-    this.closeInvoked = true;
+    // if (this.closeInvoked) return;
+    // this.closeInvoked = true;
     const hasWS = !!this.ws;
     try {
       if (this.reconnectOnIdle) {
         this.reconnectOnIdle.cancel();
       }
-      if (this.reconnectOnHalfOpen) {
-        this.reconnectOnHalfOpen.cancel();
+      if (this.halfOpen) {
+        this.halfOpen.cancel();
       }
       this.ws.close(code, reason);
     } catch (ex) {
@@ -178,10 +175,7 @@ export class WSController<TData = unknown> extends DataEventEmitter<
 
   destroy(): void {
     this.close();
-    this.ws.onopen = null;
-    this.ws.onclose = null;
-    this.ws.onmessage = null;
-    this.ws.onerror = null;
+    this.listener.removeAllListeners();
     this.removeAllListeners();
   }
 }
@@ -193,13 +187,13 @@ export namespace WSController {
     readonly protocols?: ConstructorParameters<typeof ReconnectingWebSocket>['1'] | undefined;
     /** Reconnecting after an idle timeout (no message events). Default 30_000. */
     readonly idleTimeout?: number | undefined;
-    readonly logger?: Pick<Console, 'warn' | 'debug'> | undefined;
+    readonly logger?: Pick<Console, 'warn' | 'info'> | undefined;
     readonly halfOpenDetection?: {
       /** Delay should be equal to the interval at which your server sends out pings plus a conservative assumption of the latency. */
       readonly pingTimeout?: number;
       readonly outMessage?: Message | (() => Message);
       /** Returns `true` if inMessage is ping message. */
-      readonly inMessageFilter?: (message: any) => boolean;
+      readonly inMessageFilter?: (message: unknown) => boolean;
     };
   }
 

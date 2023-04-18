@@ -1,8 +1,8 @@
-let memo: boolean;
+import { getUAParserResult } from './getUAParserResult';
 
-export default function isMobile(): boolean {
-  if (memo == null) {
-    memo = /Mobile/i.test(navigator.userAgent);
-  }
-  return memo;
+export function isMobile(): boolean {
+  const device = getUAParserResult().device.type;
+  return device === 'mobile' || device === 'tablet';
 }
+
+export default isMobile;

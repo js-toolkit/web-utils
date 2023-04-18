@@ -2,11 +2,7 @@ export interface GeoLocalityOptions extends Pick<GeolocationCoordinates, 'longit
   lang?: string | undefined;
 }
 
-export default function getGeoLocality({
-  longitude,
-  latitude,
-  lang,
-}: GeoLocalityOptions): Promise<string> {
+export function getGeoLocality({ longitude, latitude, lang }: GeoLocalityOptions): Promise<string> {
   const url = new URL(
     'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode'
   );
@@ -25,3 +21,5 @@ export default function getGeoLocality({
       return (address.PlaceName || address.LongLabel || address.ShortLabel || '') as string;
     });
 }
+
+export default getGeoLocality;

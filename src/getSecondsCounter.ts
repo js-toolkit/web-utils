@@ -12,9 +12,7 @@ export interface SecondsCounter {
   destroy: VoidFunction;
 }
 
-export default function getSecondsCounter({
-  onChange,
-}: SecondsCounterOptions = {}): SecondsCounter {
+export function getSecondsCounter({ onChange }: SecondsCounterOptions = {}): SecondsCounter {
   const timestamps = new Set<number>();
   let listener = onChange;
   let destroyed = false;
@@ -56,3 +54,5 @@ export default function getSecondsCounter({
     },
   };
 }
+
+export default getSecondsCounter;

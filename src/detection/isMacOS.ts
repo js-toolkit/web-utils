@@ -1,8 +1,7 @@
-let memo: boolean;
+import { getUAParserResult } from './getUAParserResult';
 
-export default function isMacOS(): boolean {
-  if (memo == null) {
-    memo = /Macintosh/i.test(navigator.userAgent);
-  }
-  return memo;
+export function isMacOS(): boolean {
+  return getUAParserResult().os.name === 'Mac OS';
 }
+
+export default isMacOS;

@@ -387,7 +387,7 @@ function parseFmtpLine(fmtpLine: string): RequiredSome<FmtpObj, 'params'> {
     // return null;
   }
 
-  const params = {};
+  const params: AnyObject = {};
   keyValues.forEach((keyValue) => {
     const pair = keyValue.split('=');
     if (pair.length === 2) {

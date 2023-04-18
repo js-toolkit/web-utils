@@ -22,5 +22,3 @@ pnp.*
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-
-src/EventTargetListener.ts.bak

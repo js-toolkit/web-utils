@@ -1,8 +1,7 @@
-let memo: boolean;
+import { getUAParserResult } from './getUAParserResult';
 
-export default function isIOS(): boolean {
-  if (memo == null) {
-    memo = /[(\s](iPhone|iPad|iPod)/i.test(navigator.userAgent);
-  }
-  return memo;
+export function isIOS(): boolean {
+  return getUAParserResult().os.name === 'iOS';
 }
+
+export default isIOS;

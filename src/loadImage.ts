@@ -1,5 +1,5 @@
 /** Don't worry, it uses cached by browser image if url already loaded previously otherwise cache the image. */
-export default function loadImage(
+export function loadImage(
   src:
     | string
     | OptionalToUndefined<
@@ -30,3 +30,5 @@ export default function loadImage(
     }
   });
 }
+
+export default loadImage;

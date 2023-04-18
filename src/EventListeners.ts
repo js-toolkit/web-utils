@@ -1,7 +1,7 @@
-import EventEmitterListener, { EmitterTarget } from './EventEmitterListener';
-import type { GetEventMap } from './EventTargetListener.utils';
+import { EventEmitterListener, type EmitterTarget } from './EventEmitterListener';
+import type { GetEventMap } from './EventEmitterListener.utils';
 
-export default class EventListeners {
+export class EventListeners {
   private readonly listeners = new Map<EmitterTarget, EventEmitterListener<any, any>>();
 
   scope<T extends EmitterTarget, M extends AnyObject = GetEventMap<T>>(
@@ -9,7 +9,7 @@ export default class EventListeners {
   ): EventEmitterListener<T, M> {
     const listener = this.listeners.get(target) ?? new EventEmitterListener<T, M>(target);
     !this.listeners.has(target) && this.listeners.set(target, listener);
-    return listener;
+    return listener as EventEmitterListener<T, M>;
   }
 
   removeAllListeners<T extends EmitterTarget>(target?: T | undefined): this {
@@ -23,3 +23,5 @@ export default class EventListeners {
     return this;
   }
 }
+
+export default EventListeners;

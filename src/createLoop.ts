@@ -5,7 +5,7 @@ export interface Loop {
   isActive: () => boolean;
 }
 
-export default function createLoop(): Loop {
+export function createLoop(): Loop {
   let timer: number | undefined;
   let raf: number | undefined;
   let active = false;
@@ -37,3 +37,5 @@ export default function createLoop(): Loop {
     isActive: (): boolean => active,
   };
 }
+
+export default createLoop;

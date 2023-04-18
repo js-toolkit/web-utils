@@ -1,8 +1,8 @@
 import getOriginFromMessage from './getOriginFromMessage';
 import {
-  IframeClientReadyMessage,
-  IframePingMessage,
-  IframeMessage,
+  type IframeClientReadyMessage,
+  type IframePingMessage,
+  type IframeMessage,
   IFRAME_CLIENT_READY,
   IFRAME_PING,
   isIframeHostReadyMessage,
@@ -20,7 +20,7 @@ interface AutoConnectClientOptions<T = unknown> {
   readonly logger?: Pick<Console, 'debug'> | undefined;
 }
 
-export default function getAutoConnectClient<T = unknown>({
+export function getAutoConnectClient<T = unknown>({
   data,
   onConnect,
   logger = console,
@@ -76,3 +76,5 @@ export default function getAutoConnectClient<T = unknown>({
     dispose: complete,
   };
 }
+
+export default getAutoConnectClient;

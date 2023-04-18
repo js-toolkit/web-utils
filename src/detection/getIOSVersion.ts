@@ -1,4 +1,5 @@
-import isIOS from './isIOS';
+import { getUAParserResult } from './getUAParserResult';
+import { isIOS } from './isIOS';
 
 class Semver {
   constructor(readonly major: number, readonly minor: number, readonly patch: number) {}
@@ -10,9 +11,10 @@ class Semver {
 
 let memo: Semver | null | undefined;
 
-export default function getIOSVersion(): Semver | undefined {
+export function getIOSVersion(): Semver | undefined {
   if (memo === undefined) {
-    const version = isIOS() && /OS (\d+)_(\d+)_?(\d+)?/.exec(navigator.userAgent);
+    const { os } = getUAParserResult();
+    const version = isIOS() && os.version && /(\d+)\.(\d+)(?:\.(\d+))?/.exec(os.version);
     if (version) {
       memo = new Semver(
         parseInt(version[1], 10) || 0,
@@ -26,3 +28,5 @@ export default function getIOSVersion(): Semver | undefined {
 
   return memo ?? undefined;
 }
+
+export default getIOSVersion;

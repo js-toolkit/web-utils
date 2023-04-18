@@ -1,12 +1,12 @@
 import onDOMReady from '../onDOMReady';
 import getOriginFromMessage from './getOriginFromMessage';
 import {
-  IframeHostReadyMessage,
-  IframePingMessage,
+  type IframeHostReadyMessage,
+  type IframePingMessage,
+  type IframeMessage,
   isIframeClientReadyMessage,
   IFRAME_HOST_READY,
   IFRAME_PING,
-  IframeMessage,
   isPingMessage,
 } from './messages';
 
@@ -42,7 +42,7 @@ function findIframeElement(
   return undefined;
 }
 
-export default function getAutoConnectHost<T>({
+export function getAutoConnectHost<T>({
   onSendData,
   onConnect,
   logger = console,
@@ -139,3 +139,5 @@ export default function getAutoConnectHost<T>({
     ready: sendReady,
   };
 }
+
+export default getAutoConnectHost;

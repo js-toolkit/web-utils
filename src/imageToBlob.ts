@@ -1,4 +1,4 @@
-export default function imageToBlob(image: HTMLImageElement): Promise<Blob> {
+export function imageToBlob(image: HTMLImageElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
     canvas.width = image.width;
@@ -18,3 +18,5 @@ export default function imageToBlob(image: HTMLImageElement): Promise<Blob> {
     });
   });
 }
+
+export default imageToBlob;
