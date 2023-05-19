@@ -1,69 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   type DomEventTarget,
   type GetEventMap as GetDomEventMap,
-  type GetEventType as GetDomEventType,
-  type GetEventListener as GetDomEventListener,
   isPassiveSupported,
   normalizeOptions,
+  type EmitterTarget,
+  type GetEventType,
+  type GetEventListener,
+  isDomEventTarget,
+  isEventTargetLike,
 } from './EventEmitterListener.utils';
-
-type EventEmitterTarget = {
-  on: (type: any, listener: AnyFunction, ...rest: any[]) => void;
-  once?: ((type: any, listener: AnyFunction, ...rest: any[]) => void) | undefined;
-  off: (type: any, listener: AnyFunction, ...rest: any[]) => void;
-};
-
-type EventTargetLike = {
-  addEventListener: EventEmitterTarget['on'];
-  removeEventListener: EventEmitterTarget['off'];
-};
-
-export type EmitterTarget = DomEventTarget | EventTargetLike | EventEmitterTarget;
-
-function isDomEventTarget(target: EmitterTarget): target is DomEventTarget {
-  return (
-    (target as DomEventTarget).addEventListener !== undefined &&
-    (target as DomEventTarget).removeEventListener !== undefined &&
-    (target as DomEventTarget).dispatchEvent !== undefined
-  );
-}
-
-function isEventTargetLike(target: EmitterTarget): target is EventTargetLike {
-  return (
-    (target as EventTargetLike).addEventListener !== undefined &&
-    (target as EventTargetLike).removeEventListener !== undefined
-  );
-}
-
-type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
-  ? GetDomEventType<T>
-  : T extends EventEmitterTarget
-  ? T['on'] extends { (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown }
-    ? K
-    : string
-  : T extends EventTargetLike
-  ? T['addEventListener'] extends {
-      (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown;
-    }
-    ? K
-    : string
-  : string;
-
-type GetEventListener<T extends EmitterTarget, E, EM extends AnyObject> = T extends DomEventTarget
-  ? IfExtends<EM, EmptyObject, EventListener, GetDomEventListener<E, EM>>
-  : IfExtends<
-      EM,
-      EmptyObject,
-      Parameters<
-        T extends EventTargetLike
-          ? T['addEventListener']
-          : T extends EventEmitterTarget
-          ? T['on']
-          : AnyFunction
-      >['1'],
-      (event: E extends keyof EM ? EM[E] : unknown, ...rest: any[]) => unknown
-    >;
 
 type GetOnOptions<T extends EmitterTarget> = T extends DomEventTarget
   ? boolean | AddEventListenerOptions

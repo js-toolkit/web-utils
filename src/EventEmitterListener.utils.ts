@@ -1,9 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import isEmptyObject from '@jstoolkit/utils/isEmptyObject';
 
-// export type DomEventTarget = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
 export type DomEventTarget = EventTarget;
 
-export type GetEventType<T extends DomEventTarget> = T['addEventListener'] extends {
+export type EventTargetLike = {
+  addEventListener: EventEmitterLike['on'];
+  removeEventListener: EventEmitterLike['off'];
+};
+
+export type EventEmitterLike = {
+  on: (type: any, listener: AnyFunction, ...rest: any[]) => void;
+  once?: ((type: any, listener: AnyFunction, ...rest: any[]) => void) | undefined;
+  off: (type: any, listener: AnyFunction, ...rest: any[]) => void;
+};
+
+export type EmitterTarget = DomEventTarget | EventTargetLike | EventEmitterLike;
+
+export type GetDomEventType<T extends DomEventTarget> = T['addEventListener'] extends {
   (
     type: infer K,
     listener: (this: T, ev: any) => any,
@@ -18,10 +31,43 @@ export type GetEventType<T extends DomEventTarget> = T['addEventListener'] exten
   ? K
   : string;
 
-export type GetEventListener<E, EM extends AnyObject> = (
+export type GetDomEventListener<E, EM extends AnyObject> = (
   ev: E extends keyof EM ? EM[E] : Event,
   ...rest: unknown[]
 ) => unknown;
+
+export type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
+  ? GetDomEventType<T>
+  : T extends EventEmitterLike
+  ? T['on'] extends { (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown }
+    ? K
+    : string
+  : T extends EventTargetLike
+  ? T['addEventListener'] extends {
+      (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown;
+    }
+    ? K
+    : string
+  : string;
+
+export type GetEventListener<
+  T extends EmitterTarget,
+  E,
+  EM extends AnyObject = GetEventMap<T>
+> = T extends DomEventTarget
+  ? IfExtends<EM, EmptyObject, EventListener, GetDomEventListener<E, EM>>
+  : IfExtends<
+      EM,
+      EmptyObject,
+      Parameters<
+        T extends EventTargetLike
+          ? T['addEventListener']
+          : T extends EventEmitterLike
+          ? T['on']
+          : AnyFunction
+      >['1'],
+      (event: E extends keyof EM ? EM[E] : unknown, ...rest: any[]) => unknown
+    >;
 
 export type GetEventMap<T> = T extends Document
   ? DocumentEventMap
@@ -55,7 +101,30 @@ export type GetEventMap<T> = T extends Document
   ? SourceBufferEventMap
   : T extends SourceBufferList
   ? SourceBufferListEventMap
+  : T extends { EventMap: Record<string, any> }
+  ? T['EventMap']
   : EmptyObject;
+
+export function isEventTargetLike(target: EmitterTarget): target is EventTargetLike {
+  return (
+    (target as EventTargetLike).addEventListener !== undefined &&
+    (target as EventTargetLike).removeEventListener !== undefined
+  );
+}
+
+export function isDomEventTarget(target: EmitterTarget): target is DomEventTarget {
+  return isEventTargetLike(target) && (target as DomEventTarget).dispatchEvent !== undefined;
+}
+
+export function isEventEmitterLike(target: EmitterTarget): target is EventEmitterLike {
+  return (
+    !isEventTargetLike(target) &&
+    !isDomEventTarget(target) &&
+    target.on !== undefined &&
+    target.once !== undefined &&
+    target.off !== undefined
+  );
+}
 
 let passiveSupported = false;
 
