@@ -1,8 +1,5 @@
-import { getSeekableTime } from './getSeekableTime';
+import { getTimeRangeDuration } from './timeRanges';
 
-// export function isMediaSeekable(media: HTMLMediaElement, duration = media.duration): boolean {
-//   return Number.isFinite(duration) && getSeekableTime(media) > 0;
-// }
 export function isMediaSeekable(media: HTMLMediaElement): boolean {
-  return getSeekableTime(media) > 0;
+  return getTimeRangeDuration(media.seekable) > 0;
 }
