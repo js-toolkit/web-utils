@@ -60,8 +60,9 @@ export class MediaStreamController {
 
   detachMedia(): void {
     if (this.media) {
-      resetMedia(this.media);
+      const { media } = this;
       this.media = undefined;
+      resetMedia(media);
     }
   }
 
