@@ -412,6 +412,18 @@ export class EventEmitterListener<
 
     return this;
   }
+
+  emit<K extends GetEventType<T>>(type: K, ...args: Parameters<GetEventListener<T, K, M>>): this;
+
+  emit(type: string, ...args: Parameters<GetEventListener<T, string, M>>): this;
+
+  emit(type: string, ...args: Parameters<GetEventListener<T, string, M>>): this {
+    const [event, ...rest] = args as unknown[];
+    this.getListenerList<GetEventListener<T, string, M>>({ event: type }).forEach((l) => {
+      l(event, ...rest);
+    });
+    return this;
+  }
 }
 
 export default EventEmitterListener;
