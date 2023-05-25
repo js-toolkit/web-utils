@@ -13,21 +13,32 @@ export class PeerConnection extends DataEventEmitter<PeerConnection.EventMap, Pe
   }
 
   readonly logger;
-  private readonly pc: RTCPeerConnection;
+  private pc: RTCPeerConnection;
 
   constructor(readonly options: PeerConnection.Options = {}) {
     super();
-
     this.logger = options.logger ?? console;
+    this.pc = this.createPC();
+  }
 
+  private clear(): void {
+    this.pc.onsignalingstatechange = null;
+    this.pc.onconnectionstatechange = null;
+    this.pc.oniceconnectionstatechange = null;
+    this.pc.ontrack = null;
+    this.pc.onnegotiationneeded = null;
+    this.pc.onicecandidate = null;
+    this.pc.onicecandidateerror = null;
+  }
+
+  private createPC(): RTCPeerConnection {
     const pc = new RTCPeerConnection(this.options.rtc);
-    this.pc = pc;
 
     pc.onsignalingstatechange = () => {
       this.logger.debug(`Signaling state changed to: ${pc.signalingState}`);
       if (pc.signalingState === 'closed') {
         this.emit(this.Events.Closed);
-        this.removeAllListeners();
+        this.clear();
       }
     };
 
@@ -96,6 +107,8 @@ export class PeerConnection extends DataEventEmitter<PeerConnection.EventMap, Pe
         this.logger.warn(`ICE candidate error: ${getErrorMessage(event)}`);
       }
     };
+
+    return pc;
   }
 
   private async setLocalDescription(
@@ -118,6 +131,10 @@ export class PeerConnection extends DataEventEmitter<PeerConnection.EventMap, Pe
 
   isConnected(): boolean {
     return this.pc.iceConnectionState === 'connected' || this.pc.iceConnectionState === 'completed';
+  }
+
+  isClosed(): boolean {
+    return this.pc.signalingState === 'closed';
   }
 
   /** Add icecandidate when the clients is exchanging icecandidates. */
@@ -184,9 +201,24 @@ export class PeerConnection extends DataEventEmitter<PeerConnection.EventMap, Pe
     return this.setRemoteDescription(this.pc, remoteDesc);
   }
 
-  /** After calling this method the connection can no longer be used. */
+  reconnect(): void {
+    this.close();
+    this.pc = this.createPC();
+  }
+
+  /** After calling this method the connection can no longer be used unless `reconnect` will be called. */
   close(): void {
     this.pc.close();
+    // The event is not fired if close manually
+    if (this.pc.onsignalingstatechange) {
+      this.emit(this.Events.Closed);
+      this.clear();
+    }
+  }
+
+  destroy(): void {
+    this.close();
+    this.removeAllListeners();
   }
 }
 
