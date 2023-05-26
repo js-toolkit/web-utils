@@ -23,8 +23,8 @@
     "@jstoolkit/configs": "^3.86.0",
     "@jstoolkit/utils": "^1.48.2",
     "@types/ua-parser-js": "^0.7.36",
-    "@typescript-eslint/eslint-plugin": "^5.59.6",
-    "@typescript-eslint/parser": "^5.59.6",
+    "@typescript-eslint/eslint-plugin": "^5.59.7",
+    "@typescript-eslint/parser": "^5.59.7",
     "copyfiles": "^2.4.1",
     "eslint": "^8.41.0",
     "eslint-config-airbnb-base": "^15.0.0",
@@ -35,10 +35,10 @@
     "prettier": "^2.8.8",
     "reconnecting-websocket": "^4.4.0",
     "rimraf": "^5.0.1",
-    "terser": "^5.17.4",
+    "terser": "^5.17.6",
     "typescript": "^5.0.4",
     "ua-parser-js": "^1.0.35",
-    "webpack": "^5.83.1",
+    "webpack": "^5.84.0",
     "yargs": "^17.7.2"
   }
 }
