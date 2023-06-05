@@ -1,5 +1,5 @@
 export function getTimeRangeStart(timeRanges: TimeRanges): number {
-  return timeRanges.length > 0 ? timeRanges.start(0) : 0;
+  return timeRanges.length > 0 ? timeRanges.start(timeRanges.length - 1) : 0;
 }
 
 export function getTimeRangeEnd(timeRanges: TimeRanges): number {
