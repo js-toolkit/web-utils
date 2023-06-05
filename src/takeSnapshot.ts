@@ -1,17 +1,29 @@
+import { hasIn } from '@jstoolkit/utils/hasIn';
+
 export function get2dContextError(): Error {
   return new Error('Failed to get canvas 2d context.');
 }
 
 const getDefaultWidth = (element: CanvasImageSource): number => {
-  if (element instanceof HTMLVideoElement) return element.videoWidth;
-  if (element.width instanceof SVGAnimatedLength) return element.width.animVal.value;
-  return element.width;
+  if (element instanceof HTMLVideoElement) {
+    return element.videoWidth;
+  }
+  if (hasIn(element, 'displayWidth')) {
+    return element.displayWidth;
+  }
+  return element.width instanceof SVGAnimatedLength ? element.width.animVal.value : element.width;
 };
 
 const getDefaultHeight = (element: CanvasImageSource): number => {
-  if (element instanceof HTMLVideoElement) return element.videoHeight;
-  if (element.height instanceof SVGAnimatedLength) return element.height.animVal.value;
-  return element.height;
+  if (element instanceof HTMLVideoElement) {
+    return element.videoHeight;
+  }
+  if (hasIn(element, 'displayHeight')) {
+    return element.displayHeight;
+  }
+  return element.height instanceof SVGAnimatedLength
+    ? element.height.animVal.value
+    : element.height;
 };
 
 export interface TakeSnapshotOptions {
