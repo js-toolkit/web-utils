@@ -3,9 +3,8 @@ import { getUAParserResult } from './getUAParserResult';
 export function isSafari(): boolean {
   const browser = getUAParserResult().browser.name;
   return (
-    browser === 'Safari' ||
-    browser === 'Mobile Safari' ||
-    !!window.WebKitPlaybackTargetAvailabilityEvent
+    browser === 'Safari' || browser === 'Mobile Safari' /* ||
+    !!window.WebKitPlaybackTargetAvailabilityEvent */
   );
 }
 
