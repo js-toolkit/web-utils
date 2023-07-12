@@ -66,29 +66,42 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
 
   constructor(
     private readonly element: Element,
-    private readonly video?: HTMLVideoElement | undefined
+    private video?: HTMLVideoElement | undefined
   ) {
     super();
     if (fullscreen.names) {
       const { names } = fullscreen;
       element.addEventListener(names.changeEventName, this.changeHandler);
       element.addEventListener(names.errorEventName, this.errorHandler);
-    } else if (video) {
-      video.addEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
-      video.addEventListener('webkitendfullscreen', this.endFullscreenHandler);
+    }
+    video && this.setVideoElement(video);
+  }
+
+  private unbindVideo(): void {
+    if (!this.video) return;
+    this.video.removeEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
+    this.video.removeEventListener('webkitendfullscreen', this.endFullscreenHandler);
+    this.video = undefined;
+  }
+
+  setVideoElement(video: HTMLVideoElement | undefined): void {
+    this.unbindVideo();
+    this.video = video;
+    // Use video if regular fullscreen api unavailable (probably ios).
+    if (this.video && !fullscreen.names) {
+      this.video.addEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
+      this.video.addEventListener('webkitendfullscreen', this.endFullscreenHandler);
     }
   }
 
   destroy(): Promise<void> {
     return this.exit().finally(() => {
       this.removeAllListeners();
+      this.unbindVideo();
       if (fullscreen.names) {
         const { names } = fullscreen;
         this.element.removeEventListener(names.changeEventName, this.changeHandler);
         this.element.removeEventListener(names.errorEventName, this.errorHandler);
-      } else if (this.video) {
-        this.video.removeEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
-        this.video.removeEventListener('webkitendfullscreen', this.endFullscreenHandler);
       }
     });
   }
@@ -234,10 +247,10 @@ export namespace FullscreenController {
     Events,
     {
       [Events.Change]: [
-        { isFullscreen: boolean; video?: boolean | undefined; pseudo?: boolean | undefined }
+        { isFullscreen: boolean; video?: boolean | undefined; pseudo?: boolean | undefined },
       ];
       [Events.Error]: [
-        { error: unknown; video?: boolean | undefined; pseudo?: boolean | undefined }
+        { error: unknown; video?: boolean | undefined; pseudo?: boolean | undefined },
       ];
     }
   >;
