@@ -2,7 +2,11 @@ import { getUAParserResult } from './getUAParserResult';
 import { isIOS } from './isIOS';
 
 class Semver {
-  constructor(readonly major: number, readonly minor: number, readonly patch: number) {}
+  constructor(
+    readonly major: number,
+    readonly minor: number,
+    readonly patch: number
+  ) {}
 
   toString(): string {
     return `${this.major}_${this.minor}_${this.patch}`;

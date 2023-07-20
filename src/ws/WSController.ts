@@ -211,7 +211,7 @@ export namespace WSController {
       {
         [Events.Connected]: [];
         [Events.Message]: [
-          event: OmitStrict<MessageEvent<TData>, keyof Event | 'initMessageEvent'>
+          event: OmitStrict<MessageEvent<TData>, keyof Event | 'initMessageEvent'>,
         ];
         [Events.Error]: [event: Pick<ErrorEvent, 'error' | 'message'>];
         [Events.Closed]: [{ readonly reason: string } | undefined];

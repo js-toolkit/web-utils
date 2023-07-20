@@ -16,7 +16,7 @@ type GALibType = 'gtm' | 'gtag' | 'ga' | 'iframe' | 'auto';
 
 export type GAEventDataTransformer<
   D extends GAEventData,
-  L extends Extract<GALibType, 'gtm' | 'iframe'>
+  L extends Extract<GALibType, 'gtm' | 'iframe'>,
 > = (data: D) => {
   gtm: GTMEventData;
   // gtag: GTagEventData;
@@ -81,7 +81,7 @@ function gaHandler<D extends GAEventData>(
 
 export type GAEventDataTransformerMap<
   D extends GAEventData,
-  L extends Extract<GALibType, 'gtm' | 'iframe'> = Extract<GALibType, 'gtm' | 'iframe'>
+  L extends Extract<GALibType, 'gtm' | 'iframe'> = Extract<GALibType, 'gtm' | 'iframe'>,
 > = L extends L ? Record<L, GAEventDataTransformer<D, L>> : never;
 
 export function getHandler<D extends GAEventData, L extends GALibType>(

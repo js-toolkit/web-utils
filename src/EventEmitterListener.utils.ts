@@ -53,7 +53,7 @@ export type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
 export type GetEventListener<
   T extends EmitterTarget,
   E,
-  EM extends AnyObject = GetEventMap<T>
+  EM extends AnyObject = GetEventMap<T>,
 > = T extends DomEventTarget
   ? IfExtends<EM, EmptyObject, EventListener, GetDomEventListener<E, EM>>
   : IfExtends<

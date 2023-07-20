@@ -10,7 +10,7 @@ export type EventAwaiter = Awaiter<void>;
 
 export function getEventAwaiter<
   T extends EmitterTarget,
-  E extends GetEventType<T>
+  E extends GetEventType<T>,
   // M extends GetEventListener<T, E>
 >(
   target: T,

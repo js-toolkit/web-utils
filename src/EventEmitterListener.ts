@@ -36,23 +36,23 @@ type GetOffOptions<T extends EmitterTarget> = T extends DomEventTarget
 type GetOnceParameters<
   T extends EmitterTarget,
   E extends GetEventType<T> | string,
-  EM extends AnyObject
+  EM extends AnyObject,
 > = [
   type: GetEventType<T>,
   listener: GetEventListener<T, E, EM>,
   ...optionsOrParam: T extends DomEventTarget ? [options?: GetOnceOptions<T> | undefined] : [],
-  ...rest: unknown[]
+  ...rest: unknown[],
 ];
 
 type GetOffParameters<
   T extends EmitterTarget,
   E extends GetEventType<T> | string,
-  EM extends AnyObject
+  EM extends AnyObject,
 > = [
   type: GetEventType<T>,
   listener: GetEventListener<T, E, EM>,
   ...optionsOrParam: T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : [],
-  ...rest: unknown[]
+  ...rest: unknown[],
 ];
 
 type ListenersMap = Map<AnyFunction, AnyFunction>;
@@ -68,7 +68,7 @@ interface GetListenersOptions {
 
 export class EventEmitterListener<
   T extends EmitterTarget,
-  M extends AnyObject = GetDomEventMap<T>
+  M extends AnyObject = GetDomEventMap<T>,
 > {
   private readonly normalListeners: EventListenersMap = {};
 
@@ -148,7 +148,7 @@ export class EventEmitterListener<
     listener?: GetEventListener<T, K, M> | undefined,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): boolean;
 
@@ -157,7 +157,7 @@ export class EventEmitterListener<
     listener?: GetEventListener<T, string, M> | undefined,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): boolean;
 
@@ -166,7 +166,7 @@ export class EventEmitterListener<
     listener?: GetEventListener<T, string, M> | undefined,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): boolean {
     if (!isDomEventTarget(this.target)) {
@@ -188,7 +188,7 @@ export class EventEmitterListener<
     listener: GetEventListener<T, K, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOnOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): this;
 
@@ -197,7 +197,7 @@ export class EventEmitterListener<
     listener: GetEventListener<T, string, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOnOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): this;
 
@@ -206,7 +206,7 @@ export class EventEmitterListener<
     listener: GetEventListener<T, string, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOnOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): this {
     if (!isDomEventTarget(this.target)) {
@@ -256,7 +256,7 @@ export class EventEmitterListener<
     listener: GetEventListener<T, K, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOnceOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): this;
 
@@ -265,7 +265,7 @@ export class EventEmitterListener<
     listener: GetEventListener<T, string, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOnceOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): this;
 
@@ -274,7 +274,7 @@ export class EventEmitterListener<
     listener: GetEventListener<T, string, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOnceOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): this {
     if (!isDomEventTarget(this.target)) {
@@ -314,7 +314,7 @@ export class EventEmitterListener<
     listener: GetEventListener<T, K, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): this;
 
@@ -323,7 +323,7 @@ export class EventEmitterListener<
     listener: GetEventListener<T, string, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): this;
 
@@ -332,7 +332,7 @@ export class EventEmitterListener<
     listener: GetEventListener<T, string, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
-      ...unknown[]
+      ...unknown[],
     ]
   ): this {
     if (!isDomEventTarget(this.target)) {
