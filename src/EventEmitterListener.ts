@@ -1,13 +1,13 @@
 import {
   type DomEventTarget,
   type GetEventMap as GetDomEventMap,
-  isPassiveSupported,
-  normalizeOptions,
   type EmitterTarget,
   type GetEventType,
   type GetEventListener,
+  isPassiveSupported,
   isDomEventTarget,
   isEventTargetLike,
+  normalizeOptions,
 } from './EventEmitterListener.utils';
 
 type GetOnOptions<T extends EmitterTarget> = T extends DomEventTarget
