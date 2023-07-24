@@ -76,7 +76,11 @@ export class EventEmitterListener<
 
   readonly passiveSupported = isPassiveSupported();
 
-  constructor(public readonly target: T) {
+  constructor(
+    public readonly target: T,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private readonly interceptor?: (...args: any[]) => [...args: unknown[]] | undefined
+  ) {
     this.target = target;
   }
 
@@ -90,10 +94,11 @@ export class EventEmitterListener<
       if (once) {
         this.off(...([type, listener, ...rest] as GetOffParameters<T, string, M>));
       }
+      const nextParams = (this.interceptor && this.interceptor(...params)) || params;
       // if (typeof listener === 'object') {
       //   (listener.handleEvent as ListenerWrapper)(...params);
       // } else {
-      (listener as ListenerWrapper)(...params);
+      (listener as ListenerWrapper)(...nextParams);
       // }
     };
   }
@@ -213,7 +218,9 @@ export class EventEmitterListener<
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
       this.normalListeners[type] = map;
 
-      const handler = map.get(listener) ?? listener;
+      const handler =
+        map.get(listener) ??
+        (this.interceptor ? this.createWrapper(type, listener, false) : listener);
       !map.has(listener) && map.set(listener, handler);
 
       if (isEventTargetLike(this.target)) {
@@ -234,18 +241,18 @@ export class EventEmitterListener<
       const map = this.captureListeners[type] ?? (new Map() as ListenersMap);
       this.captureListeners[type] = map;
 
-      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, once, options);
-      !map.has(listener) && map.set(listener, wrapper);
+      const handler = map.get(listener) ?? this.createWrapper(type, listener, once, options);
+      !map.has(listener) && map.set(listener, handler);
 
-      this.target.addEventListener(type, wrapper, normalizeOptions(options));
+      this.target.addEventListener(type, handler, normalizeOptions(options));
     } else {
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
       this.normalListeners[type] = map;
 
-      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, once, options);
-      !map.has(listener) && map.set(listener, wrapper);
+      const handler = map.get(listener) ?? this.createWrapper(type, listener, once, options);
+      !map.has(listener) && map.set(listener, handler);
 
-      this.target.addEventListener(type, wrapper, normalizeOptions(options));
+      this.target.addEventListener(type, handler, normalizeOptions(options));
     }
 
     return this;
@@ -281,15 +288,15 @@ export class EventEmitterListener<
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
       this.normalListeners[type] = map;
 
-      const wrapper = map.get(listener) ?? this.createWrapper(type, listener, true, ...rest);
-      !map.has(listener) && map.set(listener, wrapper);
+      const handler = map.get(listener) ?? this.createWrapper(type, listener, true, ...rest);
+      !map.has(listener) && map.set(listener, handler);
 
       if (isEventTargetLike(this.target)) {
-        this.target.addEventListener(type, wrapper, ...rest);
+        this.target.addEventListener(type, handler, ...rest);
       } else if (this.target.once) {
-        this.target.once(type, wrapper, ...rest);
+        this.target.once(type, handler, ...rest);
       } else {
-        this.target.on(type, wrapper, ...rest);
+        this.target.on(type, handler, ...rest);
       }
 
       return this;
@@ -364,11 +371,7 @@ export class EventEmitterListener<
       if (useCapture) delete this.captureListeners[type];
       else delete this.normalListeners[type];
     }
-    this.target.removeEventListener(
-      type,
-      wrapper ?? (listener as EventListener),
-      normalizeOptions(options)
-    );
+    this.target.removeEventListener(type, wrapper ?? listener, normalizeOptions(options));
 
     return this;
   }
