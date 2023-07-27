@@ -1,4 +1,4 @@
-import getOriginFromMessage from './getOriginFromMessage';
+import { getOriginFromMessage } from './getOriginFromMessage';
 import {
   type IframeClientReadyMessage,
   type IframePingMessage,
@@ -16,12 +16,14 @@ interface AutoConnectClient {
 
 interface AutoConnectClientOptions<T = unknown> {
   readonly data: T;
+  readonly isReady?: () => boolean;
   readonly onConnect: (data: unknown, origin: string) => void;
   readonly logger?: Pick<Console, 'debug'> | undefined;
 }
 
 export function getAutoConnectClient<T = unknown>({
   data,
+  isReady = () => true,
   onConnect,
   logger = console,
 }: AutoConnectClientOptions<T>): AutoConnectClient {
@@ -37,7 +39,8 @@ export function getAutoConnectClient<T = unknown>({
     post<IframePingMessage>({ type: IFRAME_PING }, origin);
   };
 
-  const sendReady = (readyData: T, origin: string): void => {
+  const sendReadyMaybe = (readyData: T, origin: string): void => {
+    if (!isReady()) return;
     post<IframeClientReadyMessage<T>>({ type: IFRAME_CLIENT_READY, data: readyData }, origin);
     // readySent = true;
   };
@@ -52,13 +55,12 @@ export function getAutoConnectClient<T = unknown>({
 
     // Ping from host
     if (isPingMessage(message.data)) {
-      sendReady(data, origin);
+      sendReadyMaybe(data, origin);
     }
     // Host ready
     else {
       // if (!readySent) sendReady(data, origin);
       // Close receive channel
-      // eslint-disable-next-line no-use-before-define
       complete();
       onConnect(message.data.data, origin);
       logger.debug('Iframe connected.');

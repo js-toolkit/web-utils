@@ -1,5 +1,5 @@
-import onDOMReady from '../onDOMReady';
-import getOriginFromMessage from './getOriginFromMessage';
+import { onDOMReady } from '../onDOMReady';
+import { getOriginFromMessage } from './getOriginFromMessage';
 import {
   type IframeHostReadyMessage,
   type IframePingMessage,
