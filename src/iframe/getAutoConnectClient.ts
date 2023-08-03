@@ -35,7 +35,7 @@ export function getAutoConnectClient<T = unknown>({
     logger.debug(`Post message to parent window (origin=${origin}):`, message);
   };
 
-  const sendPing = (origin = '*'): void => {
+  const sendPing: AutoConnectClient['ready'] = (origin = '*') => {
     post<IframePingMessage>({ type: IFRAME_PING }, origin);
   };
 
