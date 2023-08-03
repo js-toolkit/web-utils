@@ -10,8 +10,8 @@ import {
 } from './messages';
 
 interface AutoConnectClient {
+  readonly ready: (origin?: string) => void;
   readonly dispose: VoidFunction;
-  readonly ready: VoidFunction;
 }
 
 interface AutoConnectClientOptions<T = unknown> {
