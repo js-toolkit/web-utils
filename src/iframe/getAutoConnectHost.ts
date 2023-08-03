@@ -64,8 +64,8 @@ export function getAutoConnectHost<T>({
     post<IframePingMessage>({ type: IFRAME_PING }, target, origin);
   };
 
-  const sendReady = <D>(readyData: D, target: Window, origin = '*'): void => {
-    post<IframeHostReadyMessage<D>>({ type: IFRAME_HOST_READY, data: readyData }, target, origin);
+  const sendReady: AutoConnectHost['ready'] = (data, target, origin = '*'): void => {
+    post<IframeHostReadyMessage<unknown>>({ type: IFRAME_HOST_READY, data }, target, origin);
   };
 
   const onReceiveMessage = (message: MessageEvent): void => {
