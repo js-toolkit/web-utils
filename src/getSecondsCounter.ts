@@ -1,15 +1,24 @@
-import toInt from '@jstoolkit/utils/toInt';
+import { toInt } from '@jstoolkit/utils/toInt';
 
 export interface SecondsCounterOptions {
-  onChange?: ((data: { value: number; total: number }) => void) | undefined;
+  readonly onChange?:
+    | ((data: {
+        /** Current seconds (integer). */
+        value: number;
+        /** The number of records - total seconds. It's not a duration. (integer). */
+        total: number;
+      }) => void)
+    | undefined;
 }
 
 export interface SecondsCounter {
-  getTotal: () => number;
-  push: (currentTime: number | { currentTime: number } | { data: { currentTime: number } }) => void;
+  readonly getTotal: () => number;
+  readonly push: (
+    currentTime: number | { currentTime: number } | { data: { currentTime: number } }
+  ) => void;
   onChange: SecondsCounterOptions['onChange'];
-  reset: VoidFunction;
-  destroy: VoidFunction;
+  readonly reset: VoidFunction;
+  readonly destroy: VoidFunction;
 }
 
 export function getSecondsCounter({ onChange }: SecondsCounterOptions = {}): SecondsCounter {
@@ -33,7 +42,7 @@ export function getSecondsCounter({ onChange }: SecondsCounterOptions = {}): Sec
       if (time == null) return;
       // Add new seconds to list
       const secs = toInt(currentTime);
-      if (!timestamps.has(secs)) {
+      if (secs > 0 && !timestamps.has(secs)) {
         timestamps.add(secs);
         listener && listener({ value: secs, total: timestamps.size });
       }
