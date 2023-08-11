@@ -1,0 +1,349 @@
+import { v4 as uuid } from 'uuid';
+import { onDOMReady } from '../onDOMReady';
+import {
+  type MessagesTypes,
+  type IframeMessage,
+  type IframeDataMessage,
+  isPingMessage,
+  isTargetReadyMessage,
+} from './messages';
+import { findTarget, type Target } from './utils';
+import { getOriginFromMessage } from './getOriginFromMessage';
+
+export { getClientMessages, getHostMessages } from './messages';
+
+interface AutoConnector {
+  /** If function passed the connector waits until DOM ready. */
+  readonly start: (targets: ArrayLike<Target> | (() => ArrayLike<Target>)) => void;
+  readonly stop: VoidFunction;
+  // readonly getChannel: () => AutoConnector.Channel;
+  readonly destroy: VoidFunction;
+}
+
+// // eslint-disable-next-line @typescript-eslint/no-namespace
+// export namespace AutoConnector {
+//   export interface Channel
+//     extends Pick<
+//       MessagePort,
+//       'start' | 'close' | 'addEventListener' | 'removeEventListener' | 'postMessage'
+//     > {}
+// }
+
+interface TargetInfo {
+  readonly target: Window;
+  readonly origin: string;
+}
+
+interface ConnectTargetInfo<ReceiveData = unknown> extends TargetInfo {
+  readonly data: ReceiveData;
+}
+
+export type AutoConnectorOptions<SendData = AnyObject, ReceiveData = unknown> = {
+  readonly id?: string | undefined;
+  readonly label?: string | undefined;
+  readonly onSendData?: ((info: TargetInfo) => SendData) | undefined;
+  readonly messagesTypes: MessagesTypes;
+  /** Process messages only from targets passed to `start` method. Default `true`. */
+  readonly strictTargets?: boolean;
+  readonly logger?: Pick<Console, 'warn' | 'debug'> | undefined;
+  // readonly channel?: 'open' | 'use' | undefined;
+  // readonly onConnect: (
+  //   info: ConnectTargetInfo<ReceiveData>,
+  //   channel: AutoConnector.Channel | undefined
+  // ) => void;
+} & (
+  | {
+      readonly channel: 'open' | 'use';
+      readonly onConnect: (info: ConnectTargetInfo<ReceiveData>, port: MessagePort) => void;
+    }
+  | {
+      readonly channel?: undefined;
+      readonly onConnect: (info: ConnectTargetInfo<ReceiveData>) => void;
+    }
+);
+
+// function createChannelProxy(channelMap: Map<string, MessageChannel>): AutoConnector.Channel {
+//   return {
+//     addEventListener(...args: Parameters<MessagePort['addEventListener']>) {
+//       channelMap.forEach(({ port1 }) => port1.addEventListener(...args));
+//     },
+
+//     removeEventListener(...args: Parameters<MessagePort['removeEventListener']>) {
+//       channelMap.forEach(({ port1 }) => port1.removeEventListener(...args));
+//     },
+
+//     start() {
+//       channelMap.forEach(({ port1 }) => port1.start());
+//     },
+
+//     close() {
+//       channelMap.forEach(({ port1 }) => port1.close());
+//     },
+
+//     postMessage(message, options, ...args) {
+//       channelMap.forEach(({ port1 }) => {
+//         port1.postMessage(message, options as StructuredSerializeOptions, ...args);
+//       });
+//     },
+//   };
+// }
+
+export function getAutoConnector<SendData, ReceiveData>({
+  id,
+  label: labelOption,
+  strictTargets = true,
+  messagesTypes,
+  channel: channelOption,
+  logger = console,
+  onSendData,
+  onConnect,
+}: AutoConnectorOptions<SendData, ReceiveData>): AutoConnector {
+  const uid = id || uuid();
+  const label = labelOption || uid;
+  const msgMap = new Map<string, PartialRecord<keyof MessagesTypes, boolean>>();
+  const channelMap = channelOption === 'open' ? new Map<string, MessageChannel>() : undefined;
+
+  // let channel: AutoConnector.Channel | MessagePort | undefined;
+  let specialTargets: ArrayLike<Target> | undefined;
+  let disposer: VoidFunction | undefined;
+
+  const post = <M extends IframeMessage>(
+    message: M,
+    target: MessageEventSource,
+    origin: string,
+    targetId: string,
+    transfer?: Transferable[] | undefined
+  ): void => {
+    if (window === target) return;
+    if (target instanceof MessagePort || target instanceof ServiceWorker) {
+      target.postMessage(message, transfer && { transfer });
+      logger.debug(`${`${label}: `}Post message to MessageEventSource (uid=${targetId}):`, message);
+    }
+    // WindowProxy
+    else {
+      target.postMessage(message, origin, transfer);
+      logger.debug(
+        `${`${label}: `}Post message to iframe (uid=${targetId},origin=${origin}):`,
+        message
+      );
+    }
+  };
+
+  const sendPing = (target: MessageEventSource, origin: string, targetId: string): void => {
+    post<IframeMessage<'Ping'>>({ uid, type: messagesTypes.Ping }, target, origin, targetId);
+  };
+
+  const sendReady = (
+    data: unknown,
+    target: Window,
+    origin: string,
+    targetId: string,
+    port: MessagePort | undefined
+  ): void => {
+    post<IframeDataMessage<'SelfReady', unknown>>(
+      { uid, type: messagesTypes.SelfReady, data },
+      target,
+      origin,
+      targetId,
+      port ? [port] : undefined
+    );
+  };
+
+  const onReceiveMessage = (message: MessageEvent): void => {
+    if (!message.source || message.source === window) {
+      return;
+    }
+    if (
+      !isPingMessage(message.data, messagesTypes) &&
+      !isTargetReadyMessage(message.data, messagesTypes)
+    ) {
+      return;
+    }
+    if (message.data.uid === uid) {
+      return;
+    }
+
+    const target = message.source as Window;
+    const targetId = message.data.uid;
+
+    logger.debug(
+      `${`${label}: `}Receive message from iframe (uid=${targetId},origin=${message.origin}):`,
+      message.data
+    );
+
+    if (strictTargets && specialTargets) {
+      const found = findTarget(target, specialTargets);
+      if (!found) {
+        logger.warn(`${`${label}: `}Could not find target (uid=${targetId}) by message.source.`);
+        return;
+      }
+    }
+
+    const origin = getOriginFromMessage(message);
+    // console.log(label, { ...msgMap.get(targetId) });
+
+    // Ping from iframe
+    if (isPingMessage(message.data, messagesTypes) && !msgMap.get(targetId)?.Ping) {
+      msgMap.set(targetId, { ...msgMap.get(targetId), Ping: true });
+      sendPing(target, origin, targetId);
+      return;
+    }
+
+    // In order to wait messages queue in target before call `onConnect`.
+    let needAsync = false;
+
+    // Ping or Ready from iframe
+    if (msgMap.get(targetId)?.Ping && !msgMap.get(targetId)?.SelfReady) {
+      msgMap.set(targetId, { ...msgMap.get(targetId), SelfReady: true });
+
+      // if (!channel && channelMap) {
+      //   channel = createChannelProxy(channelMap);
+      // }
+
+      const port2 = channelMap
+        ? (() => {
+            const messageChannel = channelMap.get(targetId) ?? new MessageChannel();
+            channelMap.set(targetId, messageChannel);
+            return messageChannel.port2;
+          })()
+        : undefined;
+
+      sendReady(
+        onSendData ? onSendData({ target, origin }) : undefined,
+        target,
+        origin,
+        targetId,
+        port2
+      );
+      needAsync = false;
+      // return;
+    }
+
+    // Ready from iframe
+    if (
+      isTargetReadyMessage<ReceiveData>(message.data, messagesTypes) &&
+      msgMap.get(targetId)?.SelfReady
+    ) {
+      // Reset state for target
+      msgMap.delete(targetId);
+
+      const port = (() => {
+        if (channelOption === 'open') {
+          const port1 = channelMap?.get(targetId)?.port1;
+          if (!port1)
+            throw new Error(
+              'Something went wrong: MessageChannel is not created despite the fact that the `channel` option is `open`.'
+            );
+          return port1;
+        }
+        if (channelOption === 'use') {
+          const port2 = message.ports[0];
+          if (!port2)
+            throw new Error(
+              'MessagePort is not received despite the fact that the `channel` option is `use`. The `channel` option of connector on another side must be equals `open`.'
+            );
+          return port2;
+        }
+        return undefined;
+      })();
+
+      const { data } = message.data;
+      const complete = (): void => {
+        logger.debug(`${`${label}: `}Iframe connection established (${uid} + ${targetId}).`);
+        onConnect({ data, target, origin }, port as MessagePort);
+        // if (channelOption === 'open') {
+        //   const port1 = channelMap?.get(targetId)?.port1;
+        //   if (!port1) throw new Error();
+        //   onConnect({ data, target, origin }, port1);
+        // } else if (channelOption === 'use') {
+        //   onConnect({ data, target, origin }, channel as MessagePort);
+        // } else if (!channelOption) {
+        //   onConnect({ data, target, origin });
+        // }
+      };
+      if (needAsync) setTimeout(complete, 0);
+      else complete();
+    }
+  };
+
+  const start: AutoConnector['start'] = (targets): void => {
+    if (disposer) {
+      logger.warn(`${`${label}: `}Already started. You should first call \`stop\`.`);
+      return;
+    }
+
+    // Init and send ping to iframes
+    const ready = (): void => {
+      specialTargets = (() => {
+        const list = typeof targets === 'function' ? targets() : targets;
+        return list.length > 0 ? list : undefined;
+      })();
+
+      // if (targets && !specialTargets) {
+      //   logger.warn(
+      //     `${`${label}: `}Argument \`targets\` passed but result is empty. Will be used iframes in the current document.`
+      //   );
+      // }
+
+      window.addEventListener('message', onReceiveMessage);
+
+      // const frames = specialTargets ?? selectFrames();
+      const frames = specialTargets ?? [];
+      for (let i = 0; i < frames.length; i += 1) {
+        const frame = frames[i];
+        const frameWindow = frame instanceof HTMLIFrameElement ? frame.contentWindow : frame;
+        frameWindow && frameWindow !== window && sendPing(frameWindow, '*', '');
+      }
+    };
+
+    const cancel = typeof targets === 'function' ? onDOMReady(ready) : ready();
+
+    disposer = () => {
+      cancel && cancel();
+      window.removeEventListener('message', onReceiveMessage);
+      specialTargets = undefined;
+    };
+  };
+
+  const stop = (): void => {
+    if (disposer) {
+      disposer();
+      disposer = undefined;
+    }
+  };
+
+  return {
+    start,
+    stop,
+    // getChannel: () => {
+    //   if (!channel) {
+    //     if (channelOption === 'use')
+    //       throw new Error('Channel is unavailable. Maybe the connector is not connected yet.');
+    //     else
+    //       throw new Error(
+    //         'Channel is unavailable. In order to use channel the option `channel` must be one of `open`, `use`.'
+    //       );
+    //   }
+    //   return channel;
+    // },
+    destroy: () => {
+      stop();
+      msgMap.clear();
+      // if (channel) {
+      //   channel.close();
+      //   channel = undefined;
+      // }
+      if (channelMap) {
+        channelMap.forEach((ch) => {
+          ch.port1.close();
+          // ch.port1.onmessage = null;
+          // ch.port1.onmessageerror = null;
+          ch.port2.close();
+          // ch.port2.onmessage = null;
+          // ch.port2.onmessageerror = null;
+        });
+        channelMap.clear();
+      }
+    },
+  };
+}
