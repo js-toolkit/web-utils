@@ -1,6 +1,6 @@
 export interface Options {
-  blank?: boolean | undefined;
-  complete?: boolean | undefined;
+  readonly blank?: boolean | undefined;
+  readonly complete?: boolean | undefined;
 }
 
 export function isIframeLoaded(
