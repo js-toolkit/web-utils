@@ -1,68 +1,102 @@
-import { getOriginFromMessage } from './getOriginFromMessage';
+import { v4 as uuid } from 'uuid';
 import {
-  type IframeClientReadyMessage,
-  type IframePingMessage,
+  type MessagesTypes,
   type IframeMessage,
+  type IframeDataMessage,
   IFRAME_CLIENT_READY,
+  IFRAME_HOST_READY,
   IFRAME_PING,
-  isIframeHostReadyMessage,
   isPingMessage,
+  isTargetReadyMessage,
 } from './messages';
+import { getOriginFromMessage } from './getOriginFromMessage';
 
 interface AutoConnectClient {
   readonly ready: (origin?: string) => void;
-  readonly dispose: VoidFunction;
+  readonly destroy: VoidFunction;
 }
 
 interface AutoConnectClientOptions<T = unknown> {
   readonly data: T;
+  readonly target?: MessageEventSource | undefined;
   readonly isReady?: () => boolean;
-  readonly onConnect: (data: unknown, origin: string) => void;
+  readonly onConnect: <T = unknown>(data: T, origin: string, port?: MessagePort) => void;
   readonly logger?: Pick<Console, 'debug'> | undefined;
+  readonly messagesTypes?: Partial<MessagesTypes>;
 }
 
 export function getAutoConnectClient<T = unknown>({
   data,
+  target = window.parent,
   isReady = () => true,
   onConnect,
   logger = console,
+  messagesTypes: messagesTypes0,
 }: AutoConnectClientOptions<T>): AutoConnectClient {
-  // let readySent = false;
+  const messagesTypes: MessagesTypes = {
+    Ping: messagesTypes0?.Ping || IFRAME_PING,
+    TargetReady: messagesTypes0?.TargetReady || IFRAME_HOST_READY,
+    SelfReady: messagesTypes0?.SelfReady || IFRAME_CLIENT_READY,
+  };
 
-  const post = <M extends IframeMessage<string>>(message: M, origin: string): void => {
-    if (window === window.parent) return;
-    window.parent.postMessage(message, origin);
-    logger.debug(`Post message to parent window (origin=${origin}):`, message);
+  // let readySent = false;
+  const uid = uuid();
+  let port: MessagePort | undefined;
+
+  const post = <M extends IframeMessage>(
+    target: MessageEventSource,
+    message: M,
+    origin: string
+  ): void => {
+    if (window === target) return;
+    if (target instanceof MessagePort || target instanceof ServiceWorker) {
+      target.postMessage(message);
+      logger.debug(`Post message to parent MessageEventSource:`, message);
+    } else {
+      target.postMessage(message, origin);
+      logger.debug(`Post message to parent window (origin=${origin}):`, message);
+    }
   };
 
   const sendPing: AutoConnectClient['ready'] = (origin = '*') => {
-    post<IframePingMessage>({ type: IFRAME_PING }, origin);
+    post<IframeMessage<'Ping'>>(target, { uid, type: messagesTypes.Ping }, origin);
   };
 
-  const sendReadyMaybe = (readyData: T, origin: string): void => {
+  const sendReadyMaybe = (target: MessageEventSource, readyData: T, origin: string): void => {
     if (!isReady()) return;
-    post<IframeClientReadyMessage<T>>({ type: IFRAME_CLIENT_READY, data: readyData }, origin);
+    post<IframeDataMessage<'SelfReady', T>>(
+      target,
+      { uid, type: messagesTypes.SelfReady, data: readyData },
+      origin
+    );
     // readySent = true;
   };
 
   const onReceiveMessage = (message: MessageEvent): void => {
-    if (message.source !== window.parent) return;
-    if (!isPingMessage(message.data) && !isIframeHostReadyMessage(message.data)) return;
+    if (!message.source || message.source !== target) return;
+    if (
+      !isPingMessage(message.data, messagesTypes) &&
+      !isTargetReadyMessage(message.data, messagesTypes)
+    ) {
+      return;
+    }
     // if (!isIframeHostReadyMessage(message.data)) return;
     logger.debug(`Receive message from parent window (origin=${message.origin}):`, message.data);
 
     const origin = getOriginFromMessage(message);
 
     // Ping from host
-    if (isPingMessage(message.data)) {
-      sendReadyMaybe(data, origin);
+    if (isPingMessage(message.data, messagesTypes)) {
+      sendReadyMaybe(message.source, data, origin);
     }
     // Host ready
     else {
       // if (!readySent) sendReady(data, origin);
       // Close receive channel
       complete();
-      onConnect(message.data.data, origin);
+      const { data } = message.data;
+      [port] = message.ports;
+      onConnect(data, origin, port);
       logger.debug('Iframe connected.');
     }
   };
@@ -75,8 +109,13 @@ export function getAutoConnectClient<T = unknown>({
 
   return {
     ready: sendPing,
-    dispose: complete,
+    destroy: () => {
+      complete();
+      if (port) {
+        port.close();
+        port.onmessage = null;
+        port.onmessageerror = null;
+      }
+    },
   };
 }
-
-export default getAutoConnectClient;
