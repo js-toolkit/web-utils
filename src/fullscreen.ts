@@ -1,4 +1,4 @@
-import es5ErrorCompat from '@jstoolkit/utils/es5ErrorCompat';
+import es5ErrorCompat from '@js-toolkit/utils/es5ErrorCompat';
 
 export class FullscreenUnavailableError extends Error {
   constructor() {

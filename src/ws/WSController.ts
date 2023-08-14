@@ -8,8 +8,8 @@ import type { WebSocketEventMap } from 'reconnecting-websocket/dist/events';
 import DataEventEmitter, {
   type DataEventListener,
   type DataEventMap,
-} from '@jstoolkit/utils/DataEventEmitter';
-import delayed from '@jstoolkit/utils/delayed';
+} from '@js-toolkit/utils/DataEventEmitter';
+import delayed from '@js-toolkit/utils/delayed';
 import { EventEmitterListener } from '../EventEmitterListener';
 
 function getNotConnectedError(): Error {

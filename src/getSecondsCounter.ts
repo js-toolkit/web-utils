@@ -1,4 +1,4 @@
-import { toInt } from '@jstoolkit/utils/toInt';
+import { toInt } from '@js-toolkit/utils/toInt';
 
 export interface SecondsCounterOptions {
   readonly onChange?:

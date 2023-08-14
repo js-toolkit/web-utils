@@ -1,9 +1,9 @@
 import DataEventEmitter, {
   type DataEventListener,
   type DataEventMap,
-} from '@jstoolkit/utils/DataEventEmitter';
-import getErrorMessage from '@jstoolkit/utils/getErrorMessage';
-import { hasIn } from '@jstoolkit/utils/hasIn';
+} from '@js-toolkit/utils/DataEventEmitter';
+import getErrorMessage from '@js-toolkit/utils/getErrorMessage';
+import { hasIn } from '@js-toolkit/utils/hasIn';
 import * as sdpUtils from './sdputils';
 
 export class PeerConnection extends DataEventEmitter<PeerConnection.EventMap, PeerConnection> {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import isEmptyObject from '@jstoolkit/utils/isEmptyObject';
+import isEmptyObject from '@js-toolkit/utils/isEmptyObject';
 
 export type DomEventTarget = EventTarget;
 

@@ -1,4 +1,4 @@
-import { getAwaiter, type Awaiter } from '@jstoolkit/utils/getAwaiter';
+import { getAwaiter, type Awaiter } from '@js-toolkit/utils/getAwaiter';
 import { EventEmitterListener } from './EventEmitterListener';
 import {
   type EmitterTarget,
