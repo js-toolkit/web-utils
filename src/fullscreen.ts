@@ -1,4 +1,5 @@
-import es5ErrorCompat from '@js-toolkit/utils/es5ErrorCompat';
+import { es5ErrorCompat } from '@js-toolkit/utils/es5ErrorCompat';
+import { promisify } from '@js-toolkit/utils/promisify';
 
 export class FullscreenUnavailableError extends Error {
   constructor() {
@@ -176,7 +177,7 @@ export namespace fullscreen {
   }
 
   export function toggle(elem: Element): Promise<void> {
-    return Promise.resolve().then(() => (isFullscreen() ? exit() : request(elem)));
+    return promisify(() => (isFullscreen() ? exit() : request(elem)));
   }
 
   export function onChange(listener: EventListenerOrEventListenerObject): void {
