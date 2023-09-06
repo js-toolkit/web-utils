@@ -7,7 +7,7 @@ import {
   isPingMessage,
   isTargetReadyMessage,
 } from './messages';
-import { findTarget, type Target } from './utils';
+import { findTarget, isWindowProxy, type Target } from './utils';
 import { getOriginFromMessage } from './getOriginFromMessage';
 
 export { getClientMessages, getHostMessages } from './messages';
@@ -115,17 +115,15 @@ export function getAutoConnector<SendData, ReceiveData>({
     transfer?: Transferable[] | undefined
   ): void => {
     if (window === target) return;
-    if (target instanceof MessagePort || target instanceof ServiceWorker) {
-      target.postMessage(message, transfer && { transfer });
-      logger.debug(`${`${label}: `}Post message to MessageEventSource (uid=${targetId}):`, message);
-    }
-    // WindowProxy
-    else {
+    if (isWindowProxy(target)) {
       target.postMessage(message, origin, transfer);
       logger.debug(
         `${`${label}: `}Post message to iframe (uid=${targetId},origin=${origin}):`,
         message
       );
+    } else {
+      target.postMessage(message, transfer && { transfer });
+      logger.debug(`${`${label}: `}Post message to MessageEventSource (uid=${targetId}):`, message);
     }
   };
 

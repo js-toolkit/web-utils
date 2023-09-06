@@ -10,7 +10,7 @@ import {
   isPingMessage,
   isTargetReadyMessage,
 } from './messages';
-import { selectFrames } from './utils';
+import { isWindowProxy, selectFrames } from './utils';
 import { getOriginFromMessage } from './getOriginFromMessage';
 
 interface AutoConnectHost {
@@ -86,14 +86,12 @@ export function getAutoConnectHost<T>({
     transfer?: Transferable[] | undefined
   ): void => {
     if (window === target) return;
-    if (target instanceof MessagePort || target instanceof ServiceWorker) {
-      target.postMessage(message, transfer && { transfer });
-      logger.debug(`Post message to MessageEventSource:`, message);
-    }
-    // WindowProxy
-    else {
+    if (isWindowProxy(target)) {
       target.postMessage(message, origin, transfer);
       logger.debug(`Post message to iframe (origin=${origin}):`, message);
+    } else {
+      target.postMessage(message, transfer && { transfer });
+      logger.debug(`Post message to MessageEventSource:`, message);
     }
   };
 

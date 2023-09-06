@@ -10,6 +10,7 @@ import {
   isTargetReadyMessage,
 } from './messages';
 import { getOriginFromMessage } from './getOriginFromMessage';
+import { isWindowProxy } from './utils';
 
 interface AutoConnectClient {
   readonly ready: (origin?: string) => void;
@@ -49,12 +50,12 @@ export function getAutoConnectClient<T = unknown>({
     origin: string
   ): void => {
     if (window === target) return;
-    if (target instanceof MessagePort || target instanceof ServiceWorker) {
-      target.postMessage(message);
-      logger.debug(`Post message to parent MessageEventSource:`, message);
-    } else {
+    if (isWindowProxy(target)) {
       target.postMessage(message, origin);
       logger.debug(`Post message to parent window (origin=${origin}):`, message);
+    } else {
+      target.postMessage(message);
+      logger.debug(`Post message to parent MessageEventSource:`, message);
     }
   };
 

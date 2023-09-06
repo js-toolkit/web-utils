@@ -19,3 +19,10 @@ export function findTarget<T extends Target>(
   }
   return undefined;
 }
+
+export function isWindowProxy(target: MessageEventSource): target is Window {
+  return !(
+    (window.MessagePort !== undefined && target instanceof MessagePort) ||
+    (window.ServiceWorker !== undefined && target instanceof ServiceWorker)
+  );
+}
