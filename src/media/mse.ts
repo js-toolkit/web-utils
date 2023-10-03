@@ -10,5 +10,6 @@ export function getMediaSource(): typeof MediaSource | undefined {
 
 /** Media Source Extensions */
 export function isMSESupported(): boolean {
-  return !!getMediaSource();
+  // Some very old MediaSource implementations didn't have isTypeSupported.
+  return !!getMediaSource()?.isTypeSupported;
 }
