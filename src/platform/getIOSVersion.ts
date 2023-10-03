@@ -32,5 +32,3 @@ export function getIOSVersion(): Semver | undefined {
 
   return memo ?? undefined;
 }
-
-export default getIOSVersion;
