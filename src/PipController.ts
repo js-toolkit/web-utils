@@ -14,7 +14,7 @@ declare global {
 const getPipUnavailableError = (): Error => new Error('PiP is not available');
 
 export class PipController extends EventEmitter<PipController.EventMap> {
-  private static get isSupported(): boolean {
+  private static get isApiEnabled(): boolean {
     return (
       !!HTMLVideoElement.prototype.requestPictureInPicture &&
       !!document.exitPictureInPicture &&
@@ -22,9 +22,9 @@ export class PipController extends EventEmitter<PipController.EventMap> {
     );
   }
 
-  static isEnabled(video: HTMLVideoElement): boolean {
+  static isAvailable(video: HTMLVideoElement): boolean {
     return (
-      this.isSupported ||
+      (this.isApiEnabled && !video.disablePictureInPicture) ||
       (!!video.webkitSupportsPresentationMode &&
         video.webkitSupportsPresentationMode('picture-in-picture'))
     );
@@ -42,7 +42,7 @@ export class PipController extends EventEmitter<PipController.EventMap> {
 
     this.listener = new EventEmitterListener(video);
 
-    if (PipController.isEnabled(video)) {
+    if (PipController.isAvailable(video)) {
       const enterPipHandler = (): void => {
         this.emit(this.Events.Change, { isPip: true });
       };
@@ -51,7 +51,7 @@ export class PipController extends EventEmitter<PipController.EventMap> {
         this.emit(this.Events.Change, { isPip: false });
       };
 
-      if (PipController.isSupported) {
+      if (PipController.isApiEnabled) {
         this.listener.on('enterpictureinpicture', enterPipHandler);
         this.listener.on('leavepictureinpicture', exitPipHandler);
       } else {
@@ -82,7 +82,7 @@ export class PipController extends EventEmitter<PipController.EventMap> {
   }
 
   get isPip(): boolean {
-    return PipController.isSupported
+    return PipController.isApiEnabled
       ? document.pictureInPictureElement === this.listener.target
       : this.listener.target.webkitPresentationMode === 'picture-in-picture';
   }
@@ -101,12 +101,12 @@ export class PipController extends EventEmitter<PipController.EventMap> {
         return;
       }
 
-      if (PipController.isSupported) {
+      if (PipController.isApiEnabled) {
         this.listener.target.requestPictureInPicture().then(() => resolve(), reject);
         return;
       }
 
-      if (!PipController.isEnabled(this.listener.target)) {
+      if (!PipController.isAvailable(this.listener.target)) {
         throw getPipUnavailableError();
       }
 
@@ -129,12 +129,12 @@ export class PipController extends EventEmitter<PipController.EventMap> {
         return;
       }
 
-      if (PipController.isSupported) {
+      if (PipController.isApiEnabled) {
         document.exitPictureInPicture().then(resolve, reject);
         return;
       }
 
-      if (!PipController.isEnabled(this.listener.target)) {
+      if (!PipController.isAvailable(this.listener.target)) {
         throw getPipUnavailableError();
       }
 
