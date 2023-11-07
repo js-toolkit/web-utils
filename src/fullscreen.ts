@@ -77,11 +77,11 @@ export namespace fullscreen {
 
   export const UnavailableError = FullscreenUnavailableError;
 
-  export function isSupported(): boolean {
+  export function isApiAvailable(): boolean {
     return !!names;
   }
 
-  export function isEnabled(): boolean {
+  export function isApiEnabled(): boolean {
     // Coerce to boolean in case of old WebKit
     return !!names && Boolean((document as AnyObject)[names.fullscreenEnabledName]);
   }

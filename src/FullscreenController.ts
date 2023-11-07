@@ -107,12 +107,12 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
   }
 
   // eslint-disable-next-line class-methods-use-this
-  get isFullscreenEnabled(): boolean {
-    return fullscreen.isEnabled();
+  get isFullscreenAvailable(): boolean {
+    return fullscreen.isApiEnabled();
   }
 
-  get isAnyFullscreenEnabled(): boolean {
-    return this.isFullscreenEnabled || !!this.video?.webkitEnterFullscreen;
+  get isAnyFullscreenAvailable(): boolean {
+    return this.isFullscreenAvailable || !!this.video?.webkitEnterFullscreen;
   }
 
   get isFullscreen(): boolean {
@@ -124,7 +124,7 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
   }
 
   get currentElement(): Element | null {
-    if (fullscreen.isSupported()) {
+    if (fullscreen.isApiEnabled()) {
       if (fullscreen.getElement() === this.element) return this.element;
     } else if (this.video?.webkitDisplayingFullscreen) {
       return this.video;
@@ -159,7 +159,7 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
 
       const { toggleNativeVideoSubtitles, pseudoFullscreenFallback, ...rest } = options;
 
-      if (fullscreen.isEnabled()) {
+      if (fullscreen.isApiEnabled()) {
         fullscreen.request(this.element, rest).then(resolve, reject);
         return;
       }
@@ -205,7 +205,7 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
         return;
       }
 
-      if (fullscreen.isEnabled()) {
+      if (fullscreen.isApiEnabled()) {
         fullscreen.exit().then(resolve, reject);
         return;
       }
