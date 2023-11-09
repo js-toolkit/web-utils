@@ -1,4 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
+import { hasIn } from '@js-toolkit/utils/hasIn';
 import { fullscreen } from './fullscreen';
 import { toggleNativeSubtitles } from './media/toggleNativeSubtitles';
 
@@ -7,7 +8,7 @@ declare global {
     webkitEnterFullscreen?: VoidFunction | undefined;
     webkitExitFullscreen?: VoidFunction | undefined;
     webkitDisplayingFullscreen?: boolean | undefined;
-    // webkitSupportsFullscreen?: boolean | undefined;
+    webkitSupportsFullscreen?: boolean | undefined;
   }
 }
 
@@ -62,111 +63,130 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
     return FullscreenController.Events;
   }
 
+  private fallback: FullscreenController.Options['fallback'];
   private exitPseudoFullscreen: ReturnType<typeof enterPseudoFullscreen> | undefined;
 
   constructor(
     private readonly element: Element,
-    private video?: HTMLVideoElement | undefined
+    private options: FullscreenController.Options = {}
   ) {
     super();
+    this.setOptions(options);
+  }
+
+  private unbind(): void {
     if (fullscreen.names) {
       const { names } = fullscreen;
-      element.addEventListener(names.changeEventName, this.changeHandler);
-      element.addEventListener(names.errorEventName, this.errorHandler);
+      this.element.removeEventListener(names.changeEventName, this.nativeChangeHandler);
+      this.element.removeEventListener(names.errorEventName, this.nativeErrorHandler);
     }
-    video && this.setVideoElement(video);
+
+    if (this.fallback instanceof HTMLVideoElement) {
+      this.fallback.removeEventListener('webkitbeginfullscreen', this.videoBeginFullscreenHandler);
+      this.fallback.removeEventListener('webkitendfullscreen', this.videoEndFullscreenHandler);
+      this.fallback = undefined;
+    }
   }
 
-  private unbindVideo(): void {
-    if (!this.video) return;
-    this.video.removeEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
-    this.video.removeEventListener('webkitendfullscreen', this.endFullscreenHandler);
-    this.video = undefined;
-  }
+  setOptions(options: FullscreenController.Options): void {
+    this.unbind();
 
-  setVideoElement(video: HTMLVideoElement | undefined): void {
-    this.unbindVideo();
-    this.video = video;
+    this.options = options ?? {};
+    this.fallback = this.options.fallback;
+
+    if (fullscreen.names && fullscreen.isApiEnabled()) {
+      const { names } = fullscreen;
+      this.element.addEventListener(names.changeEventName, this.nativeChangeHandler);
+      this.element.addEventListener(names.errorEventName, this.nativeErrorHandler);
+    }
     // Use video if regular fullscreen api unavailable (probably ios).
-    if (this.video && !fullscreen.names) {
-      this.video.addEventListener('webkitbeginfullscreen', this.beginFullscreenHandler);
-      this.video.addEventListener('webkitendfullscreen', this.endFullscreenHandler);
+    else if (this.fallback instanceof HTMLVideoElement) {
+      this.fallback.addEventListener('webkitbeginfullscreen', this.videoBeginFullscreenHandler);
+      this.fallback.addEventListener('webkitendfullscreen', this.videoEndFullscreenHandler);
     }
   }
 
   destroy(): Promise<void> {
     return this.exit().finally(() => {
       this.removeAllListeners();
-      this.unbindVideo();
-      if (fullscreen.names) {
-        const { names } = fullscreen;
-        this.element.removeEventListener(names.changeEventName, this.changeHandler);
-        this.element.removeEventListener(names.errorEventName, this.errorHandler);
-      }
+      this.unbind();
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  get isFullscreenAvailable(): boolean {
-    return fullscreen.isApiEnabled();
+  isFullscreenAvailable(): boolean {
+    return (
+      fullscreen.isApiEnabled() ||
+      this.fallback === 'pseudo' ||
+      (this.fallback instanceof HTMLVideoElement &&
+        !!this.fallback.webkitEnterFullscreen &&
+        !!this.fallback.webkitSupportsFullscreen)
+    );
   }
 
-  get isAnyFullscreenAvailable(): boolean {
-    return this.isFullscreenAvailable || !!this.video?.webkitEnterFullscreen;
+  isFullscreen(): boolean {
+    return !!this.getCurrentElement();
   }
 
-  get isFullscreen(): boolean {
-    return !!this.currentElement;
+  isPseudoFullscreen(): boolean {
+    return this.isFullscreen() && !!this.exitPseudoFullscreen;
   }
 
-  get isPseudoFullscreen(): boolean {
-    return this.isFullscreen && !!this.exitPseudoFullscreen;
-  }
-
-  get currentElement(): Element | null {
+  getCurrentElement(): Element | null {
     if (fullscreen.isApiEnabled()) {
       if (fullscreen.getElement() === this.element) return this.element;
-    } else if (this.video?.webkitDisplayingFullscreen) {
-      return this.video;
     } else if (this.exitPseudoFullscreen) {
       return this.element;
+    } else if (
+      this.fallback instanceof HTMLVideoElement &&
+      this.fallback.webkitDisplayingFullscreen
+    ) {
+      return this.fallback;
     }
     return null;
   }
 
-  private changeHandler = (): void => {
-    this.emit(this.Events.Change, { isFullscreen: this.isFullscreen });
+  private nativeChangeHandler = (): void => {
+    this.emit(this.Events.Change, { fullscreen: this.isFullscreen(), type: 'native' });
   };
 
-  private errorHandler = (event: Event): void => {
-    this.emit(this.Events.Error, { error: event });
+  private nativeErrorHandler = (event: Event): void => {
+    this.emit(this.Events.Error, { error: event, type: 'native' });
   };
 
-  private beginFullscreenHandler = (): void => {
-    this.emit(this.Events.Change, { isFullscreen: true, video: true });
+  private videoBeginFullscreenHandler = (): void => {
+    this.emit(this.Events.Change, { fullscreen: true, type: 'video' });
   };
 
-  private endFullscreenHandler = (): void => {
-    this.emit(this.Events.Change, { isFullscreen: false, video: true });
+  private videoEndFullscreenHandler = (): void => {
+    this.emit(this.Events.Change, { fullscreen: false, type: 'video' });
   };
 
   request(options: FullscreenController.RequestOptions = {}): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (this.isFullscreen) {
+      if (this.isFullscreen()) {
         resolve();
         return;
       }
 
-      const { toggleNativeVideoSubtitles, pseudoFullscreenFallback, ...rest } = options;
-
       if (fullscreen.isApiEnabled()) {
-        fullscreen.request(this.element, rest).then(resolve, reject);
+        fullscreen.request(this.element, options).then(resolve, reject);
         return;
       }
 
-      const { video } = this;
-      if (video?.webkitEnterFullscreen) {
-        if (toggleNativeVideoSubtitles && video.textTracks.length > 0) {
+      if (this.fallback === 'pseudo') {
+        this.exitPseudoFullscreen = enterPseudoFullscreen(this.element as HTMLElement);
+        this.emit(this.Events.Change, { fullscreen: true, type: 'pseudo' });
+        resolve();
+        return;
+      }
+
+      const video = (this.fallback instanceof HTMLVideoElement && this.fallback) || undefined;
+      if (video?.webkitEnterFullscreen && video.webkitSupportsFullscreen) {
+        if (
+          hasIn(this.options, 'toggleNativeSubtitles') &&
+          this.options.toggleNativeSubtitles &&
+          video.textTracks.length > 0
+        ) {
           toggleNativeSubtitles(true, video.textTracks);
 
           const endFullscreenHandler = (): void => {
@@ -187,20 +207,13 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
         return;
       }
 
-      if (pseudoFullscreenFallback) {
-        this.exitPseudoFullscreen = enterPseudoFullscreen(this.element as HTMLElement);
-        this.emit(this.Events.Change, { isFullscreen: true, pseudo: true });
-        resolve();
-        return;
-      }
-
       reject(new fullscreen.UnavailableError());
     });
   }
 
   exit(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.isFullscreen) {
+      if (!this.isFullscreen()) {
         resolve();
         return;
       }
@@ -210,8 +223,16 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
         return;
       }
 
-      const { video } = this;
-      if (video?.webkitExitFullscreen) {
+      if (this.exitPseudoFullscreen) {
+        this.exitPseudoFullscreen();
+        this.exitPseudoFullscreen = undefined;
+        this.emit(this.Events.Change, { fullscreen: false, type: 'pseudo' });
+        resolve();
+        return;
+      }
+
+      const video = (this.fallback instanceof HTMLVideoElement && this.fallback) || undefined;
+      if (video?.webkitExitFullscreen && video.webkitSupportsFullscreen) {
         const endFullscreenHandler = (): void => {
           video.removeEventListener('webkitendfullscreen', endFullscreenHandler);
           resolve();
@@ -223,14 +244,6 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
         return;
       }
 
-      if (this.exitPseudoFullscreen) {
-        this.exitPseudoFullscreen();
-        this.exitPseudoFullscreen = undefined;
-        this.emit(this.Events.Change, { isFullscreen: false, pseudo: true });
-        resolve();
-        return;
-      }
-
       reject(new fullscreen.UnavailableError());
     });
   }
@@ -238,6 +251,20 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace FullscreenController {
+  export type FullscreenType = 'video' | 'pseudo' | 'native';
+
+  export type Options =
+    | {
+        readonly fallback?: ExtractStrict<FullscreenType, 'pseudo'> | undefined;
+      }
+    | {
+        readonly fallback: HTMLVideoElement;
+        /** Used for iOS. */
+        readonly toggleNativeSubtitles?: boolean | undefined;
+      };
+
+  export interface RequestOptions extends Readonly<FullscreenOptions> {}
+
   export enum Events {
     Change = 'change',
     Error = 'error',
@@ -246,20 +273,10 @@ export namespace FullscreenController {
   export type EventMap = DefineAll<
     Events,
     {
-      [Events.Change]: [
-        { isFullscreen: boolean; video?: boolean | undefined; pseudo?: boolean | undefined },
-      ];
-      [Events.Error]: [
-        { error: unknown; video?: boolean | undefined; pseudo?: boolean | undefined },
-      ];
+      [Events.Change]: [{ fullscreen: boolean; type: FullscreenType }];
+      [Events.Error]: [{ error: unknown; type: FullscreenType }];
     }
   >;
-
-  export interface RequestOptions extends Readonly<FullscreenOptions> {
-    /** Used for iOS */
-    readonly toggleNativeVideoSubtitles?: boolean | undefined;
-    readonly pseudoFullscreenFallback?: boolean | undefined;
-  }
 
   export type EventHandler<T extends Events = Events> = EventEmitter.EventListener<EventMap, T>;
 
