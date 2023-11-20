@@ -153,11 +153,36 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
     this.emit(this.Events.Error, { error: event, type: 'native' });
   };
 
-  private videoBeginFullscreenHandler = (): void => {
-    this.emit(this.Events.Change, { fullscreen: true, type: 'video' });
-  };
+  private videoBeginFullscreenHandler = (() => {
+    const handler = (): void => {
+      const video = this.fallback as HTMLVideoElement;
+
+      handler.controls = video.controls;
+      handler.nativeSubtitles =
+        hasIn(this.options, 'toggleNativeSubtitles') &&
+        this.options.toggleNativeSubtitles &&
+        video.textTracks.length > 0;
+
+      handler.nativeSubtitles && toggleNativeSubtitles(true, video.textTracks);
+
+      this.emit(this.Events.Change, { fullscreen: true, type: 'video' });
+    };
+
+    handler.nativeSubtitles = undefined as boolean | undefined;
+    handler.controls = undefined as boolean | undefined;
+
+    return handler;
+  })();
 
   private videoEndFullscreenHandler = (): void => {
+    const video = this.fallback as HTMLVideoElement;
+    // Fix swiped exit fullscreen
+    if (this.videoBeginFullscreenHandler.controls != null) {
+      video.controls = this.videoBeginFullscreenHandler.controls;
+    }
+    if (this.videoBeginFullscreenHandler.nativeSubtitles) {
+      toggleNativeSubtitles(false, video.textTracks);
+    }
     this.emit(this.Events.Change, { fullscreen: false, type: 'video' });
   };
 
@@ -182,20 +207,6 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
 
       const video = (this.fallback instanceof HTMLVideoElement && this.fallback) || undefined;
       if (video?.webkitEnterFullscreen && video.webkitSupportsFullscreen) {
-        if (
-          hasIn(this.options, 'toggleNativeSubtitles') &&
-          this.options.toggleNativeSubtitles &&
-          video.textTracks.length > 0
-        ) {
-          toggleNativeSubtitles(true, video.textTracks);
-
-          const endFullscreenHandler = (): void => {
-            video.removeEventListener('webkitendfullscreen', endFullscreenHandler);
-            toggleNativeSubtitles(false, video.textTracks);
-          };
-          video.addEventListener('webkitendfullscreen', endFullscreenHandler);
-        }
-
         const beginFullscreenHandler = (): void => {
           video.removeEventListener('webkitbeginfullscreen', beginFullscreenHandler);
           resolve();
