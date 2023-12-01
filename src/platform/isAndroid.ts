@@ -1,6 +1,8 @@
-import { getUAParserResult } from './getUAParserResult';
+import { getCachedUAInfo } from './ua';
 
 export function isAndroid(): boolean {
-  const os = getUAParserResult().os.name;
+  const uaInfo = getCachedUAInfo();
+  if (!uaInfo) return false;
+  const os = uaInfo.os.name;
   return os === 'Android' || os === 'Android-x86';
 }

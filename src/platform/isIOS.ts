@@ -1,11 +1,12 @@
-import { getUAParserResult } from './getUAParserResult';
+import { getCachedUAInfo } from './ua';
 import { isMobile } from './isMobile';
 
 export function isIOS(): boolean {
-  const parsed = getUAParserResult();
+  const uaInfo = getCachedUAInfo();
+  if (!uaInfo) return false;
   return (
-    parsed.os.name === 'iOS' ||
+    uaInfo.os.name === 'iOS' ||
     // WebView on iPad
-    (isMobile() && parsed.device.vendor === 'Apple')
+    (isMobile() && uaInfo.device.vendor === 'Apple')
   );
 }

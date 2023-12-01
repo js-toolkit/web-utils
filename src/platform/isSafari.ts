@@ -1,9 +1,11 @@
-import { getUAParserResult } from './getUAParserResult';
+import { getCachedUAInfo } from './ua';
 import { isIOS } from './isIOS';
 import { isMacOS } from './isMacOS';
 
 export function isSafari(): boolean {
-  const browser = getUAParserResult().browser.name;
+  const uaInfo = getCachedUAInfo();
+  if (!uaInfo) return false;
+  const browser = uaInfo.browser.name;
   return (
     browser === 'Safari' ||
     browser === 'Mobile Safari' /* ||
