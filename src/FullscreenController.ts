@@ -58,6 +58,10 @@ export function enterPseudoFullscreen(element: Element & ElementCSSInlineStyle):
 }
 
 export class FullscreenController extends EventEmitter<FullscreenController.EventMap> {
+  static isApiAvailable(): boolean {
+    return fullscreen.isApiEnabled();
+  }
+
   // eslint-disable-next-line class-methods-use-this
   get Events(): typeof FullscreenController.Events {
     return FullscreenController.Events;
@@ -113,7 +117,7 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
     });
   }
 
-  isFullscreenAvailable(): boolean {
+  isAvailable(): boolean {
     return (
       fullscreen.isApiEnabled() ||
       this.fallback === 'pseudo' ||
