@@ -14,7 +14,7 @@ declare global {
 const getPipUnavailableError = (): Error => new Error('PiP is not available');
 
 export class PipController extends EventEmitter<PipController.EventMap> {
-  private static get isApiEnabled(): boolean {
+  private static isApiEnabled(): boolean {
     return (
       !!HTMLVideoElement.prototype.requestPictureInPicture &&
       !!document.exitPictureInPicture &&
@@ -22,12 +22,15 @@ export class PipController extends EventEmitter<PipController.EventMap> {
     );
   }
 
-  static isAvailable(video: HTMLVideoElement): boolean {
+  private static isWebkitApiEnabled(): boolean {
     return (
-      (this.isApiEnabled && !video.disablePictureInPicture) ||
-      (!!video.webkitSupportsPresentationMode &&
-        video.webkitSupportsPresentationMode('picture-in-picture'))
+      !!HTMLVideoElement.prototype.webkitSupportsPresentationMode &&
+      HTMLVideoElement.prototype.webkitSupportsPresentationMode('picture-in-picture')
     );
+  }
+
+  static isAvailable(video: HTMLVideoElement): boolean {
+    return (this.isApiEnabled() && !video.disablePictureInPicture) || this.isWebkitApiEnabled();
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -51,7 +54,7 @@ export class PipController extends EventEmitter<PipController.EventMap> {
         this.emit(this.Events.Change, { isPip: false });
       };
 
-      if (PipController.isApiEnabled) {
+      if (PipController.isApiEnabled()) {
         this.listener.on('enterpictureinpicture', enterPipHandler);
         this.listener.on('leavepictureinpicture', exitPipHandler);
       } else {
@@ -82,7 +85,7 @@ export class PipController extends EventEmitter<PipController.EventMap> {
   }
 
   get isPip(): boolean {
-    return PipController.isApiEnabled
+    return PipController.isApiEnabled()
       ? document.pictureInPictureElement === this.listener.target
       : this.listener.target.webkitPresentationMode === 'picture-in-picture';
   }
@@ -101,24 +104,23 @@ export class PipController extends EventEmitter<PipController.EventMap> {
         return;
       }
 
-      if (PipController.isApiEnabled) {
-        this.listener.target.requestPictureInPicture().then(() => resolve(), reject);
-        return;
-      }
-
       if (!PipController.isAvailable(this.listener.target)) {
         throw getPipUnavailableError();
       }
 
-      this.listener.once(
-        'webkitpresentationmodechanged',
-        () => {
-          if (this.listener.target.webkitPresentationMode === 'picture-in-picture') resolve();
-          else reject(new Error('Something went wrong.'));
-        },
-        true
-      );
-      this.listener.target.webkitSetPresentationMode('picture-in-picture');
+      if (PipController.isApiEnabled()) {
+        this.listener.target.requestPictureInPicture().then(() => resolve(), reject);
+      } else {
+        this.listener.once(
+          'webkitpresentationmodechanged',
+          () => {
+            if (this.listener.target.webkitPresentationMode === 'picture-in-picture') resolve();
+            else reject(new Error('Something went wrong.'));
+          },
+          true
+        );
+        this.listener.target.webkitSetPresentationMode('picture-in-picture');
+      }
     });
   }
 
@@ -129,24 +131,23 @@ export class PipController extends EventEmitter<PipController.EventMap> {
         return;
       }
 
-      if (PipController.isApiEnabled) {
-        document.exitPictureInPicture().then(resolve, reject);
-        return;
-      }
-
       if (!PipController.isAvailable(this.listener.target)) {
         throw getPipUnavailableError();
       }
 
-      this.listener.once(
-        'webkitpresentationmodechanged',
-        () => {
-          if (this.listener.target.webkitPresentationMode !== 'picture-in-picture') resolve();
-          else reject(new Error('Something went wrong.'));
-        },
-        true
-      );
-      this.listener.target.webkitSetPresentationMode('inline');
+      if (PipController.isApiEnabled()) {
+        document.exitPictureInPicture().then(resolve, reject);
+      } else {
+        this.listener.once(
+          'webkitpresentationmodechanged',
+          () => {
+            if (this.listener.target.webkitPresentationMode !== 'picture-in-picture') resolve();
+            else reject(new Error('Something went wrong.'));
+          },
+          true
+        );
+        this.listener.target.webkitSetPresentationMode('inline');
+      }
     });
   }
 }
