@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import isEmptyObject from '@js-toolkit/utils/isEmptyObject';
+import { isEmptyObject } from '@js-toolkit/utils/isEmptyObject';
 
 export type DomEventTarget = EventTarget;
 
@@ -39,16 +39,16 @@ export type GetDomEventListener<E, EM extends AnyObject> = (
 export type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
   ? GetDomEventType<T>
   : T extends EventEmitterLike
-  ? T['on'] extends { (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown }
-    ? K
-    : string
-  : T extends EventTargetLike
-  ? T['addEventListener'] extends {
-      (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown;
-    }
-    ? K
-    : string
-  : string;
+    ? T['on'] extends { (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown }
+      ? K
+      : string
+    : T extends EventTargetLike
+      ? T['addEventListener'] extends {
+          (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown;
+        }
+        ? K
+        : string
+      : string;
 
 export type GetEventListener<
   T extends EmitterTarget,
@@ -63,8 +63,8 @@ export type GetEventListener<
         T extends EventTargetLike
           ? T['addEventListener']
           : T extends EventEmitterLike
-          ? T['on']
-          : AnyFunction
+            ? T['on']
+            : AnyFunction
       >['1'],
       (event: E extends keyof EM ? EM[E] : unknown, ...rest: any[]) => unknown
     >;
@@ -72,38 +72,38 @@ export type GetEventListener<
 export type GetEventMap<T> = T extends Document
   ? DocumentEventMap
   : T extends HTMLBodyElement
-  ? HTMLBodyElementEventMap
-  : T extends HTMLVideoElement
-  ? HTMLVideoElementEventMap
-  : T extends HTMLMediaElement
-  ? HTMLMediaElementEventMap
-  : T extends TextTrackList
-  ? TextTrackListEventMap
-  : T extends HTMLElement
-  ? HTMLElementEventMap
-  : T extends Element
-  ? ElementEventMap
-  : T extends Animation
-  ? AnimationEventMap
-  : T extends AbortSignal
-  ? AbortSignalEventMap
-  : T extends BroadcastChannel
-  ? BroadcastChannelEventMap
-  : T extends WebSocket
-  ? WebSocketEventMap
-  : T extends MediaStreamTrack
-  ? MediaStreamTrackEventMap
-  : T extends MediaStream
-  ? MediaStreamEventMap
-  : T extends EventSource
-  ? EventSourceEventMap
-  : T extends SourceBuffer
-  ? SourceBufferEventMap
-  : T extends SourceBufferList
-  ? SourceBufferListEventMap
-  : T extends { EventMap: Record<string, any> }
-  ? T['EventMap']
-  : EmptyObject;
+    ? HTMLBodyElementEventMap
+    : T extends HTMLVideoElement
+      ? HTMLVideoElementEventMap
+      : T extends HTMLMediaElement
+        ? HTMLMediaElementEventMap
+        : T extends TextTrackList
+          ? TextTrackListEventMap
+          : T extends HTMLElement
+            ? HTMLElementEventMap
+            : T extends Element
+              ? ElementEventMap
+              : T extends Animation
+                ? AnimationEventMap
+                : T extends AbortSignal
+                  ? AbortSignalEventMap
+                  : T extends BroadcastChannel
+                    ? BroadcastChannelEventMap
+                    : T extends WebSocket
+                      ? WebSocketEventMap
+                      : T extends MediaStreamTrack
+                        ? MediaStreamTrackEventMap
+                        : T extends MediaStream
+                          ? MediaStreamEventMap
+                          : T extends EventSource
+                            ? EventSourceEventMap
+                            : T extends SourceBuffer
+                              ? SourceBufferEventMap
+                              : T extends SourceBufferList
+                                ? SourceBufferListEventMap
+                                : T extends { EventMap: Record<string, any> }
+                                  ? T['EventMap']
+                                  : EmptyObject;
 
 export function isEventTargetLike(target: EmitterTarget): target is EventTargetLike {
   return (

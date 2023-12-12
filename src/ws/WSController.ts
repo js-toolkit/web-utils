@@ -5,11 +5,12 @@ import ReconnectingWebSocket, {
   type UrlProvider,
 } from 'reconnecting-websocket';
 import type { WebSocketEventMap } from 'reconnecting-websocket/dist/events';
-import DataEventEmitter, {
+import {
+  DataEventEmitter,
   type DataEventListener,
   type DataEventMap,
 } from '@js-toolkit/utils/DataEventEmitter';
-import delayed from '@js-toolkit/utils/delayed';
+import { delayed } from '@js-toolkit/utils/delayed';
 import { EventEmitterListener } from '../EventEmitterListener';
 
 function getNotConnectedError(): Error {
