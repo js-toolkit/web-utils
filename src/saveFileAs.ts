@@ -18,8 +18,6 @@ export function saveFileAs(
   link.click();
 }
 
-export default saveFileAs;
-
 // if (document.createEvent) {
 //   const event = document.createEvent('MouseEvents');
 //   event.initEvent('click', true, true);

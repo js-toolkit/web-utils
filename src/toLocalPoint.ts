@@ -11,5 +11,3 @@ export function toLocalPoint(
     y: coord.clientY - rect.top,
   };
 }
-
-export default toLocalPoint;

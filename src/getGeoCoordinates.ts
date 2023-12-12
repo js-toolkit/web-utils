@@ -11,5 +11,3 @@ export function getGeoCoordinates({
     );
   });
 }
-
-export default getGeoCoordinates;

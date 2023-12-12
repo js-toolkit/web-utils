@@ -37,5 +37,3 @@ export function createLoop(): Loop {
     isActive: (): boolean => active,
   };
 }
-
-export default createLoop;

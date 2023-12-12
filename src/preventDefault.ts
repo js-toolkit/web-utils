@@ -8,5 +8,3 @@ export function preventDefault<
     event.preventDefault();
   }
 }
-
-export default preventDefault;

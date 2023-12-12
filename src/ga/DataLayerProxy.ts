@@ -1,4 +1,5 @@
-import getHandler, {
+import {
+  getHandler,
   type GAEventData,
   type GADataHandler,
   type GAEventDataTransformerMap,
@@ -19,5 +20,3 @@ export class DataLayerProxy<D extends GAEventData> {
     this.handler(data);
   }
 }
-
-export default DataLayerProxy;

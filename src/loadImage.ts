@@ -30,5 +30,3 @@ export function loadImage(
     }
   });
 }
-
-export default loadImage;

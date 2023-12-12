@@ -21,5 +21,3 @@ export function getGeoLocality({ longitude, latitude, lang }: GeoLocalityOptions
       return (address.PlaceName || address.LongLabel || address.ShortLabel || '') as string;
     });
 }
-
-export default getGeoLocality;

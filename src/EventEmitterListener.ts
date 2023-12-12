@@ -429,8 +429,6 @@ export class EventEmitterListener<
   }
 }
 
-export default EventEmitterListener;
-
 // new EventEmitterListener({} as HTMLVideoElement).on('encrypted0', (e) => e, {});
 // new EventEmitterListener({} as HTMLVideoElement).removeAllListeners('sdff');
 // new EventEmitterListener({} as EventEmitterTarget).on('encrypted', (e) => e, {});

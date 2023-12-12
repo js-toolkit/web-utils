@@ -8,5 +8,3 @@ export function blobToDataUrl(blob: Blob): Promise<string> {
     reader.readAsDataURL(blob);
   });
 }
-
-export default blobToDataUrl;

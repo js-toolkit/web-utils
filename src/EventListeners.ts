@@ -63,5 +63,3 @@ export class EventListeners {
     return this;
   }
 }
-
-export default EventListeners;

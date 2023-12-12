@@ -16,5 +16,3 @@ export function getAspectRatio(width: number, height: number): AspectRatio {
   const [rwidth, rheight] = farey(ratio, 50);
   return { width: rwidth, height: rheight, ratio };
 }
-
-export default getAspectRatio;

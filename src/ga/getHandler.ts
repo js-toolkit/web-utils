@@ -1,4 +1,4 @@
-import iframeMessenger, { type GAEventMessage } from './iframeMessenger';
+import { iframeMessenger, type GAEventMessage } from './iframeMessenger';
 import './types';
 
 export interface GAEventData {
@@ -133,5 +133,3 @@ export function getHandler<D extends GAEventData, L extends GALibType>(
     }
   }
 }
-
-export default getHandler;

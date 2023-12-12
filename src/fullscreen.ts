@@ -188,5 +188,3 @@ export namespace fullscreen {
     on('error', listener);
   }
 }
-
-export default fullscreen;

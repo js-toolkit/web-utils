@@ -37,8 +37,8 @@ export function getSecondsCounter({ onChange }: SecondsCounterOptions = {}): Sec
         typeof time === 'number'
           ? time
           : 'currentTime' in time
-          ? time.currentTime
-          : time.data.currentTime;
+            ? time.currentTime
+            : time.data.currentTime;
       if (time == null) return;
       // Add new seconds to list
       const secs = toInt(currentTime);
@@ -63,5 +63,3 @@ export function getSecondsCounter({ onChange }: SecondsCounterOptions = {}): Sec
     },
   };
 }
-
-export default getSecondsCounter;

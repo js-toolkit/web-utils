@@ -10,5 +10,3 @@ export function onDOMReady(callback: VoidFunction): VoidFunction {
     document.removeEventListener('DOMContentLoaded', callback);
   };
 }
-
-export default onDOMReady;

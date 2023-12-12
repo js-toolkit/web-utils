@@ -20,5 +20,3 @@ export function getInnerXDimensions(
 
   return { width: innerWidth, left, right };
 }
-
-export default getInnerXDimensions;

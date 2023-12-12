@@ -14,5 +14,3 @@ export function getBrowserLanguage(): string | undefined {
   }
   return undefined;
 }
-
-export default getBrowserLanguage;

@@ -20,5 +20,3 @@ export function getInnerYDimensions(
 
   return { height: innerHeight, top, bottom };
 }
-
-export default getInnerYDimensions;

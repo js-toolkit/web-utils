@@ -1,4 +1,4 @@
-import onDOMReady from './onDOMReady';
+import { onDOMReady } from './onDOMReady';
 
 export interface LoadScriptOptions
   extends Partial<Pick<HTMLScriptElement, 'id' | 'async' | 'defer'>> {

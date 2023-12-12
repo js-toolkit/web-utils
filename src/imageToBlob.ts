@@ -18,5 +18,3 @@ export function imageToBlob(image: HTMLImageElement): Promise<Blob> {
     });
   });
 }
-
-export default imageToBlob;
