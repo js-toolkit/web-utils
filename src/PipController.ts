@@ -22,15 +22,18 @@ export class PipController extends EventEmitter<PipController.EventMap> {
     );
   }
 
-  private static isWebkitApiEnabled(): boolean {
+  // Only able to call on instance
+  private static isWebkitApiEnabled(media: HTMLVideoElement): boolean {
     return (
-      !!HTMLVideoElement.prototype.webkitSupportsPresentationMode &&
-      HTMLVideoElement.prototype.webkitSupportsPresentationMode('picture-in-picture')
+      !!media.webkitSupportsPresentationMode &&
+      media.webkitSupportsPresentationMode('picture-in-picture')
     );
   }
 
   static isAvailable(video: HTMLVideoElement): boolean {
-    return (this.isApiEnabled() && !video.disablePictureInPicture) || this.isWebkitApiEnabled();
+    return (
+      (this.isApiEnabled() && !video.disablePictureInPicture) || this.isWebkitApiEnabled(video)
+    );
   }
 
   // eslint-disable-next-line class-methods-use-this
