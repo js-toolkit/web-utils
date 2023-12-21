@@ -50,11 +50,11 @@ export class PipController extends EventEmitter<PipController.EventMap> {
 
     if (PipController.isAvailable(video)) {
       const enterPipHandler = (): void => {
-        this.emit(this.Events.Change, { isPip: true });
+        this.emit(this.Events.Change, { pip: true });
       };
 
       const exitPipHandler = (): void => {
-        this.emit(this.Events.Change, { isPip: false });
+        this.emit(this.Events.Change, { pip: false });
       };
 
       if (PipController.isApiEnabled()) {
@@ -87,22 +87,19 @@ export class PipController extends EventEmitter<PipController.EventMap> {
     });
   }
 
-  get isPip(): boolean {
+  isPip(): boolean {
     return PipController.isApiEnabled()
       ? document.pictureInPictureElement === this.listener.target
       : this.listener.target.webkitPresentationMode === 'picture-in-picture';
   }
 
-  get currentElement(): HTMLVideoElement | null {
-    if (this.isPip) {
-      return this.listener.target;
-    }
-    return null;
+  getCurrentElement(): HTMLVideoElement | null {
+    return this.isPip() ? this.listener.target : null;
   }
 
   request(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (this.isPip) {
+      if (this.isPip()) {
         resolve();
         return;
       }
@@ -129,7 +126,7 @@ export class PipController extends EventEmitter<PipController.EventMap> {
 
   exit(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.isPip) {
+      if (!this.isPip()) {
         resolve();
         return;
       }
@@ -162,6 +159,6 @@ export namespace PipController {
   }
 
   export type EventMap = {
-    [Events.Change]: [{ isPip: boolean }];
+    [Events.Change]: [{ pip: boolean }];
   };
 }
