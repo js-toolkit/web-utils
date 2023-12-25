@@ -28,6 +28,10 @@ export class EventListeners {
     Map<string, EventEmitterListener<any, any>>
   >();
 
+  getScopes(): IterableIterator<EmitterTarget> {
+    return this.listeners.keys();
+  }
+
   scope<T extends EmitterTarget, M extends AnyObject = GetEventMap<T>>(
     target: T,
     scope?: string
