@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 
+import type { BaseMediaController } from './BaseMediaController';
 import { resetMedia } from './resetMedia';
 
 export function attachMediaStream(media: HTMLMediaElement, stream: MediaStream | undefined): void {
@@ -45,12 +46,12 @@ export function addTrack(
   );
 }
 
-export class MediaStreamController {
+export class MediaStreamController implements BaseMediaController {
   private media: HTMLMediaElement | undefined;
 
   constructor(private mediaStream: MediaStream) {}
 
-  attachMedia(media: HTMLMediaElement): void {
+  attach(media: HTMLMediaElement): void {
     // if (this.media !== media) {
     //   this.detachMedia();
     // }
@@ -58,7 +59,7 @@ export class MediaStreamController {
     attachMediaStream(media, this.mediaStream);
   }
 
-  detachMedia(): void {
+  detach(): void {
     if (this.media) {
       const { media } = this;
       this.media = undefined;
@@ -71,7 +72,7 @@ export class MediaStreamController {
     const { media } = this;
     // this.detachMedia();
     this.mediaStream = stream;
-    media && this.attachMedia(media);
+    media && this.attach(media);
   }
 
   removeTrack(track: MediaStreamTrack): void {
@@ -93,7 +94,7 @@ export class MediaStreamController {
   }
 
   destroy(): void {
-    this.detachMedia();
+    this.detach();
     this.reset();
   }
 }
