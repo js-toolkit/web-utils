@@ -1,83 +1,90 @@
 import { iframeMessenger, type GAEventMessage } from './iframeMessenger';
-import './types';
+import type { GTMEventData } from './types';
 
 export interface GAEventData {
-  eventCategory: string;
-  action: string;
-  label: string | undefined;
-  trackingId: string | undefined;
+  readonly eventCategory: string;
+  readonly action: string;
+  readonly label: string | undefined;
+  /**
+   * Идентификатор потока данных
+   * (https://support.google.com/analytics/answer/12270356?hl=ru).
+   *
+   * Можно не указывать, если:
+   * - используется Google Tag Manager (gtm.js) с настроенным тегом, в котором самостоятельно указан идентификатор потока данных.
+   * - используется Google Tag (gtag.js) с указанным идентификатором потока данных по умолчанию.
+   */
+  readonly measurementId: string | undefined;
 }
 
 export interface GADataHandler<D extends GAEventData> {
   (data: D): void;
 }
 
-type GALibType = 'gtm' | 'gtag' | 'ga' | 'iframe' | 'auto';
+type GALibType = 'gtm' | 'gtag' | /* 'ga' | */ 'iframe' | 'auto';
 
 export type GAEventDataTransformer<
   D extends GAEventData,
   L extends Extract<GALibType, 'gtm' | 'iframe'>,
 > = (data: D) => {
-  gtm: GTMEventData;
-  // gtag: GTagEventData;
-  // ga: GAObjectEventData;
-  iframe: GAEventMessage<string, D>;
+  readonly gtm: GTMEventData;
+  // readonly gtag: GTagEventData;
+  // readonly ga: GAObjectEventData;
+  readonly iframe: GAEventMessage<string, D>;
 }[L];
 
 /** Google Tag Manager handler */
 function gtmHandler<D extends GAEventData>(
   gtm: NonNullable<Window['dataLayer']>,
-  transformer: GAEventDataTransformer<D, 'gtm'>,
+  transform: GAEventDataTransformer<D, 'gtm'>,
   data: D
 ): void {
-  gtm.push(transformer(data));
+  gtm.push(transform(data));
 }
 
-/** Universal Analytics with gtag handler */
+/** Google tag handler */
 function gtagHandler<D extends GAEventData>(gtag: NonNullable<Window['gtag']>, data: D): void {
-  const { action, eventCategory, trackingId, label } = data;
-
+  const { action, eventCategory, measurementId, label } = data;
   gtag('event', action, {
-    send_to: trackingId,
+    send_to: measurementId,
     event_category: eventCategory,
     event_label: label,
     value: undefined,
   });
 }
 
-/** Universal Analytics without gtag handler */
-function gaHandler<D extends GAEventData>(
-  gaObjectName: string,
-  trackerCache: Record<string, GATracker>,
-  data: D
-): void {
-  const ga = window[gaObjectName as 'ga'];
-  if (!ga) return;
+// /** Universal Analytics without gtag handler */
+// function gaHandler<D extends GAEventData>(
+//   gaObjectName: string,
+//   trackerCache: Record<string, GATracker>,
+//   data: D
+// ): void {
+//   const ga = window[gaObjectName as 'ga'];
+//   if (!ga) return;
 
-  const { action, eventCategory, trackingId, label } = data;
-  const gaData: GAObjectEventData = {
-    hitType: 'event',
-    eventCategory,
-    eventAction: action,
-    eventLabel: label,
-    eventValue: undefined,
-  };
+//   const { action, eventCategory, measurementId, label } = data;
+//   const gaData: GAObjectEventData = {
+//     hitType: 'event',
+//     eventCategory,
+//     eventAction: action,
+//     eventLabel: label,
+//     eventValue: undefined,
+//   };
 
-  if (trackingId) {
-    const send = (): void => {
-      const tracker =
-        trackerCache[trackingId] ?? ga.getAll().find((t) => t.get('trackingId') === trackingId);
-      if (!tracker) return;
-      // eslint-disable-next-line no-param-reassign
-      trackerCache[trackingId] = tracker;
-      tracker.send(gaData);
-    };
-    if (ga.loaded) send();
-    else ga(send);
-  } else {
-    ga('send', gaData);
-  }
-}
+//   if (measurementId) {
+//     const send = (): void => {
+//       const tracker =
+//         trackerCache[measurementId] ?? ga.getAll().find((t) => t.get('measurementId') === measurementId);
+//       if (!tracker) return;
+//       // eslint-disable-next-line no-param-reassign
+//       trackerCache[measurementId] = tracker;
+//       tracker.send(gaData);
+//     };
+//     if (ga.loaded) send();
+//     else ga(send);
+//   } else {
+//     ga('send', gaData);
+//   }
+// }
 
 export type GAEventDataTransformerMap<
   D extends GAEventData,
@@ -92,11 +99,11 @@ export function getHandler<D extends GAEventData, L extends GALibType>(
     case 'auto': {
       if (window.gtag) return getHandler('gtag', undefined);
 
-      if (
-        (window.GoogleAnalyticsObject && window[window.GoogleAnalyticsObject as 'ga']) ||
-        window.ga
-      )
-        return getHandler('ga', undefined);
+      // if (
+      //   (window.GoogleAnalyticsObject && window[window.GoogleAnalyticsObject as 'ga']) ||
+      //   window.ga
+      // )
+      //   return getHandler('ga', undefined);
 
       if (window.dataLayer)
         return getHandler('gtm', transformers as GAEventDataTransformerMap<D, 'gtm'>);
@@ -123,11 +130,11 @@ export function getHandler<D extends GAEventData, L extends GALibType>(
     case 'gtag': {
       return window.gtag ? gtagHandler.bind(undefined, window.gtag) : undefined;
     }
-    case 'ga': {
-      const propName = window.GoogleAnalyticsObject || 'ga';
-      const obj = window[propName as 'ga'];
-      return obj ? gaHandler.bind(undefined, propName, {}) : undefined;
-    }
+    // case 'ga': {
+    //   const propName = window.GoogleAnalyticsObject || 'ga';
+    //   const obj = window[propName as 'ga'];
+    //   return obj ? gaHandler.bind(undefined, propName, {}) : undefined;
+    // }
     default: {
       throw new Error(`Unknown GA lib type '${gaLib as string}'.`);
     }

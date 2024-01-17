@@ -12,7 +12,7 @@ export class DataLayerProxy<D extends GAEventData> {
 
   constructor(transformers: GAEventDataTransformerMap<D>) {
     const handler = getHandler('auto', transformers);
-    if (!handler) throw new Error('Data layer for Google Analytics is undefined.');
+    if (!handler) throw new Error('Google Analytics handler is not created.');
     this.handler = handler;
   }
 
