@@ -1,10 +1,10 @@
-import { getCachedUAInfo } from './ua';
+import { getCachedPlatformInfo } from './getPlatformInfo';
 import { isMobile } from './isMobile';
 
 export function isMacOS(): boolean {
-  const uaInfo = getCachedUAInfo();
-  if (!uaInfo) return false;
-  const osName = uaInfo.os.name;
+  const platformInfo = getCachedPlatformInfo();
+  if (!platformInfo) return false;
+  const osName = platformInfo.os.name;
   return (
     (osName === 'Mac OS' ||
       // 2.0+

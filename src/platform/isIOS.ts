@@ -1,12 +1,12 @@
-import { getCachedUAInfo } from './ua';
+import { getCachedPlatformInfo } from './getPlatformInfo';
 import { isMobile } from './isMobile';
 
 export function isIOS(): boolean {
-  const uaInfo = getCachedUAInfo();
-  if (!uaInfo) return false;
+  const platformInfo = getCachedPlatformInfo();
+  if (!platformInfo) return false;
   return (
-    uaInfo.os.name === 'iOS' ||
+    platformInfo.os.name === 'iOS' ||
     // WebView on iPad
-    (isMobile() && uaInfo.device.vendor === 'Apple')
+    (isMobile() && platformInfo.device.vendor === 'Apple')
   );
 }

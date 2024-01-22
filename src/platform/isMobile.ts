@@ -1,15 +1,15 @@
-import { getCachedUAInfo } from './ua';
+import { getCachedPlatformInfo } from './getPlatformInfo';
 
 export function isMobile(): boolean {
-  const uaInfo = getCachedUAInfo();
-  if (!uaInfo) return false;
-  const deviceType = uaInfo.device.type;
+  const platformInfo = getCachedPlatformInfo();
+  if (!platformInfo) return false;
+  const deviceType = platformInfo.device.type;
   if (
     deviceType === 'mobile' ||
     deviceType === 'tablet' ||
     // WKWebView in desktop mode on iPad
     (!deviceType &&
-      uaInfo.device.vendor === 'Apple' &&
+      platformInfo.device.vendor === 'Apple' &&
       navigator.maxTouchPoints &&
       navigator.maxTouchPoints > 2)
   ) {

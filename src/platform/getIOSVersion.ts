@@ -1,4 +1,4 @@
-import { getCachedUAInfo } from './ua';
+import { getCachedPlatformInfo } from './getPlatformInfo';
 import { isIOS } from './isIOS';
 
 // class Semver {
@@ -24,9 +24,9 @@ let memo: Semver | null | undefined;
 
 export function getIOSVersion(): Semver | undefined {
   if (memo === undefined) {
-    const uaInfo = getCachedUAInfo();
-    if (!uaInfo) return undefined;
-    const { os } = uaInfo;
+    const platformInfo = getCachedPlatformInfo();
+    if (!platformInfo) return undefined;
+    const { os } = platformInfo;
     const version = isIOS() && os.version && /(\d+)\.(\d+)(?:\.(\d+))?/.exec(os.version);
     if (version) {
       // memo = new Semver(

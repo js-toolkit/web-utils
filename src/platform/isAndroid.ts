@@ -1,8 +1,8 @@
-import { getCachedUAInfo } from './ua';
+import { getCachedPlatformInfo } from './getPlatformInfo';
 
 export function isAndroid(): boolean {
-  const uaInfo = getCachedUAInfo();
-  if (!uaInfo) return false;
-  const os = uaInfo.os.name;
+  const platformInfo = getCachedPlatformInfo();
+  if (!platformInfo) return false;
+  const os = platformInfo.os.name;
   return os === 'Android' || os === 'Android-x86';
 }

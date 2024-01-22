@@ -1,13 +1,16 @@
 import { UAParser } from 'ua-parser-js';
+import 'ua-parser-js/src/main/ua-parser';
 
-type UAInfo = DeepReadonly<OmitStrict<UAParser.IResult, 'withClientHints' | 'withFeatureCheck'>> & {
+type PlatformInfo = DeepReadonly<
+  OmitStrict<UAParser.IResult, 'withClientHints' | 'withFeatureCheck'>
+> & {
   toStringObject(): Record<Keys<ExcludeKeysOfType<UAParser.IResult, AnyFunction>>, string>;
 };
 
-let result: UAInfo | undefined;
+let result: PlatformInfo | undefined;
 let promise: Promise<UAParser.IResult> | undefined;
 
-export async function getUAInfo(): Promise<UAInfo> {
+export async function getPlatformInfo(): Promise<PlatformInfo> {
   if (result == null) {
     promise =
       promise ??
@@ -17,7 +20,7 @@ export async function getUAInfo(): Promise<UAInfo> {
       );
     result = {
       ...(await promise),
-      toStringObject(this: UAInfo) {
+      toStringObject(this: PlatformInfo) {
         return Object.getOwnPropertyNames(this).reduce(
           (acc, key) => {
             const prop = key as keyof typeof this;
@@ -26,7 +29,7 @@ export async function getUAInfo(): Promise<UAInfo> {
             }
             return acc;
           },
-          {} as Record<keyof UAInfo, string>
+          {} as Record<keyof PlatformInfo, string>
         );
       },
     };
@@ -35,10 +38,10 @@ export async function getUAInfo(): Promise<UAInfo> {
   return result;
 }
 
-export function getCachedUAInfo(): UAInfo | undefined {
+export function getCachedPlatformInfo(): PlatformInfo | undefined {
   if (result == null) {
-    console.warn('UAInfo is not ready yet.');
-    void getUAInfo();
+    console.warn('PlatformInfo is not ready yet.');
+    void getPlatformInfo();
   }
   return result;
 }
