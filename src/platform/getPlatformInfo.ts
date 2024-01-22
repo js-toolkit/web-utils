@@ -1,5 +1,6 @@
+/// <reference types="ua-parser-js/src/main/ua-parser" />
+
 import { UAParser } from 'ua-parser-js';
-import 'ua-parser-js/src/main/ua-parser';
 
 type PlatformInfo = DeepReadonly<
   OmitStrict<UAParser.IResult, 'withClientHints' | 'withFeatureCheck'>
