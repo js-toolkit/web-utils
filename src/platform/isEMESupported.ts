@@ -1,3 +1,4 @@
+/** Encrypted Media Extensions */
 export function isEMESupported(): boolean {
   return (
     !!window.MediaKeys &&
