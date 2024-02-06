@@ -1,6 +1,6 @@
 declare global {
   interface TextTrack {
-    ignoreChange?: boolean | undefined;
+    native?: boolean | undefined;
   }
 }
 
@@ -9,9 +9,9 @@ export function toggleNativeSubtitles(native: boolean, textTracks: TextTrackList
   for (let i = 0; i < textTracks.length; i += 1) {
     const track = textTracks[i];
     if (native) {
-      track.ignoreChange = true;
+      track.native = true;
     } else {
-      delete track.ignoreChange;
+      delete track.native;
     }
     if (native && track.mode === 'hidden') {
       track.mode = 'showing';
