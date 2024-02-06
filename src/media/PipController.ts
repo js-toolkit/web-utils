@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
-import { EventEmitterListener } from './EventEmitterListener';
+import { EventEmitterListener } from '../EventEmitterListener';
 
 declare global {
   type VideoPresentationMode = 'inline' | 'picture-in-picture' | 'fullscreen';
@@ -43,17 +43,22 @@ export class PipController extends EventEmitter<PipController.EventMap> {
 
   private readonly listener: EventEmitterListener<HTMLVideoElement>;
 
-  constructor(video: HTMLVideoElement) {
+  constructor(
+    video: HTMLVideoElement
+    // private readonly options: PipController.Options = {}
+  ) {
     super();
 
     this.listener = new EventEmitterListener(video);
 
     if (PipController.isAvailable(video)) {
       const enterPipHandler = (): void => {
+        // this.options.toggleNativeSubtitles && toggleNativeSubtitles(true, video.textTracks);
         this.emit(this.Events.Change, { pip: true });
       };
 
       const exitPipHandler = (): void => {
+        // this.options.toggleNativeSubtitles && toggleNativeSubtitles(false, video.textTracks);
         this.emit(this.Events.Change, { pip: false });
       };
 
@@ -154,6 +159,10 @@ export class PipController extends EventEmitter<PipController.EventMap> {
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace PipController {
+  // export interface Options {
+  //   readonly toggleNativeSubtitles?: boolean | undefined;
+  // }
+
   export enum Events {
     Change = 'change',
   }
