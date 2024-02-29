@@ -1,13 +1,13 @@
 import { getMediaSource } from '../media/getMediaSource';
 
-declare global {
-  interface Window {
-    WebKitSourceBuffer?: typeof SourceBuffer;
-  }
-}
+// declare global {
+//   interface Window {
+//     WebKitSourceBuffer?: typeof SourceBuffer;
+//   }
+// }
 
 function getSourceBuffer(): typeof SourceBuffer | undefined {
-  return window.SourceBuffer || window.WebKitSourceBuffer;
+  return window.SourceBuffer; // || window.WebKitSourceBuffer;
 }
 
 /** Media Source Extensions */

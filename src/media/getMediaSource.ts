@@ -21,11 +21,19 @@ declare global {
   }
 
   interface Window {
-    WebKitMediaSource?: typeof MediaSource;
-    ManagedMediaSource?: ManagedMediaSource;
+    // WebKitMediaSource?: typeof MediaSource;
+    ManagedMediaSource?: ManagedMediaSource & typeof MediaSource;
   }
 }
 
-export function getMediaSource(): typeof MediaSource | undefined {
-  return window.MediaSource || window.WebKitMediaSource;
+export function getMediaSource(
+  managedMediaSource?: 'prefer' | 'maybe' | undefined
+): typeof MediaSource | undefined {
+  if (
+    (managedMediaSource === 'prefer' && !!window.ManagedMediaSource) ||
+    (managedMediaSource === 'maybe' && !!window.ManagedMediaSource && !window.MediaSource)
+  ) {
+    return window.ManagedMediaSource;
+  }
+  return window.MediaSource; // || window.WebKitMediaSource;
 }
