@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-namespace */
-/* eslint-disable no-param-reassign */
+
 import { DataEventEmitter } from '@js-toolkit/utils/DataEventEmitter';
 import { ErrorCompat } from '@js-toolkit/utils/ErrorCompat';
 import { onPageReady } from '../onPageReady';
+import { isLocalhost } from './utils';
 
 /*
  * https://web.dev/articles/service-workers-registration?hl=ru
@@ -54,50 +56,58 @@ export class ServiceWorkerInstaller extends DataEventEmitter<
 
     const { deffered, ...swOptions } = options ?? {};
 
-    const register = (): void => {
-      navigator.serviceWorker
-        .register(swUrl, swOptions)
-        .then((registration) => {
-          this.registration = registration;
-          this.emit('registered', { registration });
+    const register = async (): Promise<void> => {
+      try {
+        if (isLocalhost()) {
+          // This is running on localhost. Let's check if a service worker still exists or not.
+          const response = await fetch(swUrl);
+          if (!response.ok) {
+            throw new Error(`No service worker found at '${response.url}'.`, {
+              cause: `Response: ${response.status} ${response.statusText}`,
+            });
+          }
+        }
 
-          // https://whatwebcando.today/articles/handling-service-worker-updates/
-          registration.onupdatefound = () => {
-            // At this point we only know the browser detected the Service Worker file change.
-            //
-            // Wait until the new instance is ready for activation (its state is installed).
-            const sw = registration.installing;
-            if (sw == null) {
-              return;
-            }
-            sw.onstatechange = () => {
-              if (sw.state === 'installed') {
-                if (navigator.serviceWorker.controller) {
-                  // At this point, the updated precached content has been fetched,
-                  // but the previous service worker will still serve the older content (until all client tabs are closed).
-                  this.emit('updatePending', { registration });
-                } else {
-                  // It's the first install.
-                  // At this point, everything has been precached.
-                  // It's the perfect time to display a "Content is cached for offline use." message.
-                  this.emit('updated', { registration });
-                }
+        const registration = await navigator.serviceWorker.register(swUrl, swOptions);
+        this.registration = registration;
+        this.emit('registered', { registration });
+
+        // https://whatwebcando.today/articles/handling-service-worker-updates/
+        registration.onupdatefound = () => {
+          // At this point we only know the browser detected the Service Worker file change.
+          //
+          // Wait until the new instance is ready for activation (its state is installed).
+          const sw = registration.installing;
+          if (sw == null) {
+            return;
+          }
+          sw.onstatechange = () => {
+            if (sw.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                // At this point, the updated precached content has been fetched,
+                // but the previous service worker will still serve the older content (until all client tabs are closed).
+                this.emit('updatePending', { registration });
+              } else {
+                // It's the first install.
+                // At this point, everything has been precached.
+                // It's the perfect time to display a "Content is cached for offline use." message.
+                this.emit('updated', { registration });
               }
-            };
-            sw.onerror = (error) => {
-              // this.options.logger.error(this.logPrefix, 'Installing worker:', error);
-              const nextError = new Error('Error during service worker installation', {
-                cause: error,
-              });
-              this.emit('error', { error: nextError });
-            };
+            }
           };
-        })
-        .catch((error: unknown) => {
-          const nextError = new Error('Error during service worker registration', { cause: error });
-          // this.options.logger.error(this.logPrefix, getErrorMessage(nextError));
-          this.emit('error', { error: nextError });
-        });
+          sw.onerror = (error) => {
+            // this.options.logger.error(this.logPrefix, 'Installing worker:', error);
+            const nextError = new Error('Error during service worker installation', {
+              cause: error,
+            });
+            this.emit('error', { error: nextError });
+          };
+        };
+      } catch (error) {
+        const nextError = new Error('Error during service worker registration', { cause: error });
+        // this.options.logger.error(this.logPrefix, getErrorMessage(nextError));
+        this.emit('error', { error: nextError });
+      }
     };
 
     if (deffered) {
@@ -106,7 +116,7 @@ export class ServiceWorkerInstaller extends DataEventEmitter<
         typeof deffered === 'number' ? { timeout: deffered } : undefined
       );
     } else {
-      register();
+      void register();
     }
   }
 

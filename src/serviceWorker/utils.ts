@@ -2,6 +2,16 @@
 
 import { getErrorMessage } from '@js-toolkit/utils/getErrorMessage';
 
+export function isLocalhost(hostname = window.location.hostname): boolean {
+  return !!(
+    hostname === 'localhost' ||
+    // [::1] is the IPv6 localhost address.
+    hostname === '[::1]' ||
+    // 127.0.0.1/8 is considered localhost for IPv4.
+    hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+  );
+}
+
 /** Delete all caches that aren't named in `caches`. */
 export function removeUnknownCaches<T extends Record<string, string>>(
   expectedCaches: T
