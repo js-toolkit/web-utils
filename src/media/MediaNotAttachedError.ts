@@ -5,6 +5,6 @@ export class MediaNotAttachedError extends ErrorCompat {
     message = 'Media element is not attached yet.',
     options: ErrorOptions | undefined = undefined
   ) {
-    super(MediaNotAttachedError, message, options);
+    super(MediaNotAttachedError, message, { ...options, name: 'MediaNotAttachedError ' });
   }
 }

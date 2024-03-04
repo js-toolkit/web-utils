@@ -13,7 +13,9 @@ import { isLocalhost } from './utils';
 
 export class ServiceWorkerUnavailableError extends ErrorCompat {
   constructor() {
-    super(ServiceWorkerUnavailableError, 'ServiceWorker is not available');
+    super(ServiceWorkerUnavailableError, 'ServiceWorker is not available', {
+      name: 'ServiceWorkerUnavailableError',
+    });
   }
 }
 
