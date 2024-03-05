@@ -1,6 +1,6 @@
 import {
   type DomEventTarget,
-  type GetEventMap as GetDomEventMap,
+  type GetEventMap,
   type EmitterTarget,
   type GetEventType,
   type GetEventListener,
@@ -66,10 +66,7 @@ interface GetListenersOptions {
   type?: 'normal' | 'capture' | undefined;
 }
 
-export class EventEmitterListener<
-  T extends EmitterTarget,
-  M extends AnyObject = GetDomEventMap<T>,
-> {
+export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject = GetEventMap<T>> {
   private readonly normalListeners: EventListenersMap = {};
 
   private readonly captureListeners: EventListenersMap = {};
