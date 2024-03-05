@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import type { DataEventEmitter } from '@js-toolkit/utils/DataEventEmitter';
 import { isEmptyObject } from '@js-toolkit/utils/isEmptyObject';
 
 export type DomEventTarget = EventTarget;
@@ -60,14 +61,18 @@ export type GetEventListener<
       EM,
       EmptyObject,
       Parameters<
-        T extends EventTargetLike
-          ? T['addEventListener']
-          : T extends EventEmitterLike
-            ? T['on']
+        T extends EventEmitterLike
+          ? T['on']
+          : T extends EventTargetLike
+            ? T['addEventListener']
             : AnyFunction
       >['1'],
       (event: E extends keyof EM ? EM[E] : unknown, ...rest: any[]) => unknown
     >;
+
+type ListenersMapToEventMap<T extends Record<string, AnyFunction[]>> = {
+  [P in keyof T]: Parameters<T[P][number]>[0];
+};
 
 export type GetEventMap<T> = T extends Document
   ? DocumentEventMap
@@ -101,8 +106,8 @@ export type GetEventMap<T> = T extends Document
                               ? SourceBufferEventMap
                               : T extends SourceBufferList
                                 ? SourceBufferListEventMap
-                                : T extends { EventMap: Record<string, any> }
-                                  ? T['EventMap']
+                                : T extends DataEventEmitter<any, any>
+                                  ? ListenersMapToEventMap<ReturnType<T['listenersMap']>>
                                   : EmptyObject;
 
 export function isEventTargetLike(target: EmitterTarget): target is EventTargetLike {
