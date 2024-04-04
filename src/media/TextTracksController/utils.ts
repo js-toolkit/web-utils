@@ -44,9 +44,9 @@ export function setActiveTextTrack(
   tt: ActivateTextTrackInfo | undefined,
   hideActiveTrack: boolean
 ): void {
-  if (media.textTracks.length === 0) return;
-  // console.log('setActiveTextTrack', tt);
   const { textTracks } = media;
+  if (textTracks.length === 0) return;
+  // console.log('setActiveTextTrack', tt);
   let activated = false;
   for (let i = 0; i < textTracks.length; i += 1) {
     const track = textTracks[i];
