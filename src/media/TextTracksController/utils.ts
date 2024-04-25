@@ -1,6 +1,12 @@
 import type {} from '../../FullscreenController';
 import { isIOS } from '../../platform/isIOS';
 
+declare global {
+  interface TextTrack {
+    customGroupId?: string | undefined;
+  }
+}
+
 export type TextTrackItem = Readonly<
   PartialSome<
     RequiredStrict<
@@ -16,14 +22,14 @@ export type ActivateTextTrackInfo = OptionalToUndefined<
   PartialBut<Pick<TextTrackInfo, 'kind' | 'language'>, 'language'>
 >;
 
-export const DETACHED_GROUP_ID = '__detached__';
+const DETACHED_GROUP_ID = '__detached__';
 
 /** Hack: MSE can't remove texttracks on detaching because of no browser api for that. */
 export function fakeDetachTextTracks(media: HTMLMediaElement): void {
   ([] as TextTrack[]).forEach.call(media.textTracks, (textTrack) => {
-    const track = textTrack as AnyObject;
-    if (track.groupId) {
-      track.groupId = DETACHED_GROUP_ID;
+    const track = textTrack;
+    if (track.customGroupId) {
+      track.customGroupId = DETACHED_GROUP_ID;
     }
   });
 }
@@ -31,7 +37,7 @@ export function fakeDetachTextTracks(media: HTMLMediaElement): void {
 export function parseTextTracks(media: HTMLMediaElement): TextTrackInfo[] {
   if (media.textTracks.length === 0) return [];
   return Array.from(media.textTracks)
-    .filter((track) => (track as AnyObject).groupId !== DETACHED_GROUP_ID && !!track.language)
+    .filter((track) => track.customGroupId !== DETACHED_GROUP_ID && !!track.language)
     .map(({ kind, language, label }) => ({ kind, language, label: label ?? '' }));
 }
 
