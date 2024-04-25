@@ -29,10 +29,11 @@ interface TextTracksEventMap {
   >;
 }
 
-export interface Cue {
-  id: string;
-  text: string;
-}
+export interface Cue
+  extends PartialBut<
+    OmitStrict<VTTCue, keyof EventTarget | 'onenter' | 'onexit' | 'track' | 'pauseOnExit'>,
+    'id' | 'text'
+  > {}
 
 export type { TextTrackInfo, ActivateTextTrackInfo, TextTrackItem };
 
@@ -175,10 +176,15 @@ export class TextTracksController
       if (!activeCues) return;
       const cues = new Array<Cue>(activeCues.length);
       for (let i = 0; i < cues.length; i += 1) {
-        cues[i] = {
-          id: activeCues[i].id || String(i),
-          text: (activeCues[i] as TextTrackCue & Cue).text,
-        };
+        const cue = activeCues[i] as VTTCue;
+        cue.id = cue.id || `${cue.startTime}-${i}`;
+        cues[i] = cue;
+        // cues[i] = {
+        //   id: cue.id || String(i),
+        //   text: cue.text,
+        //   startTime: cue.startTime,
+        //   endTime: cue.endTime,
+        // };
       }
       this.emit(this.Events.TextTrackCueChanged, { cues });
       this.options.emitNativeEvents && dispatchNativeEvent(media, 'texttrackcuechange', { cues });
