@@ -1,12 +1,9 @@
-function isTouchDevice(): boolean {
-  // https://habr.com/ru/companies/ruvds/articles/556156/
-  return window.matchMedia('(any-pointer: coarse) and (any-hover: none)').matches;
-}
+import { isTouchSupported } from './isTouchSupported';
 
 /** Detect mobile simulation in Chrome DevTools. */
 export function isMobileSimulation(): boolean {
   return (
-    isTouchDevice() &&
+    isTouchSupported() &&
     // maxTouchPoints is always = 1 in simulation mode
     navigator.maxTouchPoints === 1
   );
