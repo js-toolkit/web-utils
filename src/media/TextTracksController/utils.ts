@@ -16,7 +16,9 @@ export type TextTrackItem = Readonly<
   >
 >;
 
-export interface TextTrackInfo extends Pick<TextTrackItem, 'kind' | 'language' | 'label'> {}
+export interface TextTrackInfo extends Pick<TextTrackItem, 'kind' | 'language' | 'label'> {
+  readonly id: string;
+}
 
 export type ActivateTextTrackInfo = OptionalToUndefined<
   PartialBut<Pick<TextTrackInfo, 'kind' | 'language'>, 'language'>
@@ -36,9 +38,15 @@ export function fakeDetachTextTracks(media: HTMLMediaElement): void {
 
 export function parseTextTracks(media: HTMLMediaElement): TextTrackInfo[] {
   if (media.textTracks.length === 0) return [];
-  return Array.from(media.textTracks)
-    .filter((track) => track.customGroupId !== DETACHED_GROUP_ID && !!track.language)
-    .map(({ kind, language, label }) => ({ kind, language, label: label ?? '' }));
+  return (Array.prototype as TextTrack[]).filter
+    .call(
+      media.textTracks,
+      (track) => track.customGroupId !== DETACHED_GROUP_ID && !!track.language
+    )
+    .map(
+      ({ id, kind, language, label }) =>
+        ({ id, kind, language, label: label ?? '' }) satisfies TextTrackInfo
+    );
 }
 
 export function isIOSFullscreen(media: HTMLMediaElement): boolean {
@@ -77,14 +85,16 @@ export function addTextTracks(
 ): void {
   // console.log('addTracks', media.textTracks.length, media.readyState);
 
-  const textTrackMap = Array.from(media.textTracks).reduce(
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const textTrackMap = ((Array.prototype as TextTrack[]).reduce<Record<string, TextTrack>>).call(
+    media.textTracks,
     (acc, tt) => {
       if (tt.language) {
         acc[tt.language] = tt;
       }
       return acc;
     },
-    {} as Record<string, TextTrack>
+    {}
   );
 
   textTrackList.forEach((tt) => {

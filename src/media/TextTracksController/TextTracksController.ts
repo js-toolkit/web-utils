@@ -32,7 +32,7 @@ interface TextTracksEventMap {
 export interface Cue
   extends PartialBut<
     OmitStrict<VTTCue, keyof EventTarget | 'onenter' | 'onexit' | 'track' | 'pauseOnExit'>,
-    'id' | 'text'
+    'id' | 'text' | 'startTime'
   > {}
 
 export type { TextTrackInfo, ActivateTextTrackInfo, TextTrackItem };
@@ -146,11 +146,13 @@ export class TextTracksController
 
       const newCurrentTrack =
         textTracks[newCurrentIndex] &&
-        (this.textTrackList[newCurrentIndex] ?? {
-          type: textTracks[newCurrentIndex].kind,
-          lang: textTracks[newCurrentIndex].language,
-          label: textTracks[newCurrentIndex].label,
-        });
+        (this.textTrackList[newCurrentIndex] ??
+          ({
+            id: textTracks[newCurrentIndex].id,
+            kind: textTracks[newCurrentIndex].kind,
+            language: textTracks[newCurrentIndex].language,
+            label: textTracks[newCurrentIndex].label,
+          } satisfies TextTrackInfo));
 
       if (
         this.textTrack?.language !== newCurrentTrack?.language ||
@@ -186,20 +188,21 @@ export class TextTracksController
         //   endTime: cue.endTime,
         // };
       }
-      this.emit(this.Events.TextTrackCueChanged, { cues });
-      this.options.emitNativeEvents && dispatchNativeEvent(media, 'texttrackcuechange', { cues });
+      this.emit(this.Events.TextTrackCueChanged, { textTrack: event.target, cues });
+      this.options.emitNativeEvents &&
+        dispatchNativeEvent(media, 'texttrackcuechange', { textTrack: event.target, cues });
     };
 
     const onTextTracksUpdate = (): void => {
+      this.textTrackList = parseTextTracks(media);
+      this.emit(this.Events.TextTrackListChanged, { textTracks: this.textTrackList });
+      this.options.emitNativeEvents &&
+        dispatchNativeEvent(media, 'texttracklistchange', { textTracks: this.textTrackList });
       setActiveTextTrack(
         media,
         this.textTrack ?? this.nextTextTrack,
         this.options.hideActiveTrack || isIOSFullscreen(media)
       );
-      this.textTrackList = parseTextTracks(media);
-      this.emit(this.Events.TextTrackListChanged, { textTracks: this.textTrackList });
-      this.options.emitNativeEvents &&
-        dispatchNativeEvent(media, 'texttracklistchange', { textTracks: this.textTrackList });
     };
 
     const addTrack = (track: TextTrack): void => {
@@ -301,6 +304,7 @@ export namespace TextTracksController {
       ];
       [Events.TextTrackCueChanged]: [
         {
+          readonly textTrack: TextTrack;
           readonly cues: readonly Cue[];
         },
       ];
