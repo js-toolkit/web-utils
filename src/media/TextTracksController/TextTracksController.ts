@@ -173,25 +173,34 @@ export class TextTracksController
       }
     };
 
-    const cueChangeHandler = (event: Event & { target: TextTrack }): void => {
-      const { activeCues } = event.target;
-      if (!activeCues) return;
-      const cues = new Array<Cue>(activeCues.length);
-      for (let i = 0; i < cues.length; i += 1) {
-        const cue = activeCues[i] as VTTCue;
-        cue.id = cue.id || `${cue.startTime}-${i}`;
-        cues[i] = cue;
-        // cues[i] = {
-        //   id: cue.id || String(i),
-        //   text: cue.text,
-        //   startTime: cue.startTime,
-        //   endTime: cue.endTime,
-        // };
-      }
-      this.emit(this.Events.TextTrackCueChanged, { textTrack: event.target, cues });
-      this.options.emitNativeEvents &&
-        dispatchNativeEvent(media, 'texttrackcuechange', { textTrack: event.target, cues });
-    };
+    const cueChangeHandler = (() => {
+      const lastCues = [] as VTTCue[];
+      return (event: Event & { target: TextTrack }): void => {
+        const { activeCues } = event.target;
+        if (!activeCues) return;
+        // Because cuechange triggered twice.
+        let changed = lastCues.length !== activeCues.length;
+        const cues = new Array<Cue>(activeCues.length);
+        for (let i = 0; i < cues.length; i += 1) {
+          const cue = activeCues[i] as VTTCue;
+          cue.id = cue.id || `${cue.startTime}-${i}`;
+          cues[i] = cue;
+          if (!changed && lastCues[i]?.id !== cue.id) {
+            changed = true;
+          }
+          lastCues[i] = cue;
+        }
+        // Trim
+        if (lastCues.length > cues.length) {
+          lastCues.splice(cues.length - lastCues.length);
+        }
+        if (changed) {
+          this.emit(this.Events.TextTrackCueChanged, { textTrack: event.target, cues });
+          this.options.emitNativeEvents &&
+            dispatchNativeEvent(media, 'texttrackcuechange', { textTrack: event.target, cues });
+        }
+      };
+    })();
 
     const onTextTracksUpdate = (): void => {
       this.textTrackList = parseTextTracks(media);
