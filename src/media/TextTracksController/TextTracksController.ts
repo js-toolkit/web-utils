@@ -33,7 +33,9 @@ export interface Cue
   extends PartialBut<
     OmitStrict<VTTCue, keyof EventTarget | 'onenter' | 'onexit' | 'track' | 'pauseOnExit'>,
     'id' | 'text' | 'startTime'
-  > {}
+  > {
+  readonly rows: string[];
+}
 
 export type { TextTrackInfo, ActivateTextTrackInfo, TextTrackItem };
 
@@ -184,7 +186,8 @@ export class TextTracksController
         for (let i = 0; i < cues.length; i += 1) {
           const cue = activeCues[i] as VTTCue;
           cue.id = cue.id || `${cue.startTime}-${i}`;
-          cues[i] = cue;
+          cues[i] = cue as unknown as Cue;
+          (cues[i] as Writeable<Cue>).rows = cue.text.split(/\r?\n/);
           if (!changed && lastCues[i]?.id !== cue.id) {
             changed = true;
           }
