@@ -24,7 +24,7 @@ const TAG_NAME: Record<string, string> = {
   u: 'u',
   ruby: 'ruby',
   rt: 'rt',
-  v: 'span',
+  // v: 'span', ignore voice tag because it might be unclosed and it is unsupported by parser.
   lang: 'span',
 };
 
@@ -117,8 +117,24 @@ export function parseCueText<P extends CueSegment>(
   let input = input0;
   let token: string | undefined;
   let timeStamp = -1;
-  const tagStack = [];
+  const tagStack = [] as string[];
   const segments = [] as P[];
+
+  const appendSegment = (id: string): void => {
+    const tag = tagStack.pop() ?? '';
+    const node = current!;
+    current = node.parentElement || undefined;
+    if (current == null) {
+      const segment: CueSegment = {
+        id,
+        startTime: timeStamp >= 0 ? timeStamp : undefined,
+        tag,
+        node,
+      };
+      segments.push(map ? map(segment) : (segment as P));
+      timeStamp = -1;
+    }
+  };
 
   while ((([input, token] = nextToken(input)), token) != null) {
     const id = String(segments.length + 1);
@@ -127,24 +143,8 @@ export function parseCueText<P extends CueSegment>(
       // If the closing tag matches, move back up to the parent node.
       // Otherwise just ignore the end tag.
       if (token[1] === '/') {
-        if (
-          tagStack.length &&
-          tagStack[tagStack.length - 1] === token.substring(2).replace('>', '')
-        ) {
-          const tag = tagStack[tagStack.length - 1];
-          tagStack.pop();
-          const node = current!;
-          current = node.parentElement || undefined;
-          if (current == null) {
-            const part: CueSegment = {
-              id,
-              startTime: timeStamp >= 0 ? timeStamp : undefined,
-              tag,
-              node,
-            };
-            segments.push(map ? map(part) : (part as P));
-            timeStamp = -1;
-          }
+        if (tagStack.at(-1) === token.substring(2).replace('>', '')) {
+          appendSegment(id);
         }
       } else {
         // Try to parse timestamp.
@@ -174,13 +174,13 @@ export function parseCueText<P extends CueSegment>(
     }
     // Text nodes are leaf nodes.
     else {
-      // console.log(tagStack[tagStack.length - 1], typeof token, token);
+      // console.log(tagStack.at(-1), typeof token, token, current);
       if (current == null) {
         const node = createHtmlNode('c', '');
         if (node) {
           node.appendChild(window.document.createTextNode(unescape(token)));
-          const part: CueSegment = { id, node, tag: 'c', startTime: undefined };
-          segments.push(map ? map(part) : (part as P));
+          const segment: CueSegment = { id, node, tag: 'c', startTime: undefined };
+          segments.push(map ? map(segment) : (segment as P));
         }
       }
       if (current) {
@@ -189,7 +189,7 @@ export function parseCueText<P extends CueSegment>(
     }
   }
 
-  // console.log(segments.length);
+  // console.log(segments);
 
   return { segments };
 }
