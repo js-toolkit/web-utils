@@ -113,3 +113,7 @@ export function addTextTracks(
     }
   });
 }
+
+export function splitRows(text: string): string[] {
+  return text.split(/\r?\n/);
+}

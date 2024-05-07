@@ -11,6 +11,7 @@ import {
   setActiveTextTrack,
   addTextTracks,
   isIOSFullscreen,
+  splitRows,
 } from './utils';
 
 declare global {
@@ -187,7 +188,7 @@ export class TextTracksController
           const cue = activeCues[i] as VTTCue;
           cue.id = cue.id || `${cue.startTime}-${i}`;
           cues[i] = cue as unknown as Cue;
-          (cues[i] as Writeable<Cue>).rows = cue.text.split(/\r?\n/);
+          (cues[i] as Writeable<Cue>).rows = splitRows(cue.text);
           if (!changed && lastCues[i]?.id !== cue.id) {
             changed = true;
           }
