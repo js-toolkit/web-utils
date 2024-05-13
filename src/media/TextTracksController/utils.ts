@@ -114,6 +114,10 @@ export function addTextTracks(
   });
 }
 
+export function buildCueId(cue: Pick<TextTrackCue, 'startTime'>, index: number): string {
+  return `${cue.startTime}-${index}`;
+}
+
 export function splitRows(text: string): string[] {
   return text.split(/\r?\n/);
 }
