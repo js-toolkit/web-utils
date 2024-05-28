@@ -5,7 +5,7 @@ export interface CueSegment {
   readonly id: string;
   readonly startTime: number | undefined;
   readonly tag: keyof typeof TAG_NAME;
-  readonly node: Element;
+  readonly node: HTMLElement;
 }
 
 const ESCAPE: Record<string, string> = {
@@ -105,15 +105,15 @@ function createHtmlNode(type: string, annotation: string): HTMLElement | undefin
   return element;
 }
 
-export interface ParseCueTextResult<P extends CueSegment> {
+export interface ParseCueTextResult<P> {
   readonly segments: P[];
 }
 
-export function parseCueText<P extends CueSegment>(
+export function parseCueText<P = CueSegment>(
   input0: string,
   map?: (segment: CueSegment) => P
 ): ParseCueTextResult<P> {
-  let current: Element | undefined;
+  let current: HTMLElement | undefined;
   let input = input0;
   let token: string | undefined;
   let timeStamp = -1;
