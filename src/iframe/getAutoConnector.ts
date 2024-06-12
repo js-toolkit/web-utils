@@ -117,13 +117,17 @@ export function getAutoConnector<SendData, ReceiveData>({
     if (window === target) return;
     if (isWindowProxy(target)) {
       target.postMessage(message, origin, transfer);
+      const targetName = target === window.parent ? 'iframe parent' : 'iframe';
       logger.debug(
-        `${`${label}: `}Post message to iframe (uid=${targetId},origin=${origin}):`,
+        `${`${label}: `}Post message to ${targetName} (uid=${targetId},self.uid=${uid},origin=${origin}):`,
         message
       );
     } else {
       target.postMessage(message, transfer && { transfer });
-      logger.debug(`${`${label}: `}Post message to MessageEventSource (uid=${targetId}):`, message);
+      logger.debug(
+        `${`${label}: `}Post message to MessageEventSource (uid=${targetId},self.uid=${uid}):`,
+        message
+      );
     }
   };
 
@@ -165,14 +169,16 @@ export function getAutoConnector<SendData, ReceiveData>({
     const targetId = message.data.uid;
 
     logger.debug(
-      `${`${label}: `}Receive message from iframe (uid=${targetId},origin=${message.origin}):`,
+      `${`${label}: `}Receive message from iframe (uid=${targetId},self.uid=${uid},origin=${message.origin}):`,
       message.data
     );
 
     if (strictTargets && specialTargets) {
       const found = findTarget(target, specialTargets);
       if (!found) {
-        logger.warn(`${`${label}: `}Could not find target (uid=${targetId}) by message.source.`);
+        logger.warn(
+          `${`${label}: `}Could not find target (uid=${targetId},self.uid=${uid}) by message.source.`
+        );
         return;
       }
     }
@@ -247,7 +253,7 @@ export function getAutoConnector<SendData, ReceiveData>({
 
       const { data } = message.data;
       const complete = (): void => {
-        logger.debug(`${`${label}: `}Iframe connection established (${uid} + ${targetId}).`);
+        logger.debug(`${`${label}: `}Connection established (self.uid=${uid} + uid=${targetId}).`);
         onConnect({ data, target, origin }, port as MessagePort);
         // if (channelOption === 'open') {
         //   const port1 = channelMap?.get(targetId)?.port1;
