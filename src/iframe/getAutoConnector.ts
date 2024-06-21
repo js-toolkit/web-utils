@@ -7,16 +7,26 @@ import {
   isPingMessage,
   isTargetReadyMessage,
 } from './messages';
-import { findTarget, isWindowProxy, type Target } from './utils';
+import { isWindowProxy, readTargets, type Target } from './utils';
 import { getOriginFromMessage } from './getOriginFromMessage';
 
 export { getClientMessages, getHostMessages } from './messages';
 
+interface StartOptions {
+  readonly append?: boolean;
+}
+
 interface AutoConnector {
   /** If function passed the connector waits until DOM ready. */
-  readonly start: (targets: ArrayLike<Target> | (() => ArrayLike<Target>)) => void;
+  readonly start: (
+    targets: ArrayLike<Target> | (() => ArrayLike<Target>),
+    options?: StartOptions
+  ) => void;
+  /** Stops a receiving new connections. */
   readonly stop: VoidFunction;
+  readonly isStarted: () => boolean;
   // readonly getChannel: () => AutoConnector.Channel;
+  readonly close: (targets: ArrayLike<Target>) => void;
   readonly destroy: VoidFunction;
 }
 
@@ -101,10 +111,11 @@ export function getAutoConnector<SendData, ReceiveData>({
   const uid = id || uuid();
   const label = labelOption || uid;
   const msgMap = new Map<string, PartialRecord<keyof MessagesTypes, boolean>>();
-  const channelMap = channelOption === 'open' ? new Map<string, MessageChannel>() : undefined;
+  const channelMap =
+    channelOption === 'open' ? new Map<string, [MessageChannel, TargetInfo]>() : undefined;
 
   // let channel: AutoConnector.Channel | MessagePort | undefined;
-  let specialTargets: ArrayLike<Target> | undefined;
+  let specialTargets: Set<Window> | undefined;
   let disposer: VoidFunction | undefined;
 
   const post = <M extends IframeMessage>(
@@ -174,8 +185,7 @@ export function getAutoConnector<SendData, ReceiveData>({
     );
 
     if (strictTargets && specialTargets) {
-      const found = findTarget(target, specialTargets);
-      if (!found) {
+      if (!specialTargets.has(target)) {
         logger.warn(
           `${`${label}: `}Could not find target (uid=${targetId},self.uid=${uid}) by message.source.`
         );
@@ -204,21 +214,17 @@ export function getAutoConnector<SendData, ReceiveData>({
       //   channel = createChannelProxy(channelMap);
       // }
 
+      const targetInfo: TargetInfo = { target, origin };
+
       const port2 = channelMap
         ? (() => {
-            const messageChannel = channelMap.get(targetId) ?? new MessageChannel();
-            channelMap.set(targetId, messageChannel);
+            const messageChannel = channelMap.get(targetId)?.[0] ?? new MessageChannel();
+            channelMap.set(targetId, [messageChannel, targetInfo]);
             return messageChannel.port2;
           })()
         : undefined;
 
-      sendReady(
-        onSendData ? onSendData({ target, origin }) : undefined,
-        target,
-        origin,
-        targetId,
-        port2
-      );
+      sendReady(onSendData ? onSendData(targetInfo) : undefined, target, origin, targetId, port2);
       needAsync = false;
       // return;
     }
@@ -230,10 +236,11 @@ export function getAutoConnector<SendData, ReceiveData>({
     ) {
       // Reset state for target
       msgMap.delete(targetId);
+      specialTargets?.delete(target);
 
       const port = (() => {
         if (channelOption === 'open') {
-          const port1 = channelMap?.get(targetId)?.port1;
+          const port1 = channelMap?.get(targetId)?.[0].port1;
           if (!port1)
             throw new Error(
               'Something went wrong: MessageChannel is not created despite the fact that the `channel` option is `open`.'
@@ -270,34 +277,43 @@ export function getAutoConnector<SendData, ReceiveData>({
     }
   };
 
-  const start: AutoConnector['start'] = (targets): void => {
-    if (disposer) {
+  const start: AutoConnector['start'] = (targets, options = {}): void => {
+    if (disposer && !options.append) {
       logger.warn(`${`${label}: `}Already started. You should first call \`stop\`.`);
       return;
     }
 
+    if (options.append) {
+      const prevSpecialTargets = specialTargets;
+      stop();
+      specialTargets = prevSpecialTargets;
+    }
+
     // Init and send ping to iframes
     const ready = (): void => {
-      specialTargets = (() => {
+      const newTargets = (() => {
         const list = typeof targets === 'function' ? targets() : targets;
         return list.length > 0 ? list : undefined;
       })();
+      const newWindows = newTargets && readTargets(newTargets);
+      if (!newWindows) return;
+      const newWindowsSet = new Set(newWindows);
 
-      // if (targets && !specialTargets) {
-      //   logger.warn(
-      //     `${`${label}: `}Argument \`targets\` passed but result is empty. Will be used iframes in the current document.`
-      //   );
-      // }
+      if (options.append) {
+        if (!specialTargets) {
+          specialTargets = new Set();
+        }
+        newWindowsSet.forEach((w) => specialTargets!.add(w));
+      } else {
+        specialTargets = newWindowsSet;
+      }
 
       window.addEventListener('message', onReceiveMessage);
 
-      // const frames = specialTargets ?? selectFrames();
-      const frames = specialTargets ?? [];
-      for (let i = 0; i < frames.length; i += 1) {
-        const frame = frames[i];
-        const frameWindow = frame instanceof HTMLIFrameElement ? frame.contentWindow : frame;
-        frameWindow && frameWindow !== window && sendPing(frameWindow, '*', '');
-      }
+      const frameSet = options.append ? newWindowsSet : specialTargets;
+      frameSet.forEach((frameWindow) => {
+        frameWindow !== window && sendPing(frameWindow, '*', '');
+      });
     };
 
     const cancel = typeof targets === 'function' ? onDOMReady(ready) : ready();
@@ -307,6 +323,24 @@ export function getAutoConnector<SendData, ReceiveData>({
       window.removeEventListener('message', onReceiveMessage);
       specialTargets = undefined;
     };
+  };
+
+  const close = (targets: ArrayLike<Target> | Set<Window>): void => {
+    const set = targets instanceof Set ? targets : new Set(readTargets(targets));
+    if (set.size === 0) return;
+    if (channelMap) {
+      channelMap.forEach(([ch, targetInfo], targetId) => {
+        if (set.has(targetInfo.target)) {
+          ch.port1.close();
+          ch.port2.close();
+          channelMap.delete(targetId);
+        }
+      });
+    }
+    if (specialTargets) {
+      const list = specialTargets;
+      set.forEach((t) => list.delete(t));
+    }
   };
 
   const stop = (): void => {
@@ -319,6 +353,7 @@ export function getAutoConnector<SendData, ReceiveData>({
   return {
     start,
     stop,
+    isStarted: () => !!disposer,
     // getChannel: () => {
     //   if (!channel) {
     //     if (channelOption === 'use')
@@ -330,6 +365,7 @@ export function getAutoConnector<SendData, ReceiveData>({
     //   }
     //   return channel;
     // },
+    close,
     destroy: () => {
       stop();
       msgMap.clear();
@@ -338,7 +374,7 @@ export function getAutoConnector<SendData, ReceiveData>({
       //   channel = undefined;
       // }
       if (channelMap) {
-        channelMap.forEach((ch) => {
+        channelMap.forEach(([ch]) => {
           ch.port1.close();
           // ch.port1.onmessage = null;
           // ch.port1.onmessageerror = null;
