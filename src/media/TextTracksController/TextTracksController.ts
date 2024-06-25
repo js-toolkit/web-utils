@@ -72,6 +72,7 @@ export class TextTracksController
       ...options,
       emitNativeEvents: options?.emitNativeEvents ?? true,
       hideActiveTrack: options?.hideActiveTrack ?? true,
+      preferCueRowLength: options?.preferCueRowLength ?? 0,
     };
   }
 
@@ -189,7 +190,7 @@ export class TextTracksController
           const cue = activeCues[i] as VTTCue;
           cue.id = cue.id || buildCueId(cue, i);
           cues[i] = cue as unknown as Cue;
-          (cues[i] as Writeable<Cue>).rows = splitRows(cue.text);
+          (cues[i] as Writeable<Cue>).rows = splitRows(cue.text, this.options.preferCueRowLength);
           if (!changed && lastCues[i]?.id !== cue.id) {
             changed = true;
           }
@@ -294,6 +295,8 @@ export namespace TextTracksController {
     readonly emitNativeEvents?: boolean | undefined;
     /** Default `true`. */
     readonly hideActiveTrack?: boolean | undefined;
+    /** */
+    readonly preferCueRowLength?: number | undefined;
   }
 
   export enum Events {
