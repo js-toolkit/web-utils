@@ -118,6 +118,67 @@ export function buildCueId(cue: Pick<TextTrackCue, 'startTime'>, index: number):
   return `${cue.startTime}-${index}`;
 }
 
-export function splitRows(text: string): string[] {
-  return text.split(/\r?\n/);
+export function splitRows(text: string, preferLineLength: number): string[] {
+  if (preferLineLength <= 0) return text.split(/\r?\n/);
+
+  const lines = [] as string[];
+  let lineIdx = 0;
+  let nextLineIdx = lineIdx;
+  let word = '';
+
+  for (let i = 0; i <= text.length; i += 1) {
+    const char = text[i];
+
+    // Oversized from the prev line
+    if (word.length > 0 && lineIdx < nextLineIdx) {
+      lines[nextLineIdx] = char == null ? word.trim() : word.trimStart();
+      word = '';
+    }
+    lineIdx = nextLineIdx;
+    let line = lines[lineIdx] ?? '';
+
+    // Line break
+    if (char === '\n' || char === '\r\n') {
+      // Add last word to the current line or keep it for the next one.
+      if (word.length > 0 && line.length + word.length <= preferLineLength) {
+        line += line.length > 0 ? word : word.trimStart();
+        word = '';
+      }
+      nextLineIdx += 1;
+    }
+    // Word break
+    else if (char === ' ') {
+      if (word.length > 0) {
+        const oversize = line.length + word.length > preferLineLength;
+        // console.log(oversize, line, word, word.length);
+        if (oversize && line.length > 0) {
+          nextLineIdx += 1;
+          line = line.trimEnd();
+        } else {
+          line += line.length === 0 ? word.trimStart() : word;
+          word = '';
+        }
+      }
+      word += char;
+    }
+    // The last word
+    else if (char == null && word.length > 0) {
+      const oversize = line.length + word.length > preferLineLength;
+      // console.log(char, oversize, line);
+      if (!oversize || line.length === 0) {
+        line += word;
+      } else {
+        lineIdx += 1;
+        line = word.trim();
+      }
+    }
+    // Just add to word
+    else if (char) {
+      word += char;
+    }
+
+    lines[lineIdx] = line;
+  }
+
+  return lines;
 }
