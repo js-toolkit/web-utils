@@ -69,11 +69,20 @@ export class TextTracksController
   constructor(options?: TextTracksController.Options | undefined) {
     super();
     this.options = {
-      ...options,
-      emitNativeEvents: options?.emitNativeEvents ?? true,
-      hideActiveTrack: options?.hideActiveTrack ?? true,
-      preferCueRowLength: options?.preferCueRowLength ?? 0,
+      emitNativeEvents: false,
+      hideActiveTrack: true,
+      preferCueRowLength: 0,
     };
+    options && this.setOptions(options);
+  }
+
+  setOptions(options: Partial<TextTracksController.Options>): void {
+    Object.assign(this.options, {
+      ...options,
+      emitNativeEvents: options.emitNativeEvents ?? this.options.emitNativeEvents,
+      hideActiveTrack: options.hideActiveTrack ?? this.options.hideActiveTrack,
+      preferCueRowLength: options.preferCueRowLength ?? this.options.preferCueRowLength,
+    });
   }
 
   isAttached(): boolean {
@@ -216,7 +225,7 @@ export class TextTracksController
       setActiveTextTrack(
         media,
         this.textTrack ?? this.nextTextTrack,
-        this.options.hideActiveTrack || isIOSFullscreen(media)
+        this.options.hideActiveTrack && !isIOSFullscreen(media)
       );
     };
 
@@ -246,6 +255,10 @@ export class TextTracksController
     }
   }
 
+  getTextTracks(): readonly TextTrackInfo[] {
+    return this.textTrackList;
+  }
+
   setTextTracks(textTrackList: readonly TextTrackItem[]): void {
     const media = this.getMediaElement();
     this.eventListeners.scope(media, '@@setTextTracks').removeAllListeners();
@@ -268,17 +281,17 @@ export class TextTracksController
     return this.textTrack;
   }
 
-  setActiveTextTrack(tt: ActivateTextTrackInfo | undefined): void {
+  setActiveTextTrack(tt: ActivateTextTrackInfo | undefined): boolean {
     const media = this.getMediaElement();
     this.nextTextTrack =
       tt &&
       this.textTrackList.find(
         (t) => t.language === tt.language && (!tt.kind || t.kind === tt.kind)
       );
-    setActiveTextTrack(
+    return setActiveTextTrack(
       media,
       this.nextTextTrack,
-      this.options.hideActiveTrack || isIOSFullscreen(media)
+      this.options.hideActiveTrack && !isIOSFullscreen(media)
     );
   }
 
@@ -291,9 +304,9 @@ export class TextTracksController
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TextTracksController {
   export interface Options {
-    /** Default `true`. */
+    /** Defaults to `false`. */
     readonly emitNativeEvents?: boolean | undefined;
-    /** Default `true`. */
+    /** Defaults to `true`. */
     readonly hideActiveTrack?: boolean | undefined;
     /** */
     readonly preferCueRowLength?: number | undefined;
