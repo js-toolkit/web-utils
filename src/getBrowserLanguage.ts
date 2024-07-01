@@ -4,13 +4,13 @@ declare global {
   }
 }
 
-export function getBrowserLanguage(): string | undefined {
-  if (typeof window !== 'undefined' && 'navigator' in window) {
-    const language =
-      navigator.languages && navigator.languages.length > 0
-        ? navigator.languages[0]
-        : navigator.language || navigator.userLanguage;
-    return language.split('-')[0];
-  }
-  return undefined;
+/**
+ * @param includeRegion subtag separated by `-`.
+ */
+export function getBrowserLanguage(includeRegion = false): string {
+  const language =
+    navigator.languages && navigator.languages.length > 0
+      ? navigator.languages[0]
+      : navigator.language || navigator.userLanguage;
+  return includeRegion ? language : language.split('-')[0];
 }
