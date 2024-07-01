@@ -1,6 +1,8 @@
 /* eslint-disable no-cond-assign */
 // https://github.com/mozilla/vtt.js/blob/master/lib/vtt.js
 
+import { splitRows } from './TextTracksController/utils';
+
 export interface CueSegment {
   readonly id: string;
   readonly startTime: number | undefined;
@@ -105,22 +107,36 @@ function createHtmlNode(type: string, annotation: string): HTMLElement | undefin
   return element;
 }
 
+export interface ParseCueTextOptions {
+  readonly preferLength?: number | undefined;
+}
+
 export interface ParseCueTextResult<P> {
-  readonly segments: P[];
+  readonly segments: P[][];
+  readonly rawText: string[];
 }
 
 export function parseCueText<P = CueSegment>(
   input0: string,
-  map?: (segment: CueSegment) => P
+  map?: (segment: CueSegment, prevSegment: P | undefined) => P,
+  { preferLength = 0 }: ParseCueTextOptions = {}
 ): ParseCueTextResult<P> {
   let current: HTMLElement | undefined;
   let input = input0;
   let token: string | undefined;
   let timeStamp = -1;
   const tagStack = [] as string[];
-  const segments = [] as P[];
+  const segments = [] as P[][];
+  const rawText = [] as string[];
 
-  const appendSegment = (id: string): void => {
+  const addSegmentToRow = (segment: CueSegment): void => {
+    if (segments.length === 0) segments.push([]);
+    segments
+      .at(-1)!
+      .push(map ? map(segment, (segments.at(-1) ?? segments.at(-2))?.at(-1)) : (segment as P));
+  };
+
+  const addSegment = (id: string): void => {
     const tag = tagStack.pop() ?? '';
     const node = current!;
     current = node.parentElement || undefined;
@@ -131,20 +147,50 @@ export function parseCueText<P = CueSegment>(
         tag,
         node,
       };
-      segments.push(map ? map(segment) : (segment as P));
-      timeStamp = -1;
+      addSegmentToRow(segment);
+      // All next nodes will be with the same timeStamp until the next timeStamp.
+      // timeStamp = -1;
     }
   };
 
+  const addLeafToken = (text: string): void => {
+    const node = createHtmlNode('c', '')!;
+    node.appendChild(window.document.createTextNode(unescape(text)));
+    const segment: CueSegment = {
+      id: getNextId(),
+      node,
+      tag: 'c',
+      startTime: timeStamp >= 0 ? timeStamp : undefined,
+    };
+    addSegmentToRow(segment);
+  };
+
+  const addTextNode = (text: string, newRow: boolean): void => {
+    if (newRow) {
+      rawText.push(text);
+    } else {
+      rawText[rawText.length - 1] += text;
+    }
+    newRow && segments.push([]);
+    if (current == null) {
+      addLeafToken(text);
+    } else {
+      current.appendChild(window.document.createTextNode(unescape(text)));
+    }
+  };
+
+  const getNextId = (): string => {
+    return `${segments.length}-${(segments.at(-1)?.length ?? 0) + 1}`;
+  };
+
   while ((([input, token] = nextToken(input)), token) != null) {
-    const id = String(segments.length + 1);
     // console.log('token', token);
     if (token[0] === '<') {
       // If the closing tag matches, move back up to the parent node.
       // Otherwise just ignore the end tag.
       if (token[1] === '/') {
         if (tagStack.at(-1) === token.substring(2).replace('>', '')) {
-          appendSegment(id);
+          addSegment(getNextId());
         }
       } else {
         // Try to parse timestamp.
@@ -174,22 +220,24 @@ export function parseCueText<P = CueSegment>(
     }
     // Text nodes are leaf nodes.
     else {
-      // console.log(tagStack.at(-1), typeof token, token, current);
-      if (current == null) {
-        const node = createHtmlNode('c', '');
-        if (node) {
-          node.appendChild(window.document.createTextNode(unescape(token)));
-          const segment: CueSegment = { id, node, tag: 'c', startTime: undefined };
-          segments.push(map ? map(segment) : (segment as P));
+      // console.log(token, current, preferLength);
+      // eslint-disable-next-line no-lonely-if
+      if (
+        rawText.length === 0 ||
+        (preferLength > 0 && rawText.at(-1)!.length + token.length > preferLength)
+      ) {
+        const rows = splitRows(token, preferLength);
+        for (let i = 0; i < rows.length; i += 1) {
+          addTextNode(rows[i], true);
         }
-      }
-      if (current) {
-        current.appendChild(window.document.createTextNode(unescape(token)));
+      } else {
+        addTextNode(token, false);
       }
     }
   }
 
+  // console.log(rawText);
   // console.log(segments);
 
-  return { segments };
+  return { segments, rawText };
 }
