@@ -57,10 +57,11 @@ export function setActiveTextTrack(
   media: HTMLMediaElement,
   tt: ActivateTextTrackInfo | undefined,
   hideActiveTrack: boolean
-): void {
+): boolean {
   const { textTracks } = media;
-  if (textTracks.length === 0) return;
+  if (textTracks.length === 0) return false;
   // console.log('setActiveTextTrack', tt);
+  let changed = false;
   let activated = false;
   for (let i = 0; i < textTracks.length; i += 1) {
     const track = textTracks[i];
@@ -71,10 +72,13 @@ export function setActiveTextTrack(
       const nextMode: TextTrackMode = hideActiveTrack ? 'hidden' : 'showing';
       track.mode = nextMode;
       activated = true;
-    } else {
+      changed = true;
+    } else if (track.mode !== 'disabled') {
       track.mode = 'disabled';
+      changed = true;
     }
   }
+  return changed;
 }
 
 /** Dynamically add text tracks */
