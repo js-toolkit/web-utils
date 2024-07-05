@@ -107,10 +107,6 @@ export class TextTracksController
     // if (this.media === media) return;
     this.detach();
 
-    this.media = media;
-    const { textTracks } = media;
-    let lockUpdate = false;
-
     const changeHandler = (): void => {
       const { textTracks } = media;
       const { nextTextTrack } = this;
@@ -229,6 +225,10 @@ export class TextTracksController
       );
     };
 
+    this.media = media;
+    this.textTrackList = parseTextTracks(media);
+    let lockUpdate = false;
+
     const addTrack = (track: TextTrack): void => {
       if (!lockUpdate) onTextTracksUpdate();
       this.eventListeners.scope(track).on('cuechange', cueChangeHandler as EventListener);
@@ -239,15 +239,15 @@ export class TextTracksController
     };
 
     this.eventListeners
-      .scope(textTracks)
+      .scope(this.media.textTracks)
       .on('change', changeHandler)
       .on('addtrack', ({ track }) => track && addTrack(track))
       .on('removetrack', ({ track }) => track && removeTrack(track));
 
-    if (textTracks.length > 0) {
+    if (this.media.textTracks.length > 0) {
       lockUpdate = true;
       try {
-        Array.prototype.forEach.call(textTracks, addTrack);
+        Array.prototype.forEach.call(this.media.textTracks, addTrack);
         onTextTracksUpdate();
       } finally {
         lockUpdate = false;
@@ -268,6 +268,8 @@ export class TextTracksController
 
     const addTracks = (): void => {
       addTextTracks(media, textTrackList, (el) => this.addedTracks.push(el));
+      // Because event 'addtrack' will be fired in the next tick.
+      this.textTrackList = parseTextTracks(media);
     };
 
     if (media.readyState >= media.HAVE_CURRENT_DATA) {
