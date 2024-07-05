@@ -26,7 +26,7 @@ const DETACHED_GROUP_ID = '__detached__';
 
 /** Hack: MSE can't remove texttracks on detaching because of no browser api for that. */
 export function fakeDetachTextTracks(media: HTMLMediaElement): void {
-  ([] as TextTrack[]).forEach.call(media.textTracks, (textTrack) => {
+  (Array.prototype as TextTrack[]).forEach.call(media.textTracks, (textTrack) => {
     const track = textTrack;
     if (track.customGroupId) {
       track.customGroupId = DETACHED_GROUP_ID;
@@ -36,15 +36,17 @@ export function fakeDetachTextTracks(media: HTMLMediaElement): void {
 
 export function parseTextTracks(media: HTMLMediaElement): TextTrackInfo[] {
   if (media.textTracks.length === 0) return [];
-  return (Array.prototype as TextTrack[]).filter
-    .call(
-      media.textTracks,
-      (track) => track.customGroupId !== DETACHED_GROUP_ID && !!track.language
-    )
-    .map(
-      ({ id, kind, language, label }) =>
-        ({ id, kind, language, label: label ?? '' }) satisfies TextTrackInfo
-    );
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  return ((Array.prototype as TextTrack[]).reduce<TextTrackInfo[]>).call(
+    media.textTracks,
+    (acc, { customGroupId, id, kind, language, label }) => {
+      if (customGroupId !== DETACHED_GROUP_ID && language) {
+        acc.push({ id, kind, language, label: label ?? '' });
+      }
+      return acc;
+    },
+    []
+  );
 }
 
 export function isIOSFullscreen(media: HTMLMediaElement): boolean {
