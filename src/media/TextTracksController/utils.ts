@@ -9,10 +9,8 @@ declare global {
 
 export type TextTrackItem = Readonly<
   PartialSome<
-    RequiredStrict<
-      Pick<HTMLTrackElement, 'src' | 'default'> & Pick<TextTrack, 'kind' | 'label' | 'language'>
-    >,
-    'default' | 'kind'
+    RequiredStrict<Pick<HTMLTrackElement, 'src'> & Pick<TextTrack, 'kind' | 'label' | 'language'>>,
+    'kind'
   >
 >;
 
