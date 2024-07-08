@@ -1,4 +1,4 @@
-/// <reference lib="webworker" />
+/// <reference lib="webworker" preserve="true" />
 
 import { getErrorMessage } from '@js-toolkit/utils/getErrorMessage';
 

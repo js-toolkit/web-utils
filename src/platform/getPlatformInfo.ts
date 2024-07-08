@@ -1,4 +1,4 @@
-/// <reference types="ua-parser-js/src/main/ua-parser" />
+/// <reference types="ua-parser-js" preserve="true" />
 
 import { UAParser } from 'ua-parser-js';
 
