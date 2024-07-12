@@ -108,6 +108,7 @@ function createHtmlNode(type: string, annotation: string): HTMLElement | undefin
 }
 
 export interface ParseCueTextOptions {
+  /** Defaults to `0`. */
   readonly preferLength?: number | undefined;
 }
 
