@@ -114,7 +114,7 @@ export class PipController extends EventEmitter<PipController.EventMap> {
       }
 
       if (PipController.isApiEnabled()) {
-        this.listener.target.requestPictureInPicture().then(() => resolve(), reject);
+        void this.listener.target.requestPictureInPicture().then(() => resolve(), reject);
       } else {
         this.listener.once(
           'webkitpresentationmodechanged',
@@ -141,7 +141,7 @@ export class PipController extends EventEmitter<PipController.EventMap> {
       }
 
       if (PipController.isApiEnabled()) {
-        document.exitPictureInPicture().then(resolve, reject);
+        void document.exitPictureInPicture().then(resolve, reject);
       } else {
         this.listener.once(
           'webkitpresentationmodechanged',

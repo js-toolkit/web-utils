@@ -198,7 +198,7 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
       }
 
       if (fullscreen.isApiEnabled()) {
-        fullscreen.request(this.element, options).then(resolve, reject);
+        void fullscreen.request(this.element, options).then(resolve, reject);
         return;
       }
 
@@ -234,7 +234,7 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
       }
 
       if (fullscreen.isApiEnabled()) {
-        fullscreen.exit().then(resolve, reject);
+        void fullscreen.exit().then(resolve, reject);
         return;
       }
 
