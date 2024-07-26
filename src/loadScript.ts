@@ -52,9 +52,7 @@ export function loadScript(
           const ex =
             error instanceof ErrorEvent
               ? error
-              : new Error(`Unable to load script by url ${url}. See previous log messages.`, {
-                  cause: error,
-                });
+              : new Error(`Unable to load script by url ${url}.`, { cause: error });
           reject(ex);
         };
 
