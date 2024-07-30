@@ -26,7 +26,7 @@ export function getEventAwaiter<
 
   const destroy = (): void => {
     resolveEvents.forEach((e) => listener.off(e, resolve));
-    rejectEvents.forEach((e) => listener.off(e, resolve));
+    rejectEvents.forEach((e) => listener.off(e, reject));
   };
 
   const resolveOrigin = readyAwaiter.resolve;
