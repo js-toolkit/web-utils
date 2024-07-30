@@ -24,6 +24,15 @@ export function getEventAwaiter<
   const rejectEvents = Array.isArray(rejectEvent) ? rejectEvent : [rejectEvent];
   const listener = isEventEmitterLike(target) ? target : new EventEmitterListener<any>(target);
 
+  const resolve = (): void => {
+    readyAwaiter.resolve();
+  };
+
+  const reject = (ev: unknown): void => {
+    const err = eventToError ? eventToError(ev) : ev;
+    err != null && readyAwaiter.reject(err);
+  };
+
   const destroy = (): void => {
     resolveEvents.forEach((e) => listener.off(e, resolve));
     rejectEvents.forEach((e) => listener.off(e, reject));
@@ -46,15 +55,6 @@ export function getEventAwaiter<
   //   if (driver.isReady) readyAwaiter.resolve();
   //   return waitOrigin(...args);
   // };
-
-  const resolve = (): void => {
-    readyAwaiter.resolve();
-  };
-
-  const reject = (ev: unknown): void => {
-    const err = eventToError ? eventToError(ev) : ev;
-    err != null && readyAwaiter.reject(err);
-  };
 
   resolveEvents.forEach((e) => listener.on(e, resolve));
   rejectEvents.forEach((e) => listener.on(e, reject));
