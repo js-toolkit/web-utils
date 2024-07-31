@@ -1,8 +1,9 @@
 import throttleFn from 'lodash.throttle';
 
 export interface ViewableTrackerOptions {
-  /** Visibility part to detect state as viewable. */
+  /** Visibility part to detect state as viewable. Up to 1. */
   readonly visiblePart?: boolean | number | undefined;
+  // readonly invisiblePart?: boolean | number | undefined;
   readonly scrollThrottle?: number | undefined;
   readonly documentVisibility?: boolean | undefined;
   readonly onChange: (viewable: boolean) => void;
@@ -22,7 +23,8 @@ export function getViewableTracker(
     onChange,
   }: ViewableTrackerOptions
 ): ViewableTracker {
-  const visiblePart = +visiblePartOption;
+  const visiblePart = Math.min(+visiblePartOption, 1);
+  // const visiblePart = +visiblePartOption;
   let raf = 0;
   let lastViewable: boolean | undefined;
   let lastDocumentViewable = document.visibilityState === 'visible';
@@ -50,13 +52,13 @@ export function getViewableTracker(
     if (lastDocumentViewable === viewable) return;
     lastDocumentViewable = viewable;
     // Check if visible on page
-    if (viewable && visiblePart > 0) {
+    if (viewable /* && visiblePart > 0 */) {
       // Always re-check, the page size may be changed or something else.
       lastViewable = undefined;
       checkVisibility();
     }
     // Hidden tab
-    else if (visiblePart <= 0 || lastViewable !== viewable) {
+    else if (/* visiblePart <= 0 || */ lastViewable !== viewable) {
       onChange(viewable);
     }
   };
@@ -66,20 +68,18 @@ export function getViewableTracker(
       ? throttleFn(checkVisibility, scrollThrottle)
       : checkVisibilityRaf;
 
-  if (visiblePart > 0) {
-    window.addEventListener('scroll', handler, { capture: false, passive: true });
-    // checkVisibility();
-  }
+  // if (visiblePart > 0) {
+  window.addEventListener('scroll', handler, { capture: false, passive: true });
+  // }
 
   if (documentVisibility) {
     document.addEventListener('visibilitychange', checkDocumentVisibility);
-    // checkDocumentVisibility();
   }
 
   const check = (): void => {
-    if (visiblePart > 0) {
-      checkVisibility();
-    }
+    // if (visiblePart > 0) {
+    checkVisibility();
+    // }
     if (documentVisibility) {
       checkDocumentVisibility();
     }
