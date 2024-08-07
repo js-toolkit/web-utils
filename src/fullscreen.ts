@@ -102,7 +102,7 @@ export namespace fullscreen {
     options?: boolean | AddEventListenerOptions | undefined
   ): void {
     const eventName = eventNameMap[type];
-    eventName && document.addEventListener(eventName, listener, options);
+    if (eventName) document.addEventListener(eventName, listener, options);
   }
 
   export function off(
@@ -111,7 +111,7 @@ export namespace fullscreen {
     options?: boolean | EventListenerOptions | undefined
   ): void {
     const eventName = eventNameMap[type];
-    eventName && document.removeEventListener(eventName, listener, options);
+    if (eventName) document.removeEventListener(eventName, listener, options);
   }
 
   export function request(elem: Element, options?: FullscreenOptions | undefined): Promise<void> {
@@ -122,7 +122,7 @@ export namespace fullscreen {
 
       const onFullScreenEntered = (): void => {
         off('change', onFullScreenEntered);
-        off('error', onFullScreenError); // eslint-disable-line no-use-before-define
+        off('error', onFullScreenError);
         resolve();
       };
       const onFullScreenError = (event: unknown): void => {
@@ -139,7 +139,7 @@ export namespace fullscreen {
       );
 
       if (result instanceof Promise) {
-        result.then(onFullScreenEntered, onFullScreenError);
+        result.then(onFullScreenEntered).catch(onFullScreenError);
       }
     });
   }
@@ -171,7 +171,7 @@ export namespace fullscreen {
       const result = ((document as AnyObject)[names.exitFullscreenName] as AnyAsyncFunction)();
 
       if (result instanceof Promise) {
-        result.then(onFullScreenExit, onFullScreenError);
+        result.then(onFullScreenExit).catch(onFullScreenError);
       }
     });
   }
