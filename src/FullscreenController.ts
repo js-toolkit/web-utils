@@ -111,9 +111,15 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
   }
 
   destroy(): Promise<void> {
-    return this.exit().finally(() => {
-      this.removeAllListeners();
-      this.unbind();
+    return this.exit().then(() => {
+      // Because of unbind is calling before the change event will be fired.
+      return new Promise((resolve) => {
+        requestAnimationFrame(() => {
+          this.removeAllListeners();
+          this.unbind();
+          resolve();
+        });
+      });
     });
   }
 
@@ -167,7 +173,7 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
         this.options.toggleNativeSubtitles &&
         video.textTracks.length > 0;
 
-      handler.nativeSubtitles && toggleNativeSubtitles(true, video.textTracks);
+      if (handler.nativeSubtitles) toggleNativeSubtitles(true, video.textTracks);
 
       this.emit(this.Events.Change, { fullscreen: true, type: 'video' });
     };
@@ -198,7 +204,7 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
       }
 
       if (fullscreen.isApiEnabled()) {
-        void fullscreen.request(this.element, options).then(resolve, reject);
+        fullscreen.request(this.element, options).then(resolve).catch(reject);
         return;
       }
 
@@ -234,7 +240,7 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
       }
 
       if (fullscreen.isApiEnabled()) {
-        void fullscreen.exit().then(resolve, reject);
+        fullscreen.exit().then(resolve).catch(reject);
         return;
       }
 
@@ -278,7 +284,7 @@ export namespace FullscreenController {
         readonly toggleNativeSubtitles?: boolean | undefined;
       };
 
-  export interface RequestOptions extends Readonly<FullscreenOptions> {}
+  export type RequestOptions = Readonly<FullscreenOptions>;
 
   export enum Events {
     Change = 'change',
