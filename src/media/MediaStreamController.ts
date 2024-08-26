@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import type { BaseMediaController } from './BaseMediaController';
 import { resetMedia } from './resetMedia';
 
@@ -40,7 +38,7 @@ export function addTrack(
     'ended',
     () => {
       removeTrack(mediaStream, track);
-      onEnded && onEnded();
+      if (onEnded) onEnded();
     },
     { once: true }
   );
@@ -72,7 +70,7 @@ export class MediaStreamController implements BaseMediaController {
     const { media } = this;
     // this.detachMedia();
     this.mediaStream = stream;
-    media && this.attach(media);
+    if (media) this.attach(media);
   }
 
   removeTrack(track: MediaStreamTrack): void {
@@ -82,7 +80,7 @@ export class MediaStreamController implements BaseMediaController {
   addTrack(track: MediaStreamTrack, onEnded?: VoidFunction | undefined): void {
     addTrack(this.mediaStream, track, () => {
       this.removeTrack(track);
-      onEnded && onEnded();
+      if (onEnded) onEnded();
     });
   }
 

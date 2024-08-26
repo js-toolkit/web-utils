@@ -16,6 +16,7 @@ import {
 } from './utils';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface HTMLMediaElementEventMap extends TextTracksEventMap {}
 }
 
@@ -73,7 +74,7 @@ export class TextTracksController
       hideActiveTrack: true,
       preferCueRowLength: 0,
     };
-    options && this.setOptions(options);
+    if (options) this.setOptions(options);
   }
 
   setOptions(options: Partial<TextTracksController.Options>): void {
@@ -175,11 +176,12 @@ export class TextTracksController
           textTrack: this.textTrack,
           index: newCurrentIndex,
         });
-        this.options.emitNativeEvents &&
+        if (this.options.emitNativeEvents) {
           dispatchNativeEvent(media, 'texttrackchange', {
             textTrack: this.textTrack,
             index: newCurrentIndex,
           });
+        }
       }
     };
 
@@ -207,8 +209,9 @@ export class TextTracksController
         }
         if (changed) {
           this.emit(this.Events.TextTrackCueChanged, { textTrack: event.target, cues });
-          this.options.emitNativeEvents &&
+          if (this.options.emitNativeEvents) {
             dispatchNativeEvent(media, 'texttrackcuechange', { textTrack: event.target, cues });
+          }
         }
       };
     })();
@@ -216,8 +219,9 @@ export class TextTracksController
     const onTextTracksUpdate = (): void => {
       this.textTrackList = parseTextTracks(media);
       this.emit(this.Events.TextTrackListChanged, { textTracks: this.textTrackList });
-      this.options.emitNativeEvents &&
+      if (this.options.emitNativeEvents) {
         dispatchNativeEvent(media, 'texttracklistchange', { textTracks: this.textTrackList });
+      }
       setActiveTextTrack(
         media,
         this.textTrack ?? this.nextTextTrack,
