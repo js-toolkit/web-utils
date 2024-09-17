@@ -123,7 +123,7 @@ export function getAutoConnector<SendData, ReceiveData>({
     target: MessageEventSource,
     origin: string,
     targetId: string,
-    transfer?: Transferable[] | undefined
+    transfer?: Transferable[]
   ): void => {
     if (window === target) return;
     if (isWindowProxy(target)) {
@@ -277,6 +277,13 @@ export function getAutoConnector<SendData, ReceiveData>({
     }
   };
 
+  const stop = (): void => {
+    if (disposer) {
+      disposer();
+      disposer = undefined;
+    }
+  };
+
   const start: AutoConnector['start'] = (targets, options = {}): void => {
     if (disposer && !options.append) {
       logger.warn(`${`${label}: `}Already started. You should first call \`stop\`.`);
@@ -312,14 +319,14 @@ export function getAutoConnector<SendData, ReceiveData>({
 
       const frameSet = options.append ? newWindowsSet : specialTargets;
       frameSet.forEach((frameWindow) => {
-        frameWindow !== window && sendPing(frameWindow, '*', '');
+        if (frameWindow !== window) sendPing(frameWindow, '*', '');
       });
     };
 
     const cancel = typeof targets === 'function' ? onDOMReady(ready) : ready();
 
     disposer = () => {
-      cancel && cancel();
+      if (cancel) cancel();
       window.removeEventListener('message', onReceiveMessage);
       specialTargets = undefined;
     };
@@ -340,13 +347,6 @@ export function getAutoConnector<SendData, ReceiveData>({
     if (specialTargets) {
       const list = specialTargets;
       set.forEach((t) => list.delete(t));
-    }
-  };
-
-  const stop = (): void => {
-    if (disposer) {
-      disposer();
-      disposer = undefined;
     }
   };
 
