@@ -154,6 +154,10 @@ export function parseCueText<P = CueSegment>(
     }
   };
 
+  const getNextId = (): string => {
+    return `${segments.length}-${(segments.at(-1)?.length ?? 0) + 1}`;
+  };
+
   const addLeafToken = (text: string): void => {
     const node = createHtmlNode('c', '')!;
     node.appendChild(window.document.createTextNode(unescape(text)));
@@ -172,16 +176,12 @@ export function parseCueText<P = CueSegment>(
     } else {
       rawText[rawText.length - 1] += text;
     }
-    newRow && segments.push([]);
+    if (newRow) segments.push([]);
     if (current == null) {
       addLeafToken(text);
     } else {
       current.appendChild(window.document.createTextNode(unescape(text)));
     }
-  };
-
-  const getNextId = (): string => {
-    return `${segments.length}-${(segments.at(-1)?.length ?? 0) + 1}`;
   };
 
   while ((([input, token] = nextToken(input)), token) != null) {

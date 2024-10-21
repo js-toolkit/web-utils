@@ -36,7 +36,6 @@ export function fakeDetachTextTracks(media: HTMLMediaElement): void {
 
 export function parseTextTracks(media: HTMLMediaElement): TextTrackInfo[] {
   if (media.textTracks.length === 0) return [];
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   return ((Array.prototype as TextTrack[]).reduce<TextTrackInfo[]>).call(
     media.textTracks,
     (acc, { customGroupId, id, kind, language, label }) => {
@@ -89,7 +88,6 @@ export function addTextTracks(
 ): void {
   // console.log('addTracks', media.textTracks.length, media.readyState);
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   const textTrackMap = ((Array.prototype as TextTrack[]).reduce<Record<string, TextTrack>>).call(
     media.textTracks,
     (acc, tt) => {

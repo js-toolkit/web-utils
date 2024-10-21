@@ -67,7 +67,7 @@ export class TextTracksController
     return TextTracksController.Events;
   }
 
-  constructor(options?: TextTracksController.Options | undefined) {
+  constructor(options?: TextTracksController.Options) {
     super();
     this.options = {
       emitNativeEvents: false,

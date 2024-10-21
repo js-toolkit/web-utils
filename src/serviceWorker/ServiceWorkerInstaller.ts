@@ -44,14 +44,11 @@ export class ServiceWorkerInstaller extends DataEventEmitter<
   }
 
   destroy(): void {
-    this.cancelDefferedRegister && this.cancelDefferedRegister();
+    if (this.cancelDefferedRegister) this.cancelDefferedRegister();
     this.removeAllListeners();
   }
 
-  register(
-    swUrl: string | URL,
-    options?: ServiceWorkerInstaller.RegistrationOptions | undefined
-  ): void {
+  register(swUrl: string | URL, options?: ServiceWorkerInstaller.RegistrationOptions): void {
     if (!ServiceWorkerInstaller.isAvailable()) {
       throw new ServiceWorkerUnavailableError();
     }
@@ -123,7 +120,7 @@ export class ServiceWorkerInstaller extends DataEventEmitter<
   }
 
   unregister(): void {
-    this.cancelDefferedRegister && this.cancelDefferedRegister();
+    if (this.cancelDefferedRegister) this.cancelDefferedRegister();
     this.registration?.unregister().catch((error: unknown) => {
       const nextError = new Error('Error during service worker unregister', { cause: error });
       // this.options.logger.error(this.logPrefix, getErrorMessage(nextError));
@@ -133,9 +130,9 @@ export class ServiceWorkerInstaller extends DataEventEmitter<
 }
 
 export namespace ServiceWorkerInstaller {
-  export interface Options {
-    // readonly logger?: Pick<Console, 'info' | 'error'> | undefined;
-  }
+  // export interface Options {
+  //   readonly logger?: Pick<Console, 'info' | 'error'> | undefined;
+  // }
 
   export interface RegistrationOptions extends globalThis.RegistrationOptions {
     /** Wait for page ready. */

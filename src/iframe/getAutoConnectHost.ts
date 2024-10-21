@@ -20,7 +20,7 @@ interface AutoConnectHost {
   readonly stop: VoidFunction;
   readonly destroy: VoidFunction;
   /** Send `ready` to iframe. */
-  readonly ready: <T>(data: T, target: MessageEventSource, origin?: string | undefined) => void;
+  readonly ready: <T>(data: T, target: MessageEventSource, origin?: string) => void;
 }
 
 // interface AutoConnectHostOptions<T = AnyObject> {
@@ -83,7 +83,7 @@ export function getAutoConnectHost<T>({
     message: M,
     target: MessageEventSource,
     origin: string,
-    transfer?: Transferable[] | undefined
+    transfer?: Transferable[]
   ): void => {
     if (window === target) return;
     if (isWindowProxy(target)) {

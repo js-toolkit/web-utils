@@ -180,7 +180,7 @@ export class PeerConnection extends DataEventEmitter<PeerConnection.EventMap, Pe
       }
     });
 
-    stream && this.attachStream(stream);
+    if (stream) this.attachStream(stream);
   }
 
   /** A call to establish a connection. */

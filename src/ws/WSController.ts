@@ -39,7 +39,7 @@ export class WSController<TData = unknown> extends DataEventEmitter<
     | undefined;
   // private closeInvoked = false;
 
-  constructor(url: UrlProvider, options?: WSController.Options | undefined) {
+  constructor(url: UrlProvider, options?: WSController.Options) {
     super();
     const { logger, protocols, binaryType, idleTimeout, halfOpenDetection, startClosed, ...rest } =
       options ?? {};
@@ -103,7 +103,7 @@ export class WSController<TData = unknown> extends DataEventEmitter<
 
     this.listener
       .on('open', () => {
-        this.reconnectOnIdle && this.reconnectOnIdle();
+        if (this.reconnectOnIdle) this.reconnectOnIdle();
         this.halfOpen?.heartbeat();
         this.emit(this.Events.Connected);
       })
@@ -120,7 +120,7 @@ export class WSController<TData = unknown> extends DataEventEmitter<
         }
       })
       .on('message', (event: MessageEvent) => {
-        this.reconnectOnIdle && this.reconnectOnIdle();
+        if (this.reconnectOnIdle) this.reconnectOnIdle();
         this.halfOpen?.onMessage(event);
         this.emit(this.Events.Message, event);
       })
@@ -156,7 +156,7 @@ export class WSController<TData = unknown> extends DataEventEmitter<
     this.ws.send(data);
   }
 
-  close(code?: number | undefined, reason?: string | undefined): void {
+  close(code?: number, reason?: string): void {
     // if (this.closeInvoked) return;
     // this.closeInvoked = true;
     const hasWS = !!this.ws;
@@ -171,7 +171,7 @@ export class WSController<TData = unknown> extends DataEventEmitter<
     } catch (ex) {
       this.logger.warn(ex);
     }
-    hasWS && this.emit(this.Events.Closed, reason ? { reason } : undefined);
+    if (hasWS) this.emit(this.Events.Closed, reason ? { reason } : undefined);
   }
 
   destroy(): void {
