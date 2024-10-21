@@ -184,13 +184,11 @@ export function getAutoConnector<SendData, ReceiveData>({
       message.data
     );
 
-    if (strictTargets && specialTargets) {
-      if (!specialTargets.has(target)) {
-        logger.warn(
-          `${`${label}: `}Could not find target (uid=${targetId},self.uid=${uid}) by message.source.`
-        );
-        return;
-      }
+    if (strictTargets && specialTargets && !specialTargets.has(target)) {
+      logger.debug(
+        `${`${label}: `}Could not find target (uid=${targetId},self.uid=${uid}) by message.source.`
+      );
+      return;
     }
 
     const origin = getOriginFromMessage(message);
