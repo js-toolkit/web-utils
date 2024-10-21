@@ -16,28 +16,28 @@ export class WakeLockController extends DataEventEmitter<
   private wakelock: WakeLockSentinel | undefined;
   private releasing = false;
   /** Lock when document will be visible. */
-  private lockOnVisible = false;
+  private relockOnVisible = false;
 
   private restoreWakeLock = (): void => {
-    // console.log('*', this.lockOnVisible, this.wakelock);
-    if (document.visibilityState === 'visible' && this.lockOnVisible && !this.isActive()) {
+    if (document.visibilityState === 'visible' && this.relockOnVisible) {
+      this.relockOnVisible = false;
       this.request().catch((error) => this.emit('error', { error }));
     }
   };
 
   private onRelease = (): void => {
-    // console.log('* release', document.visibilityState, this.wakelock);
     if (!this.wakelock) return;
     this.wakelock.removeEventListener('release', this.onRelease);
     this.wakelock = undefined;
     // Unsubscribe only if document is visible else keep subscription to re-lock when document will be visible again.
     // Release the wakelock happens before `visibilitychange` callback.
-    if (document.visibilityState === 'visible') {
+    if (this.releasing) {
       document.removeEventListener('visibilitychange', this.restoreWakeLock);
     }
     // If not releasing via api
-    else if (!this.releasing) {
-      this.lockOnVisible = true;
+    else if (document.visibilityState === 'hidden') {
+      this.relockOnVisible = true;
+      document.addEventListener('visibilitychange', this.restoreWakeLock);
     }
     this.emit('deactivated');
   };
@@ -47,7 +47,6 @@ export class WakeLockController extends DataEventEmitter<
   }
 
   async request(): Promise<void> {
-    // console.log('* lock', this.wakelock);
     if (this.wakelock) return;
     try {
       this.wakelock = await navigator.wakeLock.request('screen');
@@ -55,14 +54,14 @@ export class WakeLockController extends DataEventEmitter<
       // Probably do not have permissions.
       if (document.visibilityState === 'visible') throw error;
       // If trying to wakelock when document inactive.
-      this.lockOnVisible = true;
+      this.relockOnVisible = true;
+      document.addEventListener('visibilitychange', this.restoreWakeLock);
       this.emit('error', { error });
+      return;
     }
-    document.addEventListener('visibilitychange', this.restoreWakeLock);
-    if (this.wakelock) {
-      this.wakelock.addEventListener('release', this.onRelease);
-      this.emit('activated');
-    }
+    this.relockOnVisible = false;
+    this.wakelock.addEventListener('release', this.onRelease);
+    this.emit('activated');
   }
 
   async release(): Promise<void> {
@@ -70,6 +69,7 @@ export class WakeLockController extends DataEventEmitter<
     try {
       this.releasing = true;
       await this.wakelock.release();
+      this.relockOnVisible = false;
     } finally {
       this.releasing = false;
     }
