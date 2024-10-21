@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { onDOMReady } from './onDOMReady';
 
 export interface LoadScriptOptions
@@ -5,39 +7,37 @@ export interface LoadScriptOptions
   keepScript?: boolean | undefined;
 }
 
-function isScriptAdded(src: string): boolean {
+function findScript(src: string): HTMLScriptElement | undefined {
   const url = src.startsWith('//') ? window.location.protocol + src : src;
   for (let i = 0; i < document.scripts.length; i += 1) {
     if (document.scripts[i].src === url) {
-      return true;
+      return document.scripts[i];
     }
   }
-  return false;
+  return undefined;
 }
 
 export function loadScript(
   url: string,
-  { keepScript, id, async = true, defer = false }: LoadScriptOptions = {}
+  { keepScript, id, async = true, defer = false }: LoadScriptOptions = {},
+  isExecuted: (() => boolean) | undefined = undefined
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     onDOMReady(() => {
       try {
-        if (id) {
-          if (document.scripts.namedItem(id)) {
-            resolve();
-            return;
-          }
-        } else if (isScriptAdded(url)) {
+        const addedScript = id ? document.scripts.namedItem(id) : findScript(url);
+
+        if (addedScript && (!isExecuted || isExecuted())) {
           resolve();
           return;
         }
 
-        const scriptElement = document.createElement('script');
+        const scriptElement = addedScript ?? document.createElement('script');
 
         const done = (): void => {
           scriptElement.removeEventListener('load', onLoad);
           scriptElement.removeEventListener('error', onError);
-          if (!keepScript) {
+          if (!keepScript && !addedScript) {
             scriptElement.remove();
           }
         };
@@ -56,17 +56,17 @@ export function loadScript(
           reject(ex);
         };
 
-        if (id) {
-          scriptElement.id = id;
-        }
-        scriptElement.async = async;
-        scriptElement.defer = defer;
-        scriptElement.src = url;
-
         scriptElement.addEventListener('load', onLoad, { once: true });
         scriptElement.addEventListener('error', onError, { once: true });
-
-        document.head.appendChild(scriptElement);
+        if (!addedScript) {
+          if (id) {
+            scriptElement.id = id;
+          }
+          scriptElement.async = async;
+          scriptElement.defer = defer;
+          scriptElement.src = url;
+          document.head.appendChild(scriptElement);
+        }
       } catch (ex) {
         reject(ex);
       }
