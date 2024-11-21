@@ -20,7 +20,9 @@ interface Options {
 
 export function getEventAwaiter<
   T extends EmitterTarget,
-  E extends T extends EventTargetLike ? GetEventTypeFromFn<T['addEventListener']> : GetEventType<T>,
+  E extends T extends EventTargetLike
+    ? GetEventTypeFromFn<OverloadToUnion<T['addEventListener']>>
+    : GetEventType<T>,
 >(
   target: T,
   resolveEvent: E | E[],
