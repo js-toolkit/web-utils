@@ -21,12 +21,12 @@ export type GetDomEventType<T extends DomEventTarget> = T['addEventListener'] ex
   (
     type: infer K,
     listener: (this: T, ev: any) => any,
-    options?: boolean | AddEventListenerOptions | undefined
+    options?: boolean | AddEventListenerOptions
   ): void;
   (
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions | undefined
+    options?: boolean | AddEventListenerOptions
   ): void;
 }
   ? K
@@ -37,18 +37,18 @@ export type GetDomEventListener<E, EM extends AnyObject> = (
   ...rest: unknown[]
 ) => unknown;
 
+export type GetEventTypeFromFn<T extends EventEmitterLike['on']> = T extends {
+  (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown;
+}
+  ? K
+  : string;
+
 export type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
   ? GetDomEventType<T>
   : T extends EventEmitterLike
-    ? T['on'] extends { (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown }
-      ? K
-      : string
+    ? GetEventTypeFromFn<T['on']>
     : T extends EventTargetLike
-      ? T['addEventListener'] extends {
-          (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown;
-        }
-        ? K
-        : string
+      ? GetEventTypeFromFn<T['addEventListener']>
       : string;
 
 export type GetEventListener<
@@ -145,8 +145,7 @@ try {
     },
   };
   window.addEventListener('__testpassive__', null as unknown as EventListener, options);
-  // eslint-disable-next-line no-empty
-} catch (err) {}
+} catch {}
 
 export function normalizeOptions(
   options: boolean | AddEventListenerOptions | undefined
