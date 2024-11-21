@@ -127,9 +127,9 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
       const normal = this.getListeners<L>({ event, type: 'normal' });
       const capture = this.getListeners<L>({ event, type: 'capture' });
       const acc: Record<string, L[]> = {};
-      const callback = ([type, l]: [string, L[]]): void => {
-        const list = acc[type];
-        acc[type] = list ? list.concat(l) : l;
+      const callback = ([evtype, l]: [string, L[]]): void => {
+        const list = acc[evtype];
+        acc[evtype] = list ? list.concat(l) : l;
       };
       Object.entries(normal).forEach(callback);
       Object.entries(capture).forEach(callback);
@@ -138,16 +138,16 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
 
     const entries = event ? map[event] && { [event]: map[event] } : map;
     if (!entries) return {};
-    return Object.entries(entries).reduce((acc, [type, m]) => {
+    return Object.entries(entries).reduce((acc, [evtype, m]) => {
       const listeners = m ? Array.from(m.keys()) : [];
-      if (listeners.length > 0) acc[type] = listeners;
+      if (listeners.length > 0) acc[evtype] = listeners;
       return acc;
     }, {} as AnyObject);
   }
 
   has<K extends GetEventType<T>>(
     type: K,
-    listener?: GetEventListener<T, K, M> | undefined,
+    listener?: GetEventListener<T, K, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
       ...unknown[],
@@ -156,7 +156,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
 
   has(
     type: string,
-    listener?: GetEventListener<T, string, M> | undefined,
+    listener?: GetEventListener<T, string, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
       ...unknown[],
@@ -165,7 +165,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
 
   has(
     type: string,
-    listener?: GetEventListener<T, string, M> | undefined,
+    listener?: GetEventListener<T, string, M>,
     ...rest: [
       ...(T extends DomEventTarget ? [options?: GetOffOptions<T> | undefined] : []),
       ...unknown[],
@@ -373,11 +373,11 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
     return this;
   }
 
-  removeAllListeners<K extends GetEventType<T>>(type?: K | undefined): this;
+  removeAllListeners<K extends GetEventType<T>>(type?: K): this;
 
-  removeAllListeners(type?: string | undefined): this;
+  removeAllListeners(type?: string): this;
 
-  removeAllListeners(type?: string | undefined): this {
+  removeAllListeners(type?: string): this {
     if (type) {
       const normalMap = this.normalListeners[type];
       normalMap &&

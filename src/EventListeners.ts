@@ -44,7 +44,7 @@ export class EventListeners {
     return listener as EventEmitterListener<T, M>;
   }
 
-  removeAllListeners<T extends EmitterTarget>(target?: T | undefined, scope?: string): this {
+  removeAllListeners<T extends EmitterTarget>(target?: T, scope?: string): this {
     if (target) {
       if (scope) {
         const map = this.listeners.get(target);

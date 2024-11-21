@@ -4,7 +4,7 @@ export interface RafLoopStartOptions {
 }
 
 export interface RafLoop {
-  start: (callback: FrameRequestCallback, options?: RafLoopStartOptions | undefined) => void;
+  start: (callback: FrameRequestCallback, options?: RafLoopStartOptions ) => void;
   stop: VoidFunction;
   isActive: () => boolean;
 }

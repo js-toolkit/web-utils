@@ -1,8 +1,4 @@
-export function saveFileAs(
-  filename: string,
-  url: string,
-  attrs?: Record<string, string> | undefined
-): void {
+export function saveFileAs(filename: string, url: string, attrs?: Record<string, string>): void {
   const link = document.createElement('a');
   link.setAttribute('href', url);
   link.setAttribute('download', filename);

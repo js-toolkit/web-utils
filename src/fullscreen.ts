@@ -99,7 +99,7 @@ export namespace fullscreen {
   export function on(
     type: EventType,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions | undefined
+    options?: boolean | AddEventListenerOptions
   ): void {
     const eventName = eventNameMap[type];
     if (eventName) document.addEventListener(eventName, listener, options);
@@ -108,13 +108,13 @@ export namespace fullscreen {
   export function off(
     type: EventType,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions | undefined
+    options?: boolean | EventListenerOptions
   ): void {
     const eventName = eventNameMap[type];
     if (eventName) document.removeEventListener(eventName, listener, options);
   }
 
-  export function request(elem: Element, options?: FullscreenOptions | undefined): Promise<void> {
+  export function request(elem: Element, options?: FullscreenOptions): Promise<void> {
     return new Promise((resolve, reject) => {
       if (!names) {
         throw new UnavailableError();
