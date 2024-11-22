@@ -1,7 +1,6 @@
 import { EventEmitter } from 'eventemitter3';
 import { EventListeners } from '../../EventListeners';
 import type {} from '../toggleNativeSubtitles';
-import type { BaseMediaController } from '../BaseMediaController';
 import { MediaNotAttachedError } from '../MediaNotAttachedError';
 import {
   type ActivateTextTrackInfo,
@@ -52,7 +51,7 @@ function dispatchNativeEvent<T extends keyof TextTracksEventMap>(
 
 export class TextTracksController
   extends EventEmitter<TextTracksController.EventMap>
-  implements BaseMediaController
+  implements Disposable
 {
   private readonly options: RequiredStrict<TextTracksController.Options>;
   private readonly eventListeners = new EventListeners();
@@ -304,6 +303,10 @@ export class TextTracksController
   destroy(): void {
     this.detach();
     this.removeAllListeners();
+  }
+
+  [Symbol.dispose](): void {
+    this.destroy();
   }
 }
 

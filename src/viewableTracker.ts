@@ -9,7 +9,7 @@ export interface ViewableTrackerOptions {
   readonly onChange: (viewable: boolean) => void;
 }
 
-export interface ViewableTracker {
+export interface ViewableTracker extends Disposable {
   readonly check: VoidFunction;
   readonly destroy: VoidFunction;
 }
@@ -94,5 +94,8 @@ export function getViewableTracker(
   return {
     check,
     destroy,
+    [Symbol.dispose](): void {
+      this.destroy();
+    },
   };
 }

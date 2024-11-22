@@ -57,7 +57,10 @@ export function enterPseudoFullscreen(element: Element & ElementCSSInlineStyle):
   };
 }
 
-export class FullscreenController extends EventEmitter<FullscreenController.EventMap> {
+export class FullscreenController
+  extends EventEmitter<FullscreenController.EventMap>
+  implements AsyncDisposable
+{
   static isApiAvailable(): boolean {
     return fullscreen.isApiEnabled();
   }
@@ -108,19 +111,6 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
       this.fallback.addEventListener('webkitbeginfullscreen', this.videoBeginFullscreenHandler);
       this.fallback.addEventListener('webkitendfullscreen', this.videoEndFullscreenHandler);
     }
-  }
-
-  destroy(): Promise<void> {
-    return this.exit().then(() => {
-      // Because of unbind is calling before the change event will be fired.
-      return new Promise((resolve) => {
-        requestAnimationFrame(() => {
-          this.removeAllListeners();
-          this.unbind();
-          resolve();
-        });
-      });
-    });
   }
 
   isAvailable(): boolean {
@@ -267,6 +257,23 @@ export class FullscreenController extends EventEmitter<FullscreenController.Even
 
       reject(new fullscreen.UnavailableError());
     });
+  }
+
+  destroy(): Promise<void> {
+    return this.exit().then(() => {
+      // Because of unbind is calling before the change event will be fired.
+      return new Promise((resolve) => {
+        requestAnimationFrame(() => {
+          this.removeAllListeners();
+          this.unbind();
+          resolve();
+        });
+      });
+    });
+  }
+
+  [Symbol.asyncDispose](): PromiseLike<void> {
+    return this.destroy();
   }
 }
 

@@ -17,10 +17,10 @@ function getNotConnectedError(): Error {
   return new Error('The object is not connected yet.');
 }
 
-export class WSController<TData = unknown> extends DataEventEmitter<
-  WSController.EventMap<TData>,
-  WSController<TData>
-> {
+export class WSController<TData = unknown>
+  extends DataEventEmitter<WSController.EventMap<TData>, WSController<TData>>
+  implements Disposable
+{
   // eslint-disable-next-line class-methods-use-this
   get Events(): typeof WSController.Events {
     return WSController.Events;
@@ -178,6 +178,10 @@ export class WSController<TData = unknown> extends DataEventEmitter<
     this.close();
     this.listener.removeAllListeners();
     this.removeAllListeners();
+  }
+
+  [Symbol.dispose](): void {
+    this.destroy();
   }
 }
 

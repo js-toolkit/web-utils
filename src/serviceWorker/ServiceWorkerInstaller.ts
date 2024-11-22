@@ -19,16 +19,19 @@ export class ServiceWorkerUnavailableError extends ErrorCompat {
   }
 }
 
-export class ServiceWorkerInstaller extends DataEventEmitter<
-  {
-    registered: [{ registration: ServiceWorkerRegistration }];
-    unregistered: [{ registration: ServiceWorkerRegistration }];
-    updatePending: [{ registration: ServiceWorkerRegistration }];
-    updated: [{ registration: ServiceWorkerRegistration }];
-    error: [{ error: unknown }];
-  },
-  ServiceWorkerInstaller
-> {
+export class ServiceWorkerInstaller
+  extends DataEventEmitter<
+    {
+      registered: [{ registration: ServiceWorkerRegistration }];
+      unregistered: [{ registration: ServiceWorkerRegistration }];
+      updatePending: [{ registration: ServiceWorkerRegistration }];
+      updated: [{ registration: ServiceWorkerRegistration }];
+      error: [{ error: unknown }];
+    },
+    ServiceWorkerInstaller
+  >
+  implements Disposable
+{
   static isAvailable(): boolean {
     return 'serviceWorker' in navigator;
   }
@@ -41,11 +44,6 @@ export class ServiceWorkerInstaller extends DataEventEmitter<
   constructor(/* options: ServiceWorkerInstaller.Options */) {
     super();
     // this.options = { ...options, logger: options.logger ?? console };
-  }
-
-  destroy(): void {
-    if (this.cancelDefferedRegister) this.cancelDefferedRegister();
-    this.removeAllListeners();
   }
 
   register(swUrl: string | URL, options?: ServiceWorkerInstaller.RegistrationOptions): void {
@@ -126,6 +124,15 @@ export class ServiceWorkerInstaller extends DataEventEmitter<
       // this.options.logger.error(this.logPrefix, getErrorMessage(nextError));
       this.emit('error', { error: nextError });
     });
+  }
+
+  destroy(): void {
+    if (this.cancelDefferedRegister) this.cancelDefferedRegister();
+    this.removeAllListeners();
+  }
+
+  [Symbol.dispose](): void {
+    this.destroy();
   }
 }
 

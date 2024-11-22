@@ -13,7 +13,7 @@ declare global {
 
 const getPipUnavailableError = (): Error => new Error('PiP is not available');
 
-export class PipController extends EventEmitter<PipController.EventMap> {
+export class PipController extends EventEmitter<PipController.EventMap> implements AsyncDisposable {
   private static isApiEnabled(): boolean {
     return (
       !!HTMLVideoElement.prototype.requestPictureInPicture &&
@@ -85,13 +85,6 @@ export class PipController extends EventEmitter<PipController.EventMap> {
     }
   }
 
-  destroy(): Promise<void> {
-    return this.exit().finally(() => {
-      this.removeAllListeners();
-      this.listener.removeAllListeners();
-    });
-  }
-
   isPip(): boolean {
     return PipController.isApiEnabled()
       ? document.pictureInPictureElement === this.listener.target
@@ -154,6 +147,17 @@ export class PipController extends EventEmitter<PipController.EventMap> {
         this.listener.target.webkitSetPresentationMode('inline');
       }
     });
+  }
+
+  destroy(): Promise<void> {
+    return this.exit().finally(() => {
+      this.removeAllListeners();
+      this.listener.removeAllListeners();
+    });
+  }
+
+  [Symbol.asyncDispose](): PromiseLike<void> {
+    return this.destroy();
   }
 }
 

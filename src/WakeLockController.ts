@@ -79,4 +79,8 @@ export class WakeLockController extends DataEventEmitter<
     await this.release();
     this.removeAllListeners();
   }
+
+  [Symbol.asyncDispose](): PromiseLike<void> {
+    return this.destroy();
+  }
 }

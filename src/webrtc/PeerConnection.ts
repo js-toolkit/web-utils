@@ -7,7 +7,10 @@ import { getErrorMessage } from '@js-toolkit/utils/getErrorMessage';
 import { hasIn } from '@js-toolkit/utils/hasIn';
 import * as sdpUtils from './sdputils';
 
-export class PeerConnection extends DataEventEmitter<PeerConnection.EventMap, PeerConnection> {
+export class PeerConnection
+  extends DataEventEmitter<PeerConnection.EventMap, PeerConnection>
+  implements Disposable
+{
   // eslint-disable-next-line class-methods-use-this
   get Events(): typeof PeerConnection.Events {
     return PeerConnection.Events;
@@ -220,6 +223,10 @@ export class PeerConnection extends DataEventEmitter<PeerConnection.EventMap, Pe
   destroy(): void {
     this.close();
     this.removeAllListeners();
+  }
+
+  [Symbol.dispose](): void {
+    this.destroy();
   }
 }
 

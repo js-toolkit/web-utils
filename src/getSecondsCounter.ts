@@ -11,7 +11,7 @@ export interface SecondsCounterOptions {
     | undefined;
 }
 
-export interface SecondsCounter {
+export interface SecondsCounter extends Disposable {
   readonly getTotal: () => number;
   readonly push: (
     currentTime: number | { currentTime: number } | { data: { currentTime: number } }
@@ -60,6 +60,9 @@ export function getSecondsCounter({ onChange }: SecondsCounterOptions = {}): Sec
       destroyed = true;
       listener = undefined;
       this.reset();
+    },
+    [Symbol.dispose](): void {
+      this.destroy();
     },
   };
 }

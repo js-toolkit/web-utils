@@ -1,4 +1,3 @@
-import type { BaseMediaController } from './BaseMediaController';
 import { resetMedia } from './resetMedia';
 
 export function attachMediaStream(media: HTMLMediaElement, stream: MediaStream | undefined): void {
@@ -44,7 +43,7 @@ export function addTrack(
   );
 }
 
-export class MediaStreamController implements BaseMediaController {
+export class MediaStreamController implements Disposable {
   private media: HTMLMediaElement | undefined;
 
   constructor(private mediaStream: MediaStream) {}
@@ -94,5 +93,9 @@ export class MediaStreamController implements BaseMediaController {
   destroy(): void {
     this.detach();
     this.reset();
+  }
+
+  [Symbol.dispose](): void {
+    this.destroy();
   }
 }

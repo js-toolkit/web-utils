@@ -16,7 +16,7 @@ interface StartOptions {
   readonly append?: boolean;
 }
 
-interface AutoConnector {
+interface AutoConnector extends Disposable {
   /** If function passed the connector waits until DOM ready. */
   readonly start: (
     targets: ArrayLike<Target> | (() => ArrayLike<Target>),
@@ -382,6 +382,9 @@ export function getAutoConnector<SendData, ReceiveData>({
         });
         channelMap.clear();
       }
+    },
+    [Symbol.dispose](): void {
+      this.destroy();
     },
   };
 }
