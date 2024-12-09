@@ -80,7 +80,7 @@ export function setActiveTextTrack(
   return changed;
 }
 
-/** Dynamically add text tracks */
+/** Dynamically add text tracks if they not exist. */
 export function addTextTracks(
   media: HTMLMediaElement,
   textTrackList: readonly TextTrackItem[],
@@ -88,7 +88,7 @@ export function addTextTracks(
 ): void {
   // console.log('addTracks', media.textTracks.length, media.readyState);
 
-  const textTrackMap = ((Array.prototype as TextTrack[]).reduce<Record<string, TextTrack>>).call(
+  const existedMap = ((Array.prototype as TextTrack[]).reduce<Record<string, TextTrack>>).call(
     media.textTracks,
     (acc, tt) => {
       if (tt.language) {
@@ -100,7 +100,7 @@ export function addTextTracks(
   );
 
   textTrackList.forEach((tt) => {
-    if (!textTrackMap[tt.language]) {
+    if (!existedMap[tt.language]) {
       const trackEl = document.createElement('track');
       trackEl.src = tt.src;
       trackEl.srclang = tt.language;

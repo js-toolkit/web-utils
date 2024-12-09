@@ -229,7 +229,6 @@ export class TextTracksController
     };
 
     this.media = media;
-    this.textTrackList = parseTextTracks(media);
     let lockUpdate = false;
 
     const addTrack = (track: TextTrack): void => {
@@ -248,6 +247,7 @@ export class TextTracksController
       .on('removetrack', ({ track }) => track && removeTrack(track));
 
     if (this.media.textTracks.length > 0) {
+      this.textTrackList = parseTextTracks(media);
       lockUpdate = true;
       try {
         Array.prototype.forEach.call(this.media.textTracks, addTrack);
