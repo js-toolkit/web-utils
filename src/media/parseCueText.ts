@@ -78,12 +78,16 @@ function nextToken(input: string): [output: string, token: string | undefined] {
   if (!input) {
     return [input, undefined];
   }
-  const matchAr = input.match(/^([^<]*)(<[^>]+>?)?/);
+  const matchAr = input.match(/^([^<]*)(<[^>]*>?)?/);
   if (!matchAr) {
     return [input, undefined];
   }
   // If there is some text before the next tag, return it, otherwise return the tag.
   const token = matchAr[1] ? matchAr[1] : matchAr[2];
+  // If tag is invalid or it is not a tag. Eg: <>.
+  if (token == null) {
+    return [input, token];
+  }
   // Consume 'n' characters from the input.
   return [input.substring(token.length), token];
 }
@@ -117,6 +121,7 @@ export interface ParseCueTextResult<P> {
   readonly rawText: string[];
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/API/WebVTT_API/Web_Video_Text_Tracks_Format#cue_payload
 export function parseCueText<P = CueSegment>(
   input0: string,
   map?: (segment: CueSegment, prevSegment: P | undefined) => P,
