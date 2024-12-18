@@ -13,6 +13,7 @@ export function onPageReady(callback: VoidFunction, options?: Options): VoidFunc
   let delayed: delay.Delay | undefined;
 
   const cancel = (): void => {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     window.removeEventListener('load', cbWrapper);
     delayed?.cancel();
   };

@@ -4,7 +4,7 @@ export interface RafLoopStartOptions {
 }
 
 export interface RafLoop {
-  start: (callback: FrameRequestCallback, options?: RafLoopStartOptions ) => void;
+  start: (callback: FrameRequestCallback, options?: RafLoopStartOptions) => void;
   stop: VoidFunction;
   isActive: () => boolean;
 }
@@ -18,6 +18,7 @@ export function createRafLoop(): RafLoop {
   let rafCallback: FrameRequestCallback | undefined;
 
   const call = (): void => {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     raf = scope.requestAnimationFrame(step);
   };
 

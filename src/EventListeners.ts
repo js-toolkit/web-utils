@@ -25,7 +25,7 @@ export class EventListeners {
 
   private readonly listeners = new Map<
     EmitterTarget,
-    Map<string, EventEmitterListener<any, any>>
+    Map<string, EventEmitterListener<EmitterTarget, AnyObject>>
   >();
 
   getScopes(): IterableIterator<EmitterTarget> {
@@ -37,7 +37,9 @@ export class EventListeners {
     scope?: string
   ): EventEmitterListener<T, M> {
     const id = scope ?? '';
-    const scopeMap = this.listeners.get(target) ?? new Map<string, EventEmitterListener<T, M>>();
+    const scopeMap =
+      this.listeners.get(target) ??
+      new Map<string, EventEmitterListener<EmitterTarget, AnyObject>>();
     !this.listeners.has(target) && this.listeners.set(target, scopeMap);
     const listener = scopeMap.get(id) ?? new EventEmitterListener<T, M>(target);
     !scopeMap.has(id) && scopeMap.set(id, listener);

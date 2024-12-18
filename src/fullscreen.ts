@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { es5ErrorCompat } from '@js-toolkit/utils/es5ErrorCompat';
 import { promisify } from '@js-toolkit/utils/promisify';
 

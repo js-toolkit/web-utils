@@ -27,7 +27,7 @@ declare global {
 }
 
 export function getMediaSource(
-  managedMediaSource?: 'prefer' | 'maybe' | undefined
+  managedMediaSource?: 'prefer' | 'maybe'
 ): typeof MediaSource | undefined {
   if (
     (managedMediaSource === 'prefer' && !!window.ManagedMediaSource) ||

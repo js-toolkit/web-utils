@@ -17,6 +17,7 @@ export function loadImage(
     img.onerror = (event) => {
       img.onload = null;
       img.onerror = null;
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       reject(event);
     };
     if (typeof src === 'string') {

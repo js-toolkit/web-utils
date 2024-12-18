@@ -1,3 +1,5 @@
+import { getErrorMessage } from '@js-toolkit/utils/getErrorMessage';
+
 export interface GeoLocalityOptions extends Pick<GeolocationCoordinates, 'longitude' | 'latitude'> {
   lang?: string | undefined;
 }
@@ -17,7 +19,7 @@ export function getGeoLocality({ longitude, latitude, lang }: GeoLocalityOptions
     .then((data) => {
       /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
       const { address, error } = data;
-      if (error) throw new Error(error.message);
+      if (error) throw new Error(getErrorMessage(error), { cause: error });
       return (address.PlaceName || address.LongLabel || address.ShortLabel || '') as string;
     });
 }
