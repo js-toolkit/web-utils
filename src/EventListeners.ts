@@ -48,13 +48,12 @@ export class EventListeners {
 
   removeAllListeners<T extends EmitterTarget>(target?: T, scope?: string): this {
     if (target) {
+      const map = this.listeners.get(target);
       if (scope) {
-        const map = this.listeners.get(target);
         map?.get(scope)?.removeAllListeners();
         map?.delete(scope);
         map?.size === 0 && this.listeners.delete(target);
       } else {
-        const map = this.listeners.get(target);
         map?.forEach((l) => l.removeAllListeners());
         map?.clear();
         this.listeners.delete(target);
