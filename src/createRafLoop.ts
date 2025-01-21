@@ -1,6 +1,6 @@
 export interface RafLoopStartOptions {
   readonly suspendTimeout?: number | undefined;
-  readonly scope?: AnimationFrameProvider | undefined;
+  readonly scope?: (AnimationFrameProvider & WindowOrWorkerGlobalScope) | undefined;
 }
 
 export interface RafLoop {
@@ -14,11 +14,11 @@ export function createRafLoop(): RafLoop {
   let timer: number | undefined;
   let raf: number | undefined;
   let suspendTimeout = 0;
-  let scope: AnimationFrameProvider = window;
+  let scope: NonNullable<RafLoopStartOptions['scope']> = window;
   let rafCallback: FrameRequestCallback | undefined;
 
   const reset = (): void => {
-    window.clearTimeout(timer);
+    scope.clearTimeout(timer);
     raf && scope.cancelAnimationFrame(raf);
     raf = undefined;
     suspendTimeout = 0;
@@ -35,7 +35,7 @@ export function createRafLoop(): RafLoop {
     if (active) {
       rafCallback(time);
       if (suspendTimeout > 0) {
-        timer = window.setTimeout(call, suspendTimeout);
+        timer = scope.setTimeout(call, suspendTimeout);
       } else {
         call();
       }
