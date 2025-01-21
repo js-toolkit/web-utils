@@ -5,7 +5,7 @@ export interface RafLoopStartOptions {
 
 export interface RafLoop {
   start: (callback: FrameRequestCallback, options?: RafLoopStartOptions) => void;
-  stop: VoidFunction;
+  stop: (waitLast?: boolean) => void;
   isActive: () => boolean;
 }
 
@@ -17,19 +17,33 @@ export function createRafLoop(): RafLoop {
   let scope: AnimationFrameProvider = window;
   let rafCallback: FrameRequestCallback | undefined;
 
+  const reset = (): void => {
+    window.clearTimeout(timer);
+    raf && scope.cancelAnimationFrame(raf);
+    raf = undefined;
+    suspendTimeout = 0;
+    timer = undefined;
+  };
+
   const call = (): void => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     raf = scope.requestAnimationFrame(step);
   };
 
   const step = (time: number): void => {
-    if (active && rafCallback) {
+    if (!rafCallback) return;
+    if (active) {
       rafCallback(time);
       if (suspendTimeout > 0) {
         timer = window.setTimeout(call, suspendTimeout);
       } else {
         call();
       }
+    }
+    // Wait last call
+    else if (raf != null || timer != null) {
+      reset();
+      rafCallback(time);
     }
   };
 
@@ -43,14 +57,10 @@ export function createRafLoop(): RafLoop {
         call();
       }
     },
-    stop: () => {
+    stop: (waitLast) => {
       if (active) {
         active = false;
-        window.clearTimeout(timer);
-        raf && cancelAnimationFrame(raf);
-        raf = undefined;
-        suspendTimeout = 0;
-        timer = undefined;
+        if (!waitLast) reset();
       }
     },
     isActive: (): boolean => active,
