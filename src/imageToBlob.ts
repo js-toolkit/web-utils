@@ -1,3 +1,5 @@
+import { get2dContextError } from './takeSnapshot';
+
 export function imageToBlob(image: HTMLImageElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
@@ -5,7 +7,7 @@ export function imageToBlob(image: HTMLImageElement): Promise<Blob> {
     canvas.height = image.height;
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Failed to get canvas 2d context.');
+    if (!ctx) throw get2dContextError();
 
     ctx.drawImage(image, 0, 0);
 
