@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { es5ErrorCompat } from '@js-toolkit/utils/es5ErrorCompat';
@@ -10,7 +11,6 @@ export class FullscreenUnavailableError extends Error {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace fullscreen {
   interface FnNames {
     readonly requestFullscreenName: string;
@@ -136,13 +136,13 @@ export namespace fullscreen {
       on('change', onFullScreenEntered);
       on('error', onFullScreenError);
 
-      const result = ((elem as AnyObject)[names.requestFullscreenName] as AnyAsyncFunction)(
-        options
-      );
-
-      if (result instanceof Promise) {
-        result.then(onFullScreenEntered).catch(onFullScreenError);
-      }
+      void ((elem as AnyObject)[names.requestFullscreenName] as AnyAsyncFunction)(options);
+      // const result = ((elem as AnyObject)[names.requestFullscreenName] as AnyAsyncFunction)(
+      //   options
+      // );
+      // if (result instanceof Promise) {
+      //   result.then(onFullScreenEntered).catch(onFullScreenError);
+      // }
     });
   }
 
@@ -151,30 +151,30 @@ export namespace fullscreen {
       if (!names) {
         throw new UnavailableError();
       }
-      if (!isFullscreen) {
+      if (!isFullscreen()) {
         resolve();
         return;
       }
 
-      const onFullScreenExit = (): void => {
-        off('change', onFullScreenExit);
+      const onFullScreenExited = (): void => {
+        off('change', onFullScreenExited);
         off('error', onFullScreenError);
         resolve();
       };
       const onFullScreenError = (event: unknown): void => {
-        off('change', onFullScreenExit);
+        off('change', onFullScreenExited);
         off('error', onFullScreenError);
         reject(event);
       };
 
-      on('change', onFullScreenExit);
+      on('change', onFullScreenExited);
       on('error', onFullScreenError);
 
-      const result = ((document as AnyObject)[names.exitFullscreenName] as AnyAsyncFunction)();
-
-      if (result instanceof Promise) {
-        result.then(onFullScreenExit).catch(onFullScreenError);
-      }
+      void ((document as AnyObject)[names.exitFullscreenName] as AnyAsyncFunction)();
+      // const result = ((document as AnyObject)[names.exitFullscreenName] as AnyAsyncFunction)();
+      // if (result instanceof Promise) {
+      //   result.then(onFullScreenExited).catch(onFullScreenError);
+      // }
     });
   }
 
