@@ -5,6 +5,7 @@ import {
 } from '@js-toolkit/utils/DataEventEmitter';
 import { getErrorMessage } from '@js-toolkit/utils/getErrorMessage';
 import { hasIn } from '@js-toolkit/utils/hasIn';
+import log from '@js-toolkit/utils/log';
 import * as sdpUtils from './sdputils';
 
 export class PeerConnection
@@ -21,7 +22,7 @@ export class PeerConnection
 
   constructor(readonly options: PeerConnection.Options = {}) {
     super();
-    this.logger = options.logger ?? console;
+    this.logger = options.logger ?? log.getLogger('PeerConnection');
     this.pc = this.createPC();
   }
 
@@ -236,7 +237,7 @@ export namespace PeerConnection {
     readonly offerOptions?: RTCOfferOptions;
     readonly rtc?: RTCConfiguration;
     readonly codecs?: sdpUtils.PreferCodecs;
-    readonly logger?: Pick<Console, 'warn' | 'debug'>;
+    readonly logger?: Pick<log.Logger, 'debug' | 'warn'> | undefined;
     readonly id?: string;
   }
 

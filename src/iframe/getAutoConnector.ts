@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid';
+import log from '@js-toolkit/utils/log';
 import { onDOMReady } from '../onDOMReady';
 import {
   type MessagesTypes,
@@ -55,7 +56,7 @@ export type AutoConnectorOptions<SendData = AnyObject, ReceiveData = unknown> = 
   readonly messagesTypes: MessagesTypes;
   /** Process messages only from targets passed to `start` method. Default `true`. */
   readonly strictTargets?: boolean;
-  readonly logger?: Pick<Console, 'warn' | 'debug'> | undefined;
+  readonly logger?: Pick<log.Logger, 'v1' | 'warn'> | undefined;
   // readonly channel?: 'open' | 'use' | undefined;
   // readonly onConnect: (
   //   info: ConnectTargetInfo<ReceiveData>,
@@ -104,7 +105,7 @@ export function getAutoConnector<SendData, ReceiveData>({
   strictTargets = true,
   messagesTypes,
   channel: channelOption,
-  logger = console,
+  logger = log.getLogger('AutoConnector'),
   onSendData,
   onConnect,
 }: AutoConnectorOptions<SendData, ReceiveData>): AutoConnector {
@@ -129,13 +130,13 @@ export function getAutoConnector<SendData, ReceiveData>({
     if (isWindowProxy(target)) {
       target.postMessage(message, origin, transfer);
       const targetName = target === window.parent ? 'iframe parent' : 'iframe';
-      logger.debug(
+      logger.v1(
         `${`${label}: `}Post message to ${targetName} (uid=${targetId},self.uid=${uid},origin=${origin}):`,
         message
       );
     } else {
       target.postMessage(message, transfer && { transfer });
-      logger.debug(
+      logger.v1(
         `${`${label}: `}Post message to MessageEventSource (uid=${targetId},self.uid=${uid}):`,
         message
       );
@@ -179,13 +180,13 @@ export function getAutoConnector<SendData, ReceiveData>({
     const target = message.source as Window;
     const targetId = message.data.uid;
 
-    logger.debug(
+    logger.v1(
       `${`${label}: `}Receive message from iframe (uid=${targetId},self.uid=${uid},origin=${message.origin}):`,
       message.data
     );
 
     if (strictTargets && specialTargets && !specialTargets.has(target)) {
-      logger.debug(
+      logger.v1(
         `${`${label}: `}Could not find target (uid=${targetId},self.uid=${uid}) by message.source.`
       );
       return;
@@ -258,7 +259,7 @@ export function getAutoConnector<SendData, ReceiveData>({
 
       const { data } = message.data;
       const complete = (): void => {
-        logger.debug(`${`${label}: `}Connection established (self.uid=${uid} + uid=${targetId}).`);
+        logger.v1(`${`${label}: `}Connection established (self.uid=${uid} + uid=${targetId}).`);
         onConnect({ data, target, origin }, port as MessagePort);
         // if (channelOption === 'open') {
         //   const port1 = channelMap?.get(targetId)?.port1;
