@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getAwaiter, type Awaiter } from '@js-toolkit/utils/getAwaiter';
+import { getAwaiter, type Awaiter, type AwaiterOptions } from '@js-toolkit/utils/getAwaiter';
 import { EventEmitterListener } from './EventEmitterListener';
 import {
   type EmitterTarget,
@@ -9,9 +9,9 @@ import {
   isEventEmitterLike,
 } from './EventEmitterListener.utils';
 
-export type EventAwaiter = Awaiter<void>;
+export type EventAwaiter = Awaiter<any>;
 
-interface Options {
+interface Options extends AwaiterOptions {
   /** If it returns true then resolve is ignored. */
   readonly ignoreResolve?: (event: any) => boolean;
   /** If it returns null or undefined then reject is ignored. */
@@ -27,16 +27,16 @@ export function getEventAwaiter<
   target: T,
   resolveEvent: E | E[],
   rejectEvent?: E | E[],
-  { ignoreResolve, eventToError }: Options = {}
+  { ignoreResolve, eventToError, lazy = true, ...rest }: Options = {}
 ): EventAwaiter {
-  const readyAwaiter = getAwaiter({ lazy: true });
+  const readyAwaiter = getAwaiter<any>({ lazy, ...rest });
   const resolveEvents = Array.isArray(resolveEvent) ? resolveEvent : [resolveEvent];
   const rejectEvents = Array.isArray(rejectEvent) ? rejectEvent : [rejectEvent];
   const listener = isEventEmitterLike(target) ? target : new EventEmitterListener<any>(target);
 
   const resolve = (ev: unknown): void => {
     const ignore = ignoreResolve ? ignoreResolve(ev) : false;
-    !ignore && readyAwaiter.resolve();
+    !ignore && readyAwaiter.resolve(ev);
   };
 
   const reject = (ev: unknown): void => {
@@ -52,7 +52,7 @@ export function getEventAwaiter<
   const resolveOrigin = readyAwaiter.resolve;
   readyAwaiter.resolve = (...args) => {
     destroy();
-    resolveOrigin(...args);
+    return resolveOrigin(...args);
   };
 
   const rejectOrigin = readyAwaiter.reject;
