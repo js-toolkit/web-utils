@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3';
+import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { EventEmitterListener } from '../EventEmitterListener';
 
 declare global {

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3';
+import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { hasIn } from '@js-toolkit/utils/hasIn';
 import { toggleNativeSubtitles } from './media/toggleNativeSubtitles';
 import { fullscreen } from './fullscreen';
@@ -262,7 +262,11 @@ export namespace FullscreenController {
     }
   >;
 
-  export type EventHandler<T extends Events = Events> = EventEmitter.EventListener<EventMap, T>;
+  export type EventHandler<T extends Events = Events> = EventEmitter.DataEventListener<
+    EventMap,
+    T,
+    FullscreenController
+  >;
 
   export type EventHandlerMap<T extends Events = Events> = {
     [P in T]: EventHandler<P>;
