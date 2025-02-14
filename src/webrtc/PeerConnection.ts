@@ -1,15 +1,11 @@
-import {
-  DataEventEmitter,
-  type DataEventListener,
-  type DataEventMap,
-} from '@js-toolkit/utils/DataEventEmitter';
+import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { getErrorMessage } from '@js-toolkit/utils/getErrorMessage';
 import { hasIn } from '@js-toolkit/utils/hasIn';
 import log from '@js-toolkit/utils/log';
 import * as sdpUtils from './sdputils';
 
 export class PeerConnection
-  extends DataEventEmitter<PeerConnection.EventMap, PeerConnection>
+  extends EventEmitter<PeerConnection.EventMap, PeerConnection>
   implements Disposable
 {
   // eslint-disable-next-line class-methods-use-this
@@ -254,7 +250,7 @@ export namespace PeerConnection {
     Closed = 'Closed',
   }
 
-  export type EventMap = DataEventMap<
+  export type EventMap = EventEmitter.DataEventMap<
     DefineAll<
       Events,
       {
@@ -270,7 +266,7 @@ export namespace PeerConnection {
     PeerConnection
   >;
 
-  export type EventHandler<T extends Events = Events> = DataEventListener<
+  export type EventHandler<T extends Events = Events> = EventEmitter.DataEventListener<
     EventMap,
     T,
     PeerConnection

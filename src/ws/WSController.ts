@@ -5,11 +5,7 @@ import ReconnectingWebSocket, {
   type UrlProvider,
 } from 'reconnecting-websocket';
 import type { WebSocketEventMap } from 'reconnecting-websocket/dist/events';
-import {
-  DataEventEmitter,
-  type DataEventListener,
-  type DataEventMap,
-} from '@js-toolkit/utils/DataEventEmitter';
+import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { delayed } from '@js-toolkit/utils/delayed';
 import { EventEmitterListener } from '../EventEmitterListener';
 
@@ -18,7 +14,7 @@ function getNotConnectedError(): Error {
 }
 
 export class WSController<TData = unknown>
-  extends DataEventEmitter<WSController.EventMap<TData>, WSController<TData>>
+  extends EventEmitter<WSController.EventMap<TData>, WSController<TData>>
   implements Disposable
 {
   // eslint-disable-next-line class-methods-use-this
@@ -210,7 +206,7 @@ export namespace WSController {
     Closed = 'Closed',
   }
 
-  export type EventMap<TData = unknown> = DataEventMap<
+  export type EventMap<TData = unknown> = EventEmitter.DataEventMap<
     DefineAll<
       Events,
       {
@@ -225,9 +221,8 @@ export namespace WSController {
     WSController<TData>
   >;
 
-  export type EventHandler<T extends Events = Events, TData = unknown> = DataEventListener<
-    EventMap<TData>,
-    T,
-    WSController<TData>
-  >;
+  export type EventHandler<
+    T extends Events = Events,
+    TData = unknown,
+  > = EventEmitter.DataEventListener<EventMap<TData>, T, WSController<TData>>;
 }

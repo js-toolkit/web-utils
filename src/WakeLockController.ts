@@ -1,7 +1,7 @@
-import { DataEventEmitter } from '@js-toolkit/utils/DataEventEmitter';
+import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { hasIn } from '@js-toolkit/utils/hasIn';
 
-export class WakeLockController extends DataEventEmitter<
+export class WakeLockController extends EventEmitter<
   {
     activated: [];
     deactivated: [];

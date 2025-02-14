@@ -2,7 +2,7 @@
 /* eslint-disable max-classes-per-file */
 /* eslint-disable @typescript-eslint/no-namespace */
 
-import { DataEventEmitter } from '@js-toolkit/utils/DataEventEmitter';
+import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { ErrorCompat } from '@js-toolkit/utils/ErrorCompat';
 import { onPageReady } from '../onPageReady';
 import { isLocalhost } from './utils';
@@ -20,7 +20,7 @@ export class ServiceWorkerUnavailableError extends ErrorCompat {
 }
 
 export class ServiceWorkerInstaller
-  extends DataEventEmitter<
+  extends EventEmitter<
     {
       registered: [{ registration: ServiceWorkerRegistration }];
       unregistered: [{ registration: ServiceWorkerRegistration }];

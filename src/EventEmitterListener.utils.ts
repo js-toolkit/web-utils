@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { DataEventEmitter } from '@js-toolkit/utils/DataEventEmitter';
+import type { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { isEmptyObject } from '@js-toolkit/utils/isEmptyObject';
 
 export type DomEventTarget = EventTarget;
@@ -106,8 +106,8 @@ export type GetEventMap<T> = T extends Document
                               ? SourceBufferEventMap
                               : T extends SourceBufferList
                                 ? SourceBufferListEventMap
-                                : T extends DataEventEmitter<any, any>
-                                  ? ListenersMapToEventMap<ReturnType<T['listenersMap']>>
+                                : T extends EventEmitter<any, any>
+                                  ? ListenersMapToEventMap<ReturnType<T['getEventListeners']>>
                                   : EmptyObject;
 
 export function isEventTargetLike(target: EmitterTarget): target is EventTargetLike {
