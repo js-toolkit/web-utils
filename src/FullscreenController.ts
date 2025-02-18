@@ -262,7 +262,7 @@ export namespace FullscreenController {
     }
   >;
 
-  export type EventHandler<T extends Events = Events> = EventEmitter.DataEventListener<
+  export type EventHandler<T extends Events = Events> = EventEmitter.EventListener<
     EventMap,
     T,
     FullscreenController

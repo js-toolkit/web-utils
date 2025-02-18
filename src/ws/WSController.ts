@@ -206,7 +206,7 @@ export namespace WSController {
     Closed = 'Closed',
   }
 
-  export type EventMap<TData = unknown> = EventEmitter.DataEventMap<
+  export type EventMap<TData = unknown> = EventEmitter.EventMap<
     DefineAll<
       Events,
       {
@@ -221,8 +221,9 @@ export namespace WSController {
     WSController<TData>
   >;
 
-  export type EventHandler<
-    T extends Events = Events,
-    TData = unknown,
-  > = EventEmitter.DataEventListener<EventMap<TData>, T, WSController<TData>>;
+  export type EventHandler<T extends Events = Events, TData = unknown> = EventEmitter.EventListener<
+    EventMap<TData>,
+    T,
+    WSController<TData>
+  >;
 }

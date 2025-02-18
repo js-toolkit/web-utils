@@ -250,7 +250,7 @@ export namespace PeerConnection {
     Closed = 'Closed',
   }
 
-  export type EventMap = EventEmitter.DataEventMap<
+  export type EventMap = EventEmitter.EventMap<
     DefineAll<
       Events,
       {
@@ -266,7 +266,7 @@ export namespace PeerConnection {
     PeerConnection
   >;
 
-  export type EventHandler<T extends Events = Events> = EventEmitter.DataEventListener<
+  export type EventHandler<T extends Events = Events> = EventEmitter.EventListener<
     EventMap,
     T,
     PeerConnection
