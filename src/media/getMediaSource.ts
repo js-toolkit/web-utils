@@ -27,6 +27,11 @@ declare global {
 }
 
 export function getMediaSource(
+  /**
+   * `prefer` - If has support.
+   * `maybe` - If has support but mse is unsupported.
+   *  Otherwise returns mse MediaSource.
+   */
   managedMediaSource?: 'prefer' | 'maybe'
 ): typeof MediaSource | undefined {
   if (
