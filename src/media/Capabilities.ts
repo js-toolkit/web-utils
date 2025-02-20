@@ -1,5 +1,7 @@
 import { getMediaSource } from './getMediaSource';
 
+type ManagedMediaSourceOption = Parameters<typeof getMediaSource>[0];
+
 export abstract class Capabilities {
   private static readonly supportMap = new Map<string, boolean>();
   private static readonly canPlayMap = new Map<string, boolean>();
@@ -25,11 +27,11 @@ export abstract class Capabilities {
   }
 
   /** Check MediaSource. */
-  static isTypeSupported(type: string): boolean {
+  static isTypeSupported(type: string, managedMediaSource?: ManagedMediaSourceOption): boolean {
     if (this.supportMap.has(type)) {
       return !!this.supportMap.get(type);
     }
-    const mediaSource = getMediaSource();
+    const mediaSource = getMediaSource(managedMediaSource);
     if (mediaSource) {
       const support = mediaSource.isTypeSupported(type);
       this.supportMap.set(type, support);
