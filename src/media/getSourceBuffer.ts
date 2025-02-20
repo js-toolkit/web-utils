@@ -30,11 +30,9 @@ type ManagedMediaSourceOption = Parameters<typeof getMediaSource>[0];
 export function getSourceBuffer(
   managedSourceBuffer?: ManagedMediaSourceOption
 ): typeof SourceBuffer | undefined {
-  if (
-    (managedSourceBuffer === 'prefer' && !!window.ManagedSourceBuffer) ||
-    (managedSourceBuffer === 'maybe' && !!window.ManagedSourceBuffer && !window.SourceBuffer)
-  ) {
-    return window.ManagedSourceBuffer;
-  }
-  return window.SourceBuffer; // || window.WebKitSourceBuffer;
+  const msb =
+    ((managedSourceBuffer === 'prefer' && !!window.ManagedSourceBuffer) ||
+      (managedSourceBuffer === 'maybe' && !!window.ManagedSourceBuffer && !window.SourceBuffer)) &&
+    window.ManagedSourceBuffer;
+  return msb || window.SourceBuffer; // || window.WebKitSourceBuffer;
 }
