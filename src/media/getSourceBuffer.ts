@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { getMediaSource } from './getMediaSource';
 
 declare global {
@@ -28,11 +29,8 @@ declare global {
 type ManagedMediaSourceOption = Parameters<typeof getMediaSource>[0];
 
 export function getSourceBuffer(
-  managedSourceBuffer?: ManagedMediaSourceOption
+  managedMediaSource?: ManagedMediaSourceOption
 ): typeof SourceBuffer | undefined {
-  const msb =
-    ((managedSourceBuffer === 'prefer' && !!window.ManagedSourceBuffer) ||
-      (managedSourceBuffer === 'maybe' && !!window.ManagedSourceBuffer && !window.SourceBuffer)) &&
-    window.ManagedSourceBuffer;
-  return msb || window.SourceBuffer; // || window.WebKitSourceBuffer;
+  if (managedMediaSource === 'maybe') return window.ManagedSourceBuffer;
+  return (managedMediaSource === 'prefer' && window.ManagedSourceBuffer) || window.SourceBuffer; // || window.WebKitSourceBuffer;
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
   interface ManagedMediaSourceEventMap extends MediaSourceEventMap {
     startstreaming: Event;
@@ -28,15 +29,12 @@ declare global {
 
 export function getMediaSource(
   /**
-   * `prefer` - If has support.
-   * `maybe` - If has support but mse is unsupported.
-   *  Otherwise returns mse MediaSource.
+   * `prefer` - returns ManagedMediaSource or MediaSource.
+   * `maybe` - returns ManagedMediaSource.
+   *  Otherwise returns MediaSource.
    */
   managedMediaSource?: 'prefer' | 'maybe'
 ): typeof MediaSource | undefined {
-  const mms =
-    ((managedMediaSource === 'prefer' && !!window.ManagedMediaSource) ||
-      (managedMediaSource === 'maybe' && !!window.ManagedMediaSource && !window.MediaSource)) &&
-    window.ManagedMediaSource;
-  return mms || window.MediaSource; // || window.WebKitMediaSource;
+  if (managedMediaSource === 'maybe') return window.ManagedMediaSource;
+  return (managedMediaSource === 'prefer' && window.ManagedMediaSource) || window.MediaSource; // || window.WebKitMediaSource;
 }
