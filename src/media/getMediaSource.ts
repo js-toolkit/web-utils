@@ -34,11 +34,9 @@ export function getMediaSource(
    */
   managedMediaSource?: 'prefer' | 'maybe'
 ): typeof MediaSource | undefined {
-  if (
-    (managedMediaSource === 'prefer' && !!window.ManagedMediaSource) ||
-    (managedMediaSource === 'maybe' && !!window.ManagedMediaSource && !window.MediaSource)
-  ) {
-    return window.ManagedMediaSource;
-  }
-  return window.MediaSource; // || window.WebKitMediaSource;
+  const mms =
+    ((managedMediaSource === 'prefer' && !!window.ManagedMediaSource) ||
+      (managedMediaSource === 'maybe' && !!window.ManagedMediaSource && !window.MediaSource)) &&
+    window.ManagedMediaSource;
+  return mms || window.MediaSource; // || window.WebKitMediaSource;
 }
