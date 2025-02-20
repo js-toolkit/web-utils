@@ -113,7 +113,7 @@ function createHtmlNode(type: string, annotation: string): HTMLElement | undefin
 
 export interface ParseCueTextOptions {
   /** Defaults to `0`. */
-  readonly preferLength?: number | undefined;
+  readonly preferLineLength?: number | undefined;
 }
 
 export interface ParseCueTextResult<P> {
@@ -125,9 +125,10 @@ export interface ParseCueTextResult<P> {
 export function parseCueText<P = CueSegment>(
   input0: string,
   map?: (segment: CueSegment, prevSegment: P | undefined) => P,
-  { preferLength = 0 }: ParseCueTextOptions = {}
+  { preferLineLength = 0 }: ParseCueTextOptions = {}
 ): ParseCueTextResult<P> {
   let current: HTMLElement | undefined;
+  let prevCurrent: HTMLElement | undefined;
   let input = input0;
   let token: string | undefined;
   let timeStamp = -1;
@@ -156,6 +157,7 @@ export function parseCueText<P = CueSegment>(
       addSegmentToRow(segment);
       // All next nodes will be with the same timeStamp until the next timeStamp.
       // timeStamp = -1;
+      prevCurrent = node;
     }
   };
 
@@ -183,7 +185,12 @@ export function parseCueText<P = CueSegment>(
     }
     if (newRow) segments.push([]);
     if (current == null) {
-      addLeafToken(text);
+      // Append whitespaces to prev node.
+      if (text.trim().length === 0 && !newRow && prevCurrent) {
+        prevCurrent.appendChild(window.document.createTextNode(unescape(text)));
+      } else {
+        addLeafToken(text);
+      }
     } else {
       current.appendChild(window.document.createTextNode(unescape(text)));
     }
@@ -230,9 +237,9 @@ export function parseCueText<P = CueSegment>(
       // eslint-disable-next-line no-lonely-if
       if (
         rawText.length === 0 ||
-        (preferLength > 0 && rawText.at(-1)!.length + token.length > preferLength)
+        (preferLineLength > 0 && rawText.at(-1)!.length + token.length > preferLineLength)
       ) {
-        const rows = splitRows(token, preferLength);
+        const rows = splitRows(token, preferLineLength);
         for (let i = 0; i < rows.length; i += 1) {
           addTextNode(rows[i], true);
         }
