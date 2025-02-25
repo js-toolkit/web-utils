@@ -185,7 +185,7 @@ export class TextTracksController
     };
 
     const cueChangeHandler = (() => {
-      const lastCues = [] as VTTCue[];
+      const lastCues = [] as Cue[];
       return (event: Event & { target: TextTrack }): void => {
         const { activeCues } = event.target;
         if (!activeCues) return;
@@ -193,10 +193,10 @@ export class TextTracksController
         let changed = lastCues.length !== activeCues.length;
         const cues = new Array<Cue>(activeCues.length);
         for (let i = 0; i < cues.length; i += 1) {
-          const cue = activeCues[i] as VTTCue;
+          const cue = activeCues[i] as unknown as Writeable<Cue>;
           cue.id = cue.id || buildCueId(cue, i);
-          cues[i] = cue as unknown as Cue;
-          (cues[i] as Writeable<Cue>).rows = splitRows(cue.text, this.options.preferCueRowLength);
+          cue.rows = splitRows(cue.text, this.options.preferCueRowLength);
+          cues[i] = cue;
           if (!changed && lastCues[i]?.id !== cue.id) {
             changed = true;
           }
