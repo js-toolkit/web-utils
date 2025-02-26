@@ -1,5 +1,6 @@
 import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { EventEmitterListener } from '../EventEmitterListener';
+import { toggleNativeSubtitles } from './toggleNativeSubtitles';
 
 declare global {
   type VideoPresentationMode = 'inline' | 'picture-in-picture' | 'fullscreen';
@@ -44,21 +45,31 @@ export class PipController extends EventEmitter<PipController.EventMap> implemen
   private readonly listener: EventEmitterListener<HTMLVideoElement>;
 
   constructor(
-    video: HTMLVideoElement
-    // private readonly options: PipController.Options = {}
+    video: HTMLVideoElement,
+    private readonly options: PipController.Options = {}
   ) {
     super();
 
     this.listener = new EventEmitterListener(video);
 
     if (PipController.isAvailable(video)) {
-      const enterPipHandler = (): void => {
-        // this.options.toggleNativeSubtitles && toggleNativeSubtitles(true, video.textTracks);
-        this.emit(this.Events.Change, { pip: true });
-      };
+      const enterPipHandler = (() => {
+        const handler = (): void => {
+          handler.nativeSubtitles =
+            this.options.toggleNativeSubtitles && this.listener.target.textTracks.length > 0;
+          if (handler.nativeSubtitles) {
+            toggleNativeSubtitles(true, this.listener.target.textTracks);
+          }
+          this.emit(this.Events.Change, { pip: true });
+        };
+        handler.nativeSubtitles = undefined as boolean | undefined;
+        return handler;
+      })();
 
       const exitPipHandler = (): void => {
-        // this.options.toggleNativeSubtitles && toggleNativeSubtitles(false, video.textTracks);
+        if (enterPipHandler.nativeSubtitles) {
+          toggleNativeSubtitles(false, this.listener.target.textTracks);
+        }
         this.emit(this.Events.Change, { pip: false });
       };
 
@@ -163,9 +174,9 @@ export class PipController extends EventEmitter<PipController.EventMap> implemen
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace PipController {
-  // export interface Options {
-  //   readonly toggleNativeSubtitles?: boolean | undefined;
-  // }
+  export interface Options {
+    readonly toggleNativeSubtitles?: boolean | undefined;
+  }
 
   export enum Events {
     Change = 'change',
