@@ -8,15 +8,19 @@ declare global {
 }
 
 export type TextTrackItem = Readonly<
-  PartialSome<
-    RequiredStrict<Pick<HTMLTrackElement, 'src'> & Pick<TextTrack, 'kind' | 'label' | 'language'>>,
-    'kind'
+  OptionalToUndefined<
+    PartialSome<
+      RequiredStrict<
+        Pick<HTMLTrackElement, 'src'> & Pick<TextTrack, 'kind' | 'label' | 'language'>
+      >,
+      'kind'
+    >
   >
 >;
 
-export interface TextTrackInfo extends Pick<TextTrackItem, 'kind' | 'language' | 'label'> {
-  readonly id: string;
-}
+export interface TextTrackInfo
+  extends Pick<TextTrackItem, 'kind' | 'language' | 'label'>,
+    Pick<TextTrack, 'id'> {}
 
 export type ActivateTextTrackInfo = OptionalToUndefined<
   PartialBut<Pick<TextTrackInfo, 'kind' | 'language'>, 'language'>

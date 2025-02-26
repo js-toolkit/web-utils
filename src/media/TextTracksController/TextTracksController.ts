@@ -1,6 +1,5 @@
 import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { EventListeners } from '../../EventListeners';
-import type {} from '../toggleNativeSubtitles';
 import { MediaNotAttachedError } from '../MediaNotAttachedError';
 import {
   type ActivateTextTrackInfo,
@@ -17,6 +16,14 @@ import {
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface HTMLMediaElementEventMap extends TextTracksEventMap {}
+
+  interface TextTrack {
+    native?: boolean | undefined;
+  }
+
+  interface TextTrackList {
+    [index: number]: TextTrack | undefined;
+  }
 }
 
 interface TextTracksEventMap {
@@ -41,6 +48,8 @@ export interface Cue
 
 export type { TextTrackInfo, ActivateTextTrackInfo, TextTrackItem };
 
+export type ActiveTextTrackInfo = TextTrackInfo & Pick<TextTrack, 'mode'>;
+
 function dispatchNativeEvent<T extends keyof TextTracksEventMap>(
   media: HTMLMediaElement,
   type: T,
@@ -58,7 +67,9 @@ export class TextTracksController
   private addedTracks: HTMLTrackElement[] = [];
   private textTrackList: TextTrackInfo[] = [];
   private media: HTMLMediaElement | undefined;
-  private textTrack: TextTrackInfo | undefined;
+  /** Already set. */
+  private textTrack: ActiveTextTrackInfo | undefined;
+  /** To be set. */
   private nextTextTrack: TextTrackInfo | undefined;
 
   // eslint-disable-next-line class-methods-use-this
@@ -115,7 +126,9 @@ export class TextTracksController
       // console.log(
       //   'onchange',
       //   nextTextTrack,
-      //   Array.from(textTracks).map((tt) => JSON.stringify({ lang: tt.language, mode: tt.mode })),
+      //   Array.from(textTracks).map((tt) =>
+      //     JSON.stringify({ lang: tt.language, mode: tt.mode, native: tt.native })
+      //   ),
       //   media.webkitDisplayingFullscreen
       // );
 
@@ -152,21 +165,27 @@ export class TextTracksController
           }
         }
       }
-      // console.log('onchange end', nextTextTrack, newCurrentIndex);
 
-      const newCurrentTrack =
+      const newCurrentTrack: ActiveTextTrackInfo | undefined =
         textTracks[newCurrentIndex] &&
-        (this.textTrackList[newCurrentIndex] ??
+        ((this.textTrackList[newCurrentIndex] && {
+          ...this.textTrackList[newCurrentIndex],
+          mode: textTracks[newCurrentIndex].mode,
+        }) ??
           ({
             id: textTracks[newCurrentIndex].id,
             kind: textTracks[newCurrentIndex].kind,
             language: textTracks[newCurrentIndex].language,
             label: textTracks[newCurrentIndex].label,
-          } satisfies TextTrackInfo));
+            mode: textTracks[newCurrentIndex].mode,
+          } satisfies ActiveTextTrackInfo));
+
+      // console.log('onchange end', nextTextTrack, newCurrentIndex, newCurrentTrack);
 
       if (
         this.textTrack?.language !== newCurrentTrack?.language ||
-        this.textTrack?.kind !== newCurrentTrack?.kind
+        this.textTrack?.kind !== newCurrentTrack?.kind ||
+        this.textTrack?.mode !== newCurrentTrack?.mode
       ) {
         this.textTrack = newCurrentTrack;
         this.nextTextTrack = this.textTrack;
@@ -282,7 +301,7 @@ export class TextTracksController
     }
   }
 
-  getActiveTextTrack(): TextTrackInfo | undefined {
+  getActiveTextTrack(): ActiveTextTrackInfo | undefined {
     return this.textTrack;
   }
 
@@ -337,7 +356,7 @@ export namespace TextTracksController {
       ];
       [Events.CurrentTextTrackChanged]: [
         {
-          readonly textTrack: TextTrackInfo | undefined;
+          readonly textTrack: ActiveTextTrackInfo | undefined;
           readonly index: number;
         },
       ];

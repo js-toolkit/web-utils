@@ -1,9 +1,3 @@
-declare global {
-  interface TextTrack {
-    native?: boolean | undefined;
-  }
-}
-
 export function toggleNativeSubtitles(native: boolean, textTracks: TextTrackList): void {
   // console.log('toggleNativeSubtitles');
   for (let i = 0; i < textTracks.length; i += 1) {
