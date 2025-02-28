@@ -5,11 +5,9 @@ export function resetMedia(media: HTMLMediaElement): void {
     media.removeAttribute('src');
     media.srcObject = null;
     if (media.childElementCount > 0) {
-      for (const element of media.children) {
-        if (element instanceof HTMLSourceElement) {
-          media.removeChild(element);
-        }
-      }
+      (Array.prototype as Element[]).filter
+        .call(media.children, (element) => element instanceof HTMLSourceElement)
+        .forEach((el) => media.removeChild(el));
     }
     media.load();
   }
