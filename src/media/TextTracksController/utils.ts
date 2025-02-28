@@ -56,6 +56,20 @@ export function isIOSFullscreen(media: HTMLMediaElement): boolean {
   return isIOS() && !!media.webkitDisplayingFullscreen;
 }
 
+export function findTextTrack(
+  media: Pick<HTMLMediaElement, 'textTracks'>,
+  conditions: OptionalToUndefined<Partial<Pick<TextTrack, 'mode' | 'language'>>>[]
+): TextTrack | undefined {
+  return (Array.prototype as TextTrack[]).find.call(media.textTracks, ({ mode, language }) => {
+    return conditions.some((condition) => {
+      return (
+        (condition.mode == null || condition.mode === mode) &&
+        (condition.language == null || condition.language === language)
+      );
+    });
+  });
+}
+
 export function setActiveTextTrack(
   media: HTMLMediaElement,
   tt: ActivateTextTrackInfo | undefined,
