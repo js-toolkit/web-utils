@@ -106,24 +106,19 @@ export function addTextTracks(
 ): void {
   // console.log('addTracks', media.textTracks.length, media.readyState);
 
-  const existedMap = ((Array.prototype as TextTrack[]).reduce<Record<string, TextTrack>>).call(
-    media.textTracks,
-    (acc, tt) => {
-      if (tt.language) {
-        acc[tt.language] = tt;
-      }
-      return acc;
-    },
-    {}
-  );
+  const keySet = new Set<string>();
+  for (const { language, kind } of media.textTracks) {
+    keySet.add(`${language} ${kind}`);
+  }
 
   textTrackList.forEach((tt) => {
-    if (!existedMap[tt.language]) {
+    const kind = tt.kind ?? 'subtitles';
+    if (!keySet.has(`${tt.language} ${kind}`)) {
       const trackEl = document.createElement('track');
       trackEl.src = tt.src;
       trackEl.srclang = tt.language;
       trackEl.label = tt.label;
-      trackEl.kind = tt.kind ?? 'captions';
+      trackEl.kind = kind;
       // Ignore `default` because the most times there are problems with loading vtt file
       // because of track mode changed from `showing` to `disabled` in the middle of loading
       // and therefore no cues are loaded.
