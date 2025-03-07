@@ -2,7 +2,7 @@
 
 import { UAParser } from 'ua-parser-js';
 
-type PlatformInfo = DeepReadonly<
+export type PlatformInfo = DeepReadonly<
   OmitStrict<UAParser.IResult, 'withClientHints' | 'withFeatureCheck'>
 > & {
   toStringObject(): Record<Keys<ExcludeKeysOfType<UAParser.IResult, AnyFunction>>, string>;
