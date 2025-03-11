@@ -1,24 +1,6 @@
 import { getCachedPlatformInfo } from './getPlatformInfo';
 import { isIOS } from './isIOS';
-
-// class Semver {
-//   constructor(
-//     readonly major: number,
-//     readonly minor: number,
-//     readonly patch: number
-//   ) {}
-
-//   toString(): string {
-//     return `${this.major}_${this.minor}_${this.patch}`;
-//   }
-// }
-
-interface Semver {
-  readonly major: number;
-  readonly minor: number;
-  readonly patch: number;
-  toString(): string;
-}
+import { Semver } from './Semver';
 
 let memo: Semver | null | undefined;
 
@@ -27,21 +9,8 @@ export function getIOSVersion(): Semver | undefined {
     const platformInfo = getCachedPlatformInfo();
     if (!platformInfo) return undefined;
     const { os } = platformInfo;
-    const version = isIOS() && os.version && /(\d+)\.(\d+)(?:\.(\d+))?/.exec(os.version);
-    if (version) {
-      // memo = new Semver(
-      //   parseInt(version[1], 10) || 0,
-      //   parseInt(version[2], 10) || 0,
-      //   parseInt(version[3], 10) || 0
-      // );
-      memo = {
-        major: parseInt(version[1], 10) || 0,
-        minor: parseInt(version[2], 10) || 0,
-        patch: parseInt(version[3], 10) || 0,
-        toString() {
-          return `${this.major}_${this.minor}_${this.patch}`;
-        },
-      };
+    if (isIOS() && os.version) {
+      memo = Semver.parse(os.version);
     } else {
       memo = null;
     }
