@@ -219,7 +219,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
 
       const handler =
         map.get(listener) ??
-        (this.interceptor ? this.createWrapper(type, listener, false) : listener);
+        (this.interceptor ? this.createWrapper(type, listener, false, ...rest) : listener);
       !map.has(listener) && map.set(listener, handler);
 
       if (isEventTargetLike(this.target)) {
@@ -240,7 +240,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
       const map = this.captureListeners[type] ?? (new Map() as ListenersMap);
       this.captureListeners[type] = map;
 
-      const handler = map.get(listener) ?? this.createWrapper(type, listener, once, options);
+      const handler = map.get(listener) ?? this.createWrapper(type, listener, once, ...rest);
       !map.has(listener) && map.set(listener, handler);
 
       this.target.addEventListener(type, handler, normalizeOptions(options));
@@ -248,7 +248,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
       this.normalListeners[type] = map;
 
-      const handler = map.get(listener) ?? this.createWrapper(type, listener, once, options);
+      const handler = map.get(listener) ?? this.createWrapper(type, listener, once, ...rest);
       !map.has(listener) && map.set(listener, handler);
 
       this.target.addEventListener(type, handler, normalizeOptions(options));
