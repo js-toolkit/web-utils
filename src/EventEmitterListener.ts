@@ -111,8 +111,8 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
         (m) => (m ? Array.from(wrapper ? m.values() : m.keys()) : []) as unknown as L[]
       );
     }
-    return this.getListenerList<L>({ event, type: 'normal' }).concat(
-      this.getListenerList<L>({ event, type: 'capture' })
+    return this.getListenerList<L>({ event, type: 'normal', wrapper }).concat(
+      this.getListenerList<L>({ event, type: 'capture', wrapper })
     );
   }
 
@@ -126,8 +126,8 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
       undefined;
 
     if (!map) {
-      const normal = this.getListeners<L>({ event, type: 'normal' });
-      const capture = this.getListeners<L>({ event, type: 'capture' });
+      const normal = this.getListeners<L>({ event, type: 'normal', wrapper });
+      const capture = this.getListeners<L>({ event, type: 'capture', wrapper });
       const acc: Record<string, L[]> = {};
       const callback = ([evtype, l]: [string, L[]]): void => {
         const list = acc[evtype];
