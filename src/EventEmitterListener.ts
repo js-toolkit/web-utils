@@ -64,13 +64,12 @@ type ListenerWrapper = (...args: unknown[]) => unknown;
 interface GetListenersOptions {
   event?: string | undefined;
   type?: 'normal' | 'capture' | undefined;
+  wrapper?: boolean | undefined;
 }
 
 export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject = GetEventMap<T>> {
   private readonly normalListeners: EventListenersMap = {};
-
   private readonly captureListeners: EventListenersMap = {};
-
   readonly passiveSupported = isPassiveSupported();
 
   constructor(
@@ -100,7 +99,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
     };
   }
 
-  getListenerList<L = unknown>({ event, type }: GetListenersOptions = {}): L[] {
+  getListenerList<L = unknown>({ event, type, wrapper }: GetListenersOptions = {}): L[] {
     const map =
       (type === 'normal' && this.normalListeners) ||
       (type === 'capture' && this.captureListeners) ||
@@ -109,7 +108,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
       const entries = event ? map[event] && { [event]: map[event] } : map;
       if (!entries) return [];
       return Object.values(entries).flatMap(
-        (m) => (m ? Array.from(m.keys()) : []) as unknown as L[]
+        (m) => (m ? Array.from(wrapper ? m.values() : m.keys()) : []) as unknown as L[]
       );
     }
     return this.getListenerList<L>({ event, type: 'normal' }).concat(
@@ -117,7 +116,10 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
     );
   }
 
-  getListeners<L = unknown>({ event, type }: GetListenersOptions = {}): Record<string, L[]> {
+  getListeners<L = unknown>({ event, type, wrapper }: GetListenersOptions = {}): Record<
+    string,
+    L[]
+  > {
     const map =
       (type === 'normal' && this.normalListeners) ||
       (type === 'capture' && this.captureListeners) ||
@@ -139,7 +141,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
     const entries = event ? map[event] && { [event]: map[event] } : map;
     if (!entries) return {};
     return Object.entries(entries).reduce((acc, [evtype, m]) => {
-      const listeners = m ? Array.from(m.keys()) : [];
+      const listeners = m ? Array.from(wrapper ? m.values() : m.keys()) : [];
       if (listeners.length > 0) acc[evtype] = listeners;
       return acc;
     }, {} as AnyObject);
@@ -419,9 +421,11 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
 
   emit(type: string, ...args: Parameters<GetEventListener<T, string, M>>): this {
     const [event, ...rest] = args as unknown[];
-    this.getListenerList<GetEventListener<T, string, M>>({ event: type }).forEach((l) => {
-      l(event, ...rest);
-    });
+    this.getListenerList<GetEventListener<T, string, M>>({ event: type, wrapper: true }).forEach(
+      (l) => {
+        l(event, ...rest);
+      }
+    );
     return this;
   }
 }
