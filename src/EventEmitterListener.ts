@@ -67,6 +67,14 @@ interface GetListenersOptions {
   wrapper?: boolean | undefined;
 }
 
+function getEventTypeError(): Error {
+  return new Error('Event type can not be null.');
+}
+
+function getEventListenerError(): Error {
+  return new Error('Event listener can not be null.');
+}
+
 export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject = GetEventMap<T>> {
   private readonly normalListeners: EventListenersMap = {};
   private readonly captureListeners: EventListenersMap = {};
@@ -213,6 +221,9 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
       ...unknown[],
     ]
   ): this {
+    if (type == null) throw getEventTypeError();
+    if (listener == null) throw getEventListenerError();
+
     if (!isDomEventTarget(this.target)) {
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
       this.normalListeners[type] = map;
@@ -283,6 +294,9 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
       ...unknown[],
     ]
   ): this {
+    if (type == null) throw getEventTypeError();
+    if (listener == null) throw getEventListenerError();
+
     if (!isDomEventTarget(this.target)) {
       const map = this.normalListeners[type] ?? (new Map() as ListenersMap);
       this.normalListeners[type] = map;
@@ -420,6 +434,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
   emit(type: string, ...args: Parameters<GetEventListener<T, string, M>>): this;
 
   emit(type: string, ...args: Parameters<GetEventListener<T, string, M>>): this {
+    if (type == null) throw getEventTypeError();
     const [event, ...rest] = args as unknown[];
     this.getListenerList<GetEventListener<T, string, M>>({ event: type, wrapper: true }).forEach(
       (l) => {
