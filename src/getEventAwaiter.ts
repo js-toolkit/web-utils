@@ -31,7 +31,8 @@ export function getEventAwaiter<
 ): EventAwaiter {
   const readyAwaiter = getAwaiter<any>({ lazy, ...rest });
   const resolveEvents = Array.isArray(resolveEvent) ? resolveEvent : [resolveEvent];
-  const rejectEvents = Array.isArray(rejectEvent) ? rejectEvent : [rejectEvent];
+  const rejectEvents =
+    (Array.isArray(rejectEvent) && rejectEvent) || (rejectEvent && [rejectEvent]) || [];
   const listener = isEventEmitterLike(target) ? target : new EventEmitterListener<any>(target);
 
   const resolve = (ev: unknown): void => {
