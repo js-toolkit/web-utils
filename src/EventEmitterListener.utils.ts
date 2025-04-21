@@ -74,41 +74,57 @@ type ListenersMapToEventMap<T extends Record<string, AnyFunction[]>> = {
   [P in keyof T]: Parameters<T[P][number]>[0];
 };
 
-export type GetEventMap<T> = T extends Document
-  ? DocumentEventMap
-  : T extends HTMLBodyElement
-    ? HTMLBodyElementEventMap
-    : T extends HTMLVideoElement
-      ? HTMLVideoElementEventMap
-      : T extends HTMLMediaElement
-        ? HTMLMediaElementEventMap
-        : T extends TextTrackList
-          ? TextTrackListEventMap
-          : T extends HTMLElement
-            ? HTMLElementEventMap
-            : T extends Element
-              ? ElementEventMap
-              : T extends Animation
-                ? AnimationEventMap
-                : T extends AbortSignal
-                  ? AbortSignalEventMap
-                  : T extends BroadcastChannel
-                    ? BroadcastChannelEventMap
-                    : T extends WebSocket
-                      ? WebSocketEventMap
-                      : T extends MediaStreamTrack
-                        ? MediaStreamTrackEventMap
-                        : T extends MediaStream
-                          ? MediaStreamEventMap
-                          : T extends EventSource
-                            ? EventSourceEventMap
-                            : T extends SourceBuffer
-                              ? SourceBufferEventMap
-                              : T extends SourceBufferList
-                                ? SourceBufferListEventMap
-                                : T extends EventEmitter<any, any>
-                                  ? ListenersMapToEventMap<ReturnType<T['getEventListeners']>>
-                                  : EmptyObject;
+export type GetEventMap<T> = T extends Window
+  ? WindowEventMap
+  : T extends ServiceWorker
+    ? ServiceWorkerEventMap
+    : T extends Worker
+      ? WorkerEventMap
+      : T extends ShadowRoot
+        ? ShadowRootEventMap
+        : T extends Document
+          ? DocumentEventMap
+          : T extends HTMLBodyElement
+            ? HTMLBodyElementEventMap
+            : T extends HTMLVideoElement
+              ? HTMLVideoElementEventMap
+              : T extends HTMLMediaElement
+                ? HTMLMediaElementEventMap
+                : T extends TextTrackList
+                  ? TextTrackListEventMap
+                  : T extends HTMLElement
+                    ? HTMLElementEventMap
+                    : T extends Element
+                      ? ElementEventMap
+                      : T extends TextTrackList
+                        ? TextTrackListEventMap
+                        : T extends TextTrackCue
+                          ? TextTrackCueEventMap
+                          : T extends Animation
+                            ? AnimationEventMap
+                            : T extends AbortSignal
+                              ? AbortSignalEventMap
+                              : T extends BroadcastChannel
+                                ? BroadcastChannelEventMap
+                                : T extends WebSocket
+                                  ? WebSocketEventMap
+                                  : T extends MediaStreamTrack
+                                    ? MediaStreamTrackEventMap
+                                    : T extends MediaStream
+                                      ? MediaStreamEventMap
+                                      : T extends EventSource
+                                        ? EventSourceEventMap
+                                        : T extends SourceBuffer
+                                          ? SourceBufferEventMap
+                                          : T extends SourceBufferList
+                                            ? SourceBufferListEventMap
+                                            : T extends RemotePlayback
+                                              ? RemotePlaybackEventMap
+                                              : T extends EventEmitter<any, any>
+                                                ? ListenersMapToEventMap<
+                                                    ReturnType<T['getEventListeners']>
+                                                  >
+                                                : EmptyObject;
 
 export function isEventTargetLike(target: EmitterTarget): target is EventTargetLike {
   return (
