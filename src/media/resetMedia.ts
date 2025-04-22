@@ -5,9 +5,12 @@ export function resetMedia(media: HTMLMediaElement): void {
     media.removeAttribute('src');
     media.srcObject = null;
     if (media.childElementCount > 0) {
-      (Array.prototype as Element[]).filter
+      (Array.prototype as HTMLSourceElement[]).filter
         .call(media.children, (element) => element instanceof HTMLSourceElement)
-        .forEach((el) => media.removeChild(el));
+        .forEach((el) => {
+          URL.revokeObjectURL(el.src);
+          media.removeChild(el);
+        });
     }
     media.load();
   }
