@@ -43,18 +43,17 @@ export class PeerConnection
       }
     };
 
+    const handleConnectionStateChange = (
+      state: RTCPeerConnectionState | RTCIceConnectionState
+    ): void => {
+      this.logger.debug(`Connection state changed to: ${state}`);
+      if (state === 'connected') this.emit(this.Events.Connected);
+      else if (state === 'disconnected') this.emit(this.Events.Disconnected);
+    };
     if (hasIn(RTCPeerConnection.prototype, 'onconnectionstatechange')) {
-      pc.onconnectionstatechange = () => {
-        this.logger.debug(`Connection state changed to: ${pc.connectionState}`);
-        if (pc.connectionState === 'connected') this.emit(this.Events.Connected);
-        else if (pc.connectionState === 'disconnected') this.emit(this.Events.Disconnected);
-      };
+      pc.onconnectionstatechange = () => handleConnectionStateChange(pc.connectionState);
     } else {
-      pc.oniceconnectionstatechange = () => {
-        this.logger.debug(`ICE connection state changed to: ${pc.iceConnectionState}`);
-        if (pc.iceConnectionState === 'connected') this.emit(this.Events.Connected);
-        else if (pc.iceConnectionState === 'disconnected') this.emit(this.Events.Disconnected);
-      };
+      pc.oniceconnectionstatechange = () => handleConnectionStateChange(pc.iceConnectionState);
     }
 
     // All tracks must be in one stream for controlling adding/removing tracks.
