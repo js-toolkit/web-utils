@@ -254,12 +254,15 @@ export namespace FullscreenController {
     Error = 'error',
   }
 
-  export type EventMap = DefineAll<
-    Events,
-    {
-      [Events.Change]: [{ fullscreen: boolean; type: FullscreenType }];
-      [Events.Error]: [{ error: unknown; type: FullscreenType }];
-    }
+  export type EventMap = EventEmitter.EventMap<
+    DefineAll<
+      Events,
+      {
+        [Events.Change]: [{ fullscreen: boolean; type: FullscreenType }];
+        [Events.Error]: [{ error: unknown; type: FullscreenType }];
+      }
+    >,
+    FullscreenController
   >;
 
   export type EventHandler<T extends Events = Events> = EventEmitter.EventListener<
