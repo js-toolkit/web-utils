@@ -14,7 +14,7 @@ declare global {
 }
 
 export class FullscreenController
-  extends EventEmitter<FullscreenController.EventMap>
+  extends EventEmitter<FullscreenController.EventMap, FullscreenController>
   implements AsyncDisposable
 {
   static isApiAvailable(): boolean {
