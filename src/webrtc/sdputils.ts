@@ -1,4 +1,5 @@
-/* eslint-disable no-prototype-builtins, no-plusplus, prefer-destructuring, no-param-reassign */
+/* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable no-prototype-builtins, prefer-destructuring, no-param-reassign */
 
 export interface PreferCodecs {
   videoRecvCodec?: string;
@@ -199,7 +200,8 @@ function maybeSetVideoSendInitialBitRate(sdp: string, params: PreferCodecs): str
 
 function removePayloadTypeFromMline(mLine: string, payloadType: string): string {
   const lines = mLine.split(' ');
-  for (let i = 0; i < lines.length; ++i) {
+  const { length } = lines;
+  for (let i = 0; i < length; ++i) {
     if (lines[i] === payloadType.toString()) {
       lines.splice(i, 1);
     }
@@ -469,7 +471,8 @@ function setDefaultCodec(mLine: string, payload: string): string {
 
   // Put target payload first and copy in the rest.
   newLine.push(payload);
-  for (let i = 3; i < elements.length; i++) {
+  const { length } = elements;
+  for (let i = 3; i < length; i++) {
     if (elements[i] !== payload) {
       newLine.push(elements[i]);
     }

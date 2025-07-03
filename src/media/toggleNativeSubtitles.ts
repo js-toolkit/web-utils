@@ -1,6 +1,7 @@
 export function toggleNativeSubtitles(native: boolean, textTracks: TextTrackList): void {
   // console.log('toggleNativeSubtitles');
-  for (let i = 0; i < textTracks.length; i += 1) {
+  const { length } = textTracks;
+  for (let i = 0; i < length; i += 1) {
     const track = textTracks[i];
     if (native) {
       track.native = true;

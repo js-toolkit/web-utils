@@ -9,7 +9,8 @@ export function findTarget<T extends Target>(
   targets: ArrayLike<T>
   // logger: Pick<Console, 'warn'> | undefined = console
 ): T | undefined {
-  for (let i = 0; i < targets.length; i += 1) {
+  const { length } = targets;
+  for (let i = 0; i < length; i += 1) {
     const frame = targets[i];
     const window = frame instanceof HTMLIFrameElement ? frame.contentWindow : frame;
     if (window === source) return frame;
@@ -30,7 +31,8 @@ export function isWindowProxy(target: MessageEventSource): target is Window {
 export function readTargets(list: ArrayLike<Target>): Window[] {
   // const result = new Array<Window>(list.length);
   const result = new Array<Window>();
-  for (let i = 0; i < list.length; i += 1) {
+  const { length } = list;
+  for (let i = 0; i < length; i += 1) {
     const frame = list[i];
     const window = frame instanceof HTMLIFrameElement ? frame.contentWindow : frame;
     if (window) {

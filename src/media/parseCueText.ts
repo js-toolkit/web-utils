@@ -240,7 +240,8 @@ export function parseCueText<P = CueSegment>(
         (preferLineLength > 0 && rawText.at(-1)!.length + token.length > preferLineLength)
       ) {
         const rows = splitRows(token, preferLineLength);
-        for (let i = 0; i < rows.length; i += 1) {
+        const { length } = rows;
+        for (let i = 0; i < length; i += 1) {
           addTextNode(rows[i], true);
         }
       } else {

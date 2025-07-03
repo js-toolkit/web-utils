@@ -76,11 +76,12 @@ export function setActiveTextTrack(
   hideActiveTrack: boolean
 ): boolean {
   const { textTracks } = media;
-  if (textTracks.length === 0) return false;
+  const { length } = textTracks;
+  if (length === 0) return false;
   // console.log('setActiveTextTrack', tt);
   let changed = false;
   let activated = false;
-  for (let i = 0; i < textTracks.length; i += 1) {
+  for (let i = 0; i < length; i += 1) {
     const track = textTracks[i];
     // Hide active track in favor of custom/native display cues and disable others.
     if (!activated && track.language === tt?.language && (!tt.kind || track.kind === tt.kind)) {
@@ -141,7 +142,8 @@ export function splitRows(text: string, preferLineLength: number): string[] {
   let nextLineIdx = lineIdx;
   let word = '';
 
-  for (let i = 0; i <= text.length; i += 1) {
+  const { length } = text;
+  for (let i = 0; i <= length; i += 1) {
     const char = text[i];
 
     // Oversized from the prev line

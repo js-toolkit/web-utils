@@ -6,7 +6,8 @@ export function dataUrlToBlob(dataUrl: string): Blob {
 
   const ab = new ArrayBuffer(byteString.length);
   const ia = new Uint8Array(ab);
-  for (let i = 0; i < byteString.length; i += 1) {
+  const { length } = byteString;
+  for (let i = 0; i < length; i += 1) {
     ia[i] = byteString.charCodeAt(i);
   }
 

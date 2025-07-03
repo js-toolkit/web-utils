@@ -132,7 +132,8 @@ export class TextTracksController
       //   media.webkitDisplayingFullscreen
       // );
 
-      for (let i = 0; i < textTracks.length; i += 1) {
+      const { length } = textTracks;
+      for (let i = 0; i < length; i += 1) {
         const track = textTracks[i];
         // Disable default texttracks but allow select tracks in iOS native menu in fullscreen
         if (
@@ -208,10 +209,12 @@ export class TextTracksController
       return (event: Event & { target: TextTrack }): void => {
         const { activeCues } = event.target;
         if (!activeCues) return;
+        const { length: activeCuesLength } = activeCues;
+        const { length: lastCuesLength } = lastCues;
         // Because cuechange triggered twice.
-        let changed = lastCues.length !== activeCues.length;
-        const cues = new Array<Cue>(activeCues.length);
-        for (let i = 0; i < cues.length; i += 1) {
+        let changed = lastCuesLength !== activeCuesLength;
+        const cues = new Array<Cue>(activeCuesLength);
+        for (let i = 0; i < activeCuesLength; i += 1) {
           const cue = activeCues[i] as unknown as Writeable<Cue>;
           cue.id = cue.id || buildCueId(cue, i);
           cue.rows = splitRows(cue.text, this.options.preferCueRowLength);
@@ -222,8 +225,8 @@ export class TextTracksController
           lastCues[i] = cue;
         }
         // Trim
-        if (lastCues.length > cues.length) {
-          lastCues.splice(cues.length - lastCues.length);
+        if (lastCuesLength > activeCuesLength) {
+          lastCues.splice(activeCuesLength - lastCuesLength);
         }
         if (changed) {
           this.emit(this.Events.TextTrackCueChanged, { textTrack: event.target, cues });
