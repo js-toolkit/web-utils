@@ -1,9 +1,5 @@
 export type Target = HTMLIFrameElement | Window;
 
-export function selectFrames(): HTMLCollectionOf<HTMLIFrameElement> {
-  return document.getElementsByTagName('iframe');
-}
-
 export function findTarget<T extends Target>(
   source: Window,
   targets: ArrayLike<T>
