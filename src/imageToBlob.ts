@@ -1,4 +1,4 @@
-import { get2dContextError } from './takeSnapshot';
+import { get2dContextError } from './takeScreenshot';
 
 export function imageToBlob(image: HTMLImageElement): Promise<Blob> {
   return new Promise((resolve, reject) => {

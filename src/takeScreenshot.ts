@@ -26,21 +26,21 @@ const getDefaultHeight = (element: CanvasImageSource): number => {
     : element.height;
 };
 
-export interface TakeSnapshotOptions {
+export interface TakeScreenshotOptions {
   width?: number | undefined;
   height?: number | undefined;
   type?: string | undefined;
   quality?: number | undefined;
 }
 
-export function takeSnapshot(
+export function takeScreenshot(
   element: CanvasImageSource,
   {
     width = getDefaultWidth(element),
     height = getDefaultHeight(element),
     type = 'image/jpeg',
     quality = 1,
-  }: TakeSnapshotOptions = {}
+  }: TakeScreenshotOptions = {}
 ): string {
   const canvas = document.createElement('canvas');
   canvas.width = width;
@@ -54,14 +54,14 @@ export function takeSnapshot(
   return canvas.toDataURL(type, quality);
 }
 
-export function takeSnapshotAsync(
+export function takeScreenshotAsync(
   element: CanvasImageSource,
   {
     width = getDefaultWidth(element),
     height = getDefaultHeight(element),
     type = 'image/jpeg',
     quality = 1,
-  }: TakeSnapshotOptions = {}
+  }: TakeScreenshotOptions = {}
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
