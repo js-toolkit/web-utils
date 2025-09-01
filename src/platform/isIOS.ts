@@ -1,9 +1,9 @@
-import { getCachedPlatformInfo } from './getPlatformInfo';
+import { getCachedPlatformInfo, getPlatformInfoSync } from './getPlatformInfo';
 import { isMobile } from './isMobile';
 
 export function isIOS(): boolean {
-  const platformInfo = getCachedPlatformInfo();
-  if (!platformInfo) return false;
+  const platformInfo = getCachedPlatformInfo() ?? getPlatformInfoSync();
+  // if (!platformInfo) return false;
   return (
     platformInfo.os.name === 'iOS' ||
     // WebView on iPad

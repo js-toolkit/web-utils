@@ -1,8 +1,8 @@
-import { getCachedPlatformInfo } from './getPlatformInfo';
+import { getCachedPlatformInfo, getPlatformInfoSync } from './getPlatformInfo';
 
 export function isMobile(): boolean {
-  const platformInfo = getCachedPlatformInfo();
-  if (!platformInfo) return false;
+  const platformInfo = getCachedPlatformInfo() ?? getPlatformInfoSync();
+  // if (!platformInfo) return false;
   const deviceType = platformInfo.device.type;
   if (
     deviceType === 'mobile' ||

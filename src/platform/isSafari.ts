@@ -1,10 +1,10 @@
-import { getCachedPlatformInfo } from './getPlatformInfo';
+import { getCachedPlatformInfo, getPlatformInfoSync } from './getPlatformInfo';
 import { isIOS } from './isIOS';
 import { isMacOS } from './isMacOS';
 
 export function isSafari(): boolean {
-  const platformInfo = getCachedPlatformInfo();
-  if (!platformInfo) return false;
+  const platformInfo = getCachedPlatformInfo() ?? getPlatformInfoSync();
+  // if (!platformInfo) return false;
   const browser = platformInfo.browser.name;
   return (
     browser === 'Safari' ||
