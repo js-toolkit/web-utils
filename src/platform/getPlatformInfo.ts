@@ -30,13 +30,13 @@ function toPlatformInfo(result: UAParser.IResult): PlatformInfo {
 }
 
 export function getPlatformInfoSync(): PlatformInfo {
-  if (syncResult == null) {
+  if (asyncResult == null && syncResult == null) {
     // Is that order calls overrides values (withFeatureCheck().withClientHints()) ?
     syncResult = toPlatformInfo(
       new UAParser(navigator.userAgent).getResult().withFeatureCheck() as UAParser.IResult
     );
   }
-  return syncResult;
+  return (asyncResult ?? syncResult) as PlatformInfo;
 }
 
 export async function getPlatformInfo(): Promise<PlatformInfo> {
