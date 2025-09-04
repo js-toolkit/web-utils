@@ -1,4 +1,4 @@
-import { iframeMessenger, type GAEventMessage } from './iframeMessenger';
+import { UnreachableCaseError } from '@js-toolkit/utils/UnreachableCaseError';
 import type { GTMEventData } from './types';
 
 export interface GAEventData {
@@ -16,6 +16,11 @@ export interface GAEventData {
   readonly measurementId: string | undefined;
 }
 
+export interface GAIFrameMessage<T extends string = string, D extends GAEventData = GAEventData> {
+  type: T;
+  event: D;
+}
+
 export interface GADataHandler<D extends GAEventData> {
   (data: D): void;
 }
@@ -29,7 +34,7 @@ export type GAEventDataTransformer<
   readonly gtm: GTMEventData;
   // readonly gtag: GTagEventData;
   // readonly ga: GAObjectEventData;
-  readonly iframe: GAEventMessage<string, D>;
+  readonly iframe: GAIFrameMessage<string, D>;
 }[L];
 
 /** Google Tag Manager handler */
@@ -50,6 +55,10 @@ function gtagHandler<D extends GAEventData>(gtag: NonNullable<Window['gtag']>, d
     event_label: label,
     value: undefined,
   });
+}
+
+function iframeHandler<T extends string, D extends GAEventData>(type: T, data: D): void {
+  window.parent.postMessage({ type, event: data } as GAIFrameMessage, '*');
 }
 
 // /** Universal Analytics without gtag handler */
@@ -116,16 +125,15 @@ export function getHandler<D extends GAEventData, L extends GALibType>(
     case 'iframe': {
       return (data) => {
         const msg = (transformers as GAEventDataTransformerMap<D, 'iframe'>).iframe(data);
-        iframeMessenger(msg.type, msg.event);
+        iframeHandler(msg.type, msg.event);
       };
     }
     case 'gtm': {
       const { dataLayer } = window;
-      return dataLayer
-        ? (data) => {
-            gtmHandler(dataLayer, (transformers as GAEventDataTransformerMap<D, 'gtm'>).gtm, data);
-          }
-        : undefined;
+      if (!dataLayer) return undefined;
+      return (data) => {
+        gtmHandler(dataLayer, (transformers as GAEventDataTransformerMap<D, 'gtm'>).gtm, data);
+      };
     }
     case 'gtag': {
       return window.gtag ? gtagHandler.bind(undefined, window.gtag) : undefined;
@@ -136,7 +144,7 @@ export function getHandler<D extends GAEventData, L extends GALibType>(
     //   return obj ? gaHandler.bind(undefined, propName, {}) : undefined;
     // }
     default: {
-      throw new Error(`Unknown GA lib type '${gaLib as string}'.`);
+      throw new UnreachableCaseError(gaLib, `Unknown GA lib type '${gaLib}'.`);
     }
   }
 }
