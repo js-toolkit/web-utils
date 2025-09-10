@@ -3,10 +3,10 @@ import type { GTMEventData } from './types';
 
 export interface GAEventData {
   readonly eventCategory: string;
-  readonly action: string;
+  readonly eventType: string;
   readonly label: string | undefined;
   /**
-   * Идентификатор потока данных
+   * Идентификатор потока данных (номер счетчика в других системах)
    * (https://support.google.com/analytics/answer/12270356?hl=ru).
    *
    * Можно не указывать, если:
@@ -27,7 +27,7 @@ export interface GADataHandler<D extends GAEventData> {
 
 type GALibType = 'gtm' | 'gtag' | /* 'ga' | */ 'iframe' | 'auto';
 
-export type GAEventDataTransformer<
+type GAEventDataTransformer<
   D extends GAEventData,
   L extends Extract<GALibType, 'gtm' | 'iframe'>,
 > = (data: D) => {
@@ -36,6 +36,11 @@ export type GAEventDataTransformer<
   // readonly ga: GAObjectEventData;
   readonly iframe: GAIFrameMessage<string, D>;
 }[L];
+
+export type GAEventDataTransformerMap<
+  D extends GAEventData,
+  L extends Extract<GALibType, 'gtm' | 'iframe'> = Extract<GALibType, 'gtm' | 'iframe'>,
+> = L extends L ? Record<L, GAEventDataTransformer<D, L>> : never;
 
 /** Google Tag Manager handler */
 function gtmHandler<D extends GAEventData>(
@@ -48,8 +53,8 @@ function gtmHandler<D extends GAEventData>(
 
 /** Google tag handler */
 function gtagHandler<D extends GAEventData>(gtag: NonNullable<Window['gtag']>, data: D): void {
-  const { action, eventCategory, measurementId, label } = data;
-  gtag('event', action, {
+  const { eventType, eventCategory, measurementId, label } = data;
+  gtag('event', eventType, {
     send_to: measurementId,
     event_category: eventCategory,
     event_label: label,
@@ -95,15 +100,10 @@ function iframeHandler<T extends string, D extends GAEventData>(type: T, data: D
 //   }
 // }
 
-export type GAEventDataTransformerMap<
-  D extends GAEventData,
-  L extends Extract<GALibType, 'gtm' | 'iframe'> = Extract<GALibType, 'gtm' | 'iframe'>,
-> = L extends L ? Record<L, GAEventDataTransformer<D, L>> : never;
-
 export function getHandler<D extends GAEventData, L extends GALibType>(
   gaLib: L,
-  transformers: L extends 'auto' | 'gtm' | 'iframe' ? GAEventDataTransformerMap<D> : undefined
-): GADataHandler<D> | undefined {
+  transformers: L extends 'gtag' ? undefined : GAEventDataTransformerMap<D>
+): GADataHandler<D> {
   switch (gaLib) {
     case 'auto': {
       if (window.gtag) return getHandler('gtag', undefined);
@@ -120,7 +120,9 @@ export function getHandler<D extends GAEventData, L extends GALibType>(
       if (window.parent !== window)
         return getHandler('iframe', transformers as GAEventDataTransformerMap<D, 'iframe'>);
 
-      return undefined;
+      throw new Error(
+        'Unable to create auto handler due to Google Analytics is not configured or current window is not inside iframe.'
+      );
     }
     case 'iframe': {
       return (data) => {
@@ -130,13 +132,17 @@ export function getHandler<D extends GAEventData, L extends GALibType>(
     }
     case 'gtm': {
       const { dataLayer } = window;
-      if (!dataLayer) return undefined;
+      if (!dataLayer) throw new Error('Unable to create handler: `dataLayer` is undefined.');
       return (data) => {
         gtmHandler(dataLayer, (transformers as GAEventDataTransformerMap<D, 'gtm'>).gtm, data);
       };
     }
     case 'gtag': {
-      return window.gtag ? gtagHandler.bind(undefined, window.gtag) : undefined;
+      const { gtag } = window;
+      if (!gtag) throw new Error('Unable to create handler: `gtag` is undefined.');
+      return (data) => {
+        gtagHandler(gtag, data);
+      };
     }
     // case 'ga': {
     //   const propName = window.GoogleAnalyticsObject || 'ga';

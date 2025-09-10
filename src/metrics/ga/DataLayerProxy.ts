@@ -1,18 +1,16 @@
+import type { DataLayer } from '../types';
 import {
   getHandler,
-  type GAEventData,
   type GADataHandler,
+  type GAEventData,
   type GAEventDataTransformerMap,
 } from './getHandler';
 
-export type { GAEventData };
-
-export class DataLayerProxy<D extends GAEventData> {
+export class DataLayerProxy<D extends GAEventData> implements DataLayer<D> {
   private readonly handler: GADataHandler<D>;
 
   constructor(transformers: GAEventDataTransformerMap<D>) {
     const handler = getHandler('auto', transformers);
-    if (!handler) throw new Error('Google Analytics handler is not created.');
     this.handler = handler;
   }
 

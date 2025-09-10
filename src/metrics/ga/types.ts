@@ -3,7 +3,7 @@ export interface GTMEventData {
 }
 
 interface GTMDataLayer<D extends GTMEventData> {
-  push: (data: D) => unknown;
+  push(data: D): unknown;
 }
 
 interface GTagEventData {
