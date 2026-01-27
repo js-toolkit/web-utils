@@ -260,7 +260,7 @@ export function getAutoConnector<SendData, ReceiveData>({
       const { data } = message.data;
       const complete = (): void => {
         logger.v1(`${`${label}: `}Connection established (self.uid=${uid} + uid=${targetId}).`);
-        onConnect({ data, target, origin }, port as MessagePort);
+        onConnect({ data, target, origin }, port!);
         // if (channelOption === 'open') {
         //   const port1 = channelMap?.get(targetId)?.port1;
         //   if (!port1) throw new Error();
@@ -306,9 +306,7 @@ export function getAutoConnector<SendData, ReceiveData>({
       const newWindowsSet = new Set(newWindows);
 
       if (options.append) {
-        if (!specialTargets) {
-          specialTargets = new Set();
-        }
+        specialTargets ??= new Set();
         newWindowsSet.forEach((w) => specialTargets!.add(w));
       } else {
         specialTargets = newWindowsSet;

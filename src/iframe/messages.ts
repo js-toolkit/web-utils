@@ -2,13 +2,13 @@ export const IFRAME_PING = '@_IFRAME_PING';
 export const IFRAME_HOST_READY = '@_IFRAME_HOST_READY';
 export const IFRAME_CLIENT_READY = '@_IFRAME_CLIENT_READY';
 
-export type MessagesTypes = {
+export interface MessagesTypes {
   readonly Ping: string;
   readonly TargetReady: string;
   readonly SelfReady: string;
   // readonly ClientReady: string;
   // readonly HostReady: string;
-};
+}
 
 export function getHostMessages(): MessagesTypes {
   return {
@@ -31,8 +31,10 @@ export interface IframeMessage<T extends keyof MessagesTypes = keyof MessagesTyp
   readonly type: MessagesTypes[T];
 }
 
-export interface IframeDataMessage<T extends keyof MessagesTypes = keyof MessagesTypes, D = unknown>
-  extends IframeMessage<T> {
+export interface IframeDataMessage<
+  T extends keyof MessagesTypes = keyof MessagesTypes,
+  D = unknown,
+> extends IframeMessage<T> {
   readonly data: D;
 }
 
