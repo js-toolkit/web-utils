@@ -21,9 +21,9 @@ declare global {
     native?: boolean | undefined;
   }
 
-  interface TextTrackList {
-    [index: number]: TextTrack | undefined;
-  }
+  // interface TextTrackList {
+  //   [index: number]: TextTrack | undefined;
+  // }
 }
 
 interface TextTracksEventMap {
@@ -38,11 +38,10 @@ interface TextTracksEventMap {
   >;
 }
 
-export interface Cue
-  extends PartialBut<
-    OmitStrict<VTTCue, keyof EventTarget | 'onenter' | 'onexit' | 'track' | 'pauseOnExit'>,
-    'id' | 'text' | 'startTime'
-  > {
+export interface Cue extends PartialBut<
+  OmitStrict<VTTCue, keyof EventTarget | 'onenter' | 'onexit' | 'track' | 'pauseOnExit'>,
+  'id' | 'text' | 'startTime'
+> {
   readonly rows: string[];
 }
 
@@ -119,6 +118,7 @@ export class TextTracksController
     this.detach();
 
     const changeHandler = (): void => {
+      // const textTracks = media.textTracks as PartialSome<TextTrackList, number>;
       const { textTracks } = media;
       const { nextTextTrack } = this;
       let newCurrentIndex = -1;
@@ -168,8 +168,9 @@ export class TextTracksController
       }
 
       const newCurrentTrack: ActiveTextTrackInfo | undefined =
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         textTracks[newCurrentIndex] &&
-        ((this.textTrackList[newCurrentIndex] && {
+        ((this.textTrackList.at(newCurrentIndex) && {
           ...this.textTrackList[newCurrentIndex],
           mode: textTracks[newCurrentIndex].mode,
         }) ??

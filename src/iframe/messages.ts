@@ -62,14 +62,14 @@ export function isPingMessage(
   data: unknown,
   messagesTypes: MessagesTypes
 ): data is IframeMessage<'Ping'> {
-  return !!data && (data as IframeMessage).type === messagesTypes.Ping;
+  return data != null && (data as IframeMessage).type === messagesTypes.Ping;
 }
 
 export function isTargetReadyMessage<T>(
   data: unknown,
   messagesTypes: MessagesTypes
 ): data is IframeDataMessage<'TargetReady', T> {
-  return !!data && (data as IframeDataMessage).type === messagesTypes.TargetReady;
+  return data != null && (data as IframeDataMessage).type === messagesTypes.TargetReady;
 }
 
 // export function isHostReadyMessage<T>(

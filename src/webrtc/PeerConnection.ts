@@ -146,11 +146,14 @@ export class PeerConnection
   attachStream(stream: MediaStream): void {
     const senders = this.pc.getSenders();
     // Get tracks which not existed in peer connection.
-    const newTracks = senders.length
-      ? stream.getTracks().filter((t) => !senders.find(({ track }) => !!track && track.id === t.id))
-      : stream.getTracks();
+    const newTracks =
+      senders.length > 0
+        ? stream
+            .getTracks()
+            .filter((t) => !senders.find(({ track }) => !!track && track.id === t.id))
+        : stream.getTracks();
     // If connection has already attached tracks then not possible attach tracks again.
-    if (!newTracks.length) {
+    if (newTracks.length === 0) {
       this.logger.debug('No tracks to attach to a peer connection.');
       return;
     }
@@ -175,7 +178,7 @@ export class PeerConnection
       const { track } = s;
       if (track && (track.readyState === 'ended' || !tracks.find((_) => _.id === track.id))) {
         this.pc.removeTrack(s);
-        this.logger.debug(`'${track && track.kind}' track is removed from a peer connection.`);
+        this.logger.debug(`'${track.kind}' track is removed from a peer connection.`);
       }
     });
 

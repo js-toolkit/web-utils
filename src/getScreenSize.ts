@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 export type ScreenSize = Pick<Screen, 'width' | 'height'>;
 
 export interface GetScreenSizeProps {
@@ -17,9 +19,8 @@ export function getScreenSize({ respectOrientation = true }: GetScreenSizeProps 
   const { width, height, orientation } = window.screen;
 
   if (respectOrientation) {
-    const orientationType = orientation
-      ? orientation.type
-      : angleToOrientationType(window.orientation);
+    const orientationType =
+      orientation != null ? orientation.type : angleToOrientationType(window.orientation);
     if (
       (orientationType === 'landscape-primary' || orientationType === 'landscape-secondary') &&
       width < height

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/prefer-function-type */
+
 export interface YTMEventData {
   event: string;
 }

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+
 export function getGeoCoordinates({
   timeout = 10000,
   maximumAge = 60000,

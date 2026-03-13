@@ -19,7 +19,7 @@ export function createRafLoop(): RafLoop {
 
   const reset = (): void => {
     scope.clearTimeout(timer);
-    raf && scope.cancelAnimationFrame(raf);
+    raf != null && scope.cancelAnimationFrame(raf);
     raf = undefined;
     suspendTimeout = 0;
     timer = undefined;

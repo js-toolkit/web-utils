@@ -1,3 +1,3 @@
-export function stopPropagation<T extends { stopPropagation: VoidFunction }>(event: T): void {
+export function stopPropagation(event: { stopPropagation: VoidFunction }): void {
   event.stopPropagation();
 }

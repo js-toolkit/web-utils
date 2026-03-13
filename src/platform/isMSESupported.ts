@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { getMediaSource } from '../media/getMediaSource';
 import { getSourceBuffer } from '../media/getSourceBuffer';
 

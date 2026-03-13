@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 import { getMediaSource } from './getMediaSource';
 
 type ManagedMediaSourceOption = Parameters<typeof getMediaSource>[0];
@@ -14,7 +15,7 @@ export abstract class Capabilities {
       return !!this.canPlayMap.get(type);
     }
     if (!this.tmpVideo) {
-      this.tmpVideo = document.getElementsByTagName('video')[0] || document.createElement('video');
+      this.tmpVideo = document.getElementsByTagName('video')[0] ?? document.createElement('video');
       // Release handle for GC work.
       window.clearTimeout(this.cacheTimer);
       this.cacheTimer = window.setTimeout(() => {

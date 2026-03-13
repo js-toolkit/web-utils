@@ -64,9 +64,7 @@ export function getViewableTracker(
   };
 
   const handler =
-    scrollThrottle && scrollThrottle > 0
-      ? throttleFn(checkVisibility, scrollThrottle)
-      : checkVisibilityRaf;
+    scrollThrottle > 0 ? throttleFn(checkVisibility, scrollThrottle) : checkVisibilityRaf;
 
   // if (visiblePart > 0) {
   window.addEventListener('scroll', handler, { capture: false, passive: true });

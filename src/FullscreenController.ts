@@ -161,7 +161,7 @@ export class FullscreenController
         return;
       }
 
-      const video = (this.fallback instanceof HTMLVideoElement && this.fallback) || undefined;
+      const video = this.fallback instanceof HTMLVideoElement ? this.fallback : undefined;
       if (video?.webkitEnterFullscreen && video.webkitSupportsFullscreen) {
         const beginFullscreenHandler = (): void => {
           video.removeEventListener('webkitbeginfullscreen', beginFullscreenHandler);
@@ -198,7 +198,7 @@ export class FullscreenController
         return;
       }
 
-      const video = (this.fallback instanceof HTMLVideoElement && this.fallback) || undefined;
+      const video = this.fallback instanceof HTMLVideoElement ? this.fallback : undefined;
       if (video?.webkitExitFullscreen && video.webkitSupportsFullscreen) {
         const endFullscreenHandler = (): void => {
           video.removeEventListener('webkitendfullscreen', endFullscreenHandler);

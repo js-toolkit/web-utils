@@ -9,9 +9,9 @@ import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { delayed } from '@js-toolkit/utils/delayed';
 import { EventEmitterListener } from '../EventEmitterListener';
 
-function getNotConnectedError(): Error {
-  return new Error('The object is not connected yet.');
-}
+// function getNotConnectedError(): Error {
+//   return new Error('The object is not connected yet.');
+// }
 
 export class WSController<TData = unknown>
   extends EventEmitter<WSController.EventMap<TData>, WSController<TData>>
@@ -54,7 +54,7 @@ export class WSController<TData = unknown>
     this.listener = new EventEmitterListener(this.ws);
 
     // reconnect on idle
-    if (idleTimeout && idleTimeout > 0) {
+    if (idleTimeout != null && idleTimeout > 0) {
       this.reconnectOnIdle = delayed(() => {
         this.logger.info(`WS connection reconnecting after ${idleTimeout}ms due to inactivity.`);
         this.ws.reconnect();
@@ -69,7 +69,7 @@ export class WSController<TData = unknown>
         pingTimeout = 12_000,
         outMessage = () => JSON.stringify({ type: 'pong' }),
         inMessageFilter = (message) =>
-          message && typeof message === 'object' && (message as AnyObject).type === 'ping',
+          message != null && typeof message === 'object' && (message as AnyObject).type === 'ping',
       } = halfOpenDetection;
 
       const reconnectOnHalfOpen = delayed(() => {
@@ -148,14 +148,14 @@ export class WSController<TData = unknown>
   }
 
   send(data: Message): void {
-    if (!this.ws) throw getNotConnectedError();
+    // if (!this.ws) throw getNotConnectedError();
     this.ws.send(data);
   }
 
   close(code?: number, reason?: string): void {
     // if (this.closeInvoked) return;
     // this.closeInvoked = true;
-    const hasWS = !!this.ws;
+    // const hasWS = !!this.ws;
     try {
       if (this.reconnectOnIdle) {
         this.reconnectOnIdle.cancel();
@@ -167,7 +167,8 @@ export class WSController<TData = unknown>
     } catch (ex) {
       this.logger.warn(ex);
     }
-    if (hasWS) this.emit(this.Events.Closed, reason ? { reason } : undefined);
+    // if (hasWS) this.emit(this.Events.Closed, reason ? { reason } : undefined);
+    this.emit(this.Events.Closed, reason ? { reason } : undefined);
   }
 
   destroy(): void {
@@ -183,8 +184,9 @@ export class WSController<TData = unknown>
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace WSController {
-  export interface Options
-    extends OptionalToUndefined<BaseOptions & Partial<Pick<WebSocket, 'binaryType'>>> {
+  export interface Options extends OptionalToUndefined<
+    BaseOptions & Partial<Pick<WebSocket, 'binaryType'>>
+  > {
     readonly protocols?: ConstructorParameters<typeof ReconnectingWebSocket>['1'] | undefined;
     /** Reconnecting after an idle timeout (no message events). Default 30_000. */
     readonly idleTimeout?: number | undefined;

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+
 export class Semver {
   static parse(version: string): Semver | undefined {
     const parts = /(\d+)\.(\d+)(?:\.(\d+))?/.exec(version);

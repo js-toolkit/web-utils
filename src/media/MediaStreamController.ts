@@ -9,13 +9,12 @@ export function attachMediaStream(media: HTMLMediaElement, stream: MediaStream |
     stream.active &&
     media.muted &&
     // Assign null if screen sharing (especially for local stream)
-    stream.getVideoTracks().filter((t) => !(t.getSettings() as AnyObject).displaySurface).length ===
-      0
+    stream.getVideoTracks().filter((t) => !t.getSettings().displaySurface).length === 0
   ) {
     media.srcObject = null;
     return;
   }
-  media.srcObject = stream && stream.active ? stream : null;
+  media.srcObject = stream?.active ? stream : null;
 }
 
 export function removeTrack(mediaStream: MediaStream, track: MediaStreamTrack): void {

@@ -41,10 +41,10 @@ export class ServiceWorkerInstaller
   private registration: ServiceWorkerRegistration | undefined;
   private cancelDefferedRegister: VoidFunction | undefined;
 
-  constructor(/* options: ServiceWorkerInstaller.Options */) {
-    super();
-    // this.options = { ...options, logger: options.logger ?? console };
-  }
+  // constructor(/* options: ServiceWorkerInstaller.Options */) {
+  //   super();
+  //   // this.options = { ...options, logger: options.logger ?? console };
+  // }
 
   register(swUrl: string | URL, options?: ServiceWorkerInstaller.RegistrationOptions): void {
     if (!ServiceWorkerInstaller.isAvailable()) {
@@ -107,7 +107,7 @@ export class ServiceWorkerInstaller
       }
     };
 
-    if (deffered) {
+    if (typeof deffered === 'number' ? deffered > 0 : deffered) {
       this.cancelDefferedRegister = onPageReady(
         register,
         typeof deffered === 'number' ? { timeout: deffered } : undefined

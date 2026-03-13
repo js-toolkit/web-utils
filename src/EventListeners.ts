@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
 import { EventEmitterListener } from './EventEmitterListener';
 import type { EmitterTarget, GetEventMap } from './EventEmitterListener.utils';
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { preventDefault } from './preventDefault';
 
 type TouchLike = Pick<Touch, 'pageX' | 'pageY' | 'clientX' | 'clientY'>;

@@ -10,7 +10,7 @@ export function isMobile(): boolean {
     // WKWebView in desktop mode on iPad
     (!deviceType &&
       platformInfo.device.vendor === 'Apple' &&
-      navigator.maxTouchPoints &&
+      navigator.maxTouchPoints != null &&
       navigator.maxTouchPoints > 2)
   ) {
     return true;

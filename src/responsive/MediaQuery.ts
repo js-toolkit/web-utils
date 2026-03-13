@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 /* eslint-disable no-underscore-dangle */
 import { MediaQueryListener, type MediaQueryEventHandler } from './MediaQueryListener';
 import type { ViewSize } from './ViewSize';
@@ -5,7 +6,7 @@ import type { ViewSize } from './ViewSize';
 export type { MediaQueryEvent, MediaQueryEventHandler } from './MediaQueryListener';
 
 export abstract class MediaQuery {
-  private static _listener: MediaQueryListener;
+  private static _listener: MediaQueryListener | undefined;
 
   static get listener(): MediaQueryListener {
     if (!this._listener) {

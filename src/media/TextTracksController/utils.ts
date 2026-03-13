@@ -19,8 +19,7 @@ export type TextTrackItem = Readonly<
 >;
 
 export interface TextTrackInfo
-  extends Pick<TextTrackItem, 'kind' | 'language' | 'label'>,
-    Pick<TextTrack, 'id'> {}
+  extends Pick<TextTrackItem, 'kind' | 'language' | 'label'>, Pick<TextTrack, 'id'> {}
 
 export type ActivateTextTrackInfo = OptionalToUndefined<
   PartialBut<Pick<TextTrackInfo, 'kind' | 'language'>, 'language'>

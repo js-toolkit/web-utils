@@ -1,5 +1,5 @@
 declare global {
-  // eslint-disable-next-line vars-on-top, no-var
+  // eslint-disable-next-line vars-on-top
   var TelegramWebviewProxy: AnyObject | undefined;
 }
 

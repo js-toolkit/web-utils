@@ -44,7 +44,7 @@ export function getSecondsCounter({ onChange }: SecondsCounterOptions = {}): Sec
       const secs = toInt(currentTime);
       if (secs > 0 && !timestamps.has(secs)) {
         timestamps.add(secs);
-        listener && listener({ value: secs, total: timestamps.size });
+        listener?.({ value: secs, total: timestamps.size });
       }
     },
     get onChange() {

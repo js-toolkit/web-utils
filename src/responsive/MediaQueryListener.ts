@@ -19,7 +19,7 @@ export class MediaQueryListener implements Disposable {
   readonly queries: Readonly<Record<ViewSize, string>>;
 
   get currentViewSize(): ViewSize {
-    if (!this._currentViewSize) {
+    if (this._currentViewSize == null) {
       throw new Error(
         `Media queries is not initialized properly. Current view size is ${String(
           this._currentViewSize

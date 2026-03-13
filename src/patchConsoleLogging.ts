@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 type Methods = Pick<Console, 'debug' | 'error' | 'info' | 'log' | 'trace' | 'warn'>;
 
 const methods: Methods = {

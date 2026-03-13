@@ -27,7 +27,7 @@ export function onPageReady(callback: VoidFunction, options?: Options): VoidFunc
     callback();
   } else {
     window.addEventListener('load', cbWrapper, { once: true });
-    if (options?.timeout) {
+    if (options?.timeout != null && options.timeout > 0) {
       delayed = delay(cbWrapper, options.timeout);
     }
   }

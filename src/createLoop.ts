@@ -13,7 +13,7 @@ export function createLoop(): Loop {
 
   const call = (): void => {
     if (active && rafCallback) {
-      raf && cancelAnimationFrame(raf);
+      raf != null && cancelAnimationFrame(raf);
       raf = requestAnimationFrame(rafCallback);
     }
   };
@@ -30,7 +30,7 @@ export function createLoop(): Loop {
       if (active) {
         active = false;
         window.clearInterval(timer);
-        raf && cancelAnimationFrame(raf);
+        raf != null && cancelAnimationFrame(raf);
       }
     },
     call,

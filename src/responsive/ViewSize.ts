@@ -69,6 +69,7 @@ export namespace ViewSize {
   export function get(width: number): ViewSize {
     const viewSize =
       valueList.find(([, value]) => width >= value.minWidth && width <= value.maxWidth)?.[0] ??
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       valueList.at(-1)![0];
     return viewSize;
   }

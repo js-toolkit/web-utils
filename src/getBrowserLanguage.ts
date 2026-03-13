@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+
 declare global {
   interface Navigator {
     userLanguage: string;

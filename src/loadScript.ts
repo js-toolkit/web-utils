@@ -88,7 +88,7 @@ export function loadScript(
     defer = false,
     waitDomReady = true,
   }: LoadScriptOptions = {},
-  isExecuted: (() => boolean) | undefined = undefined
+  isExecuted?: () => boolean
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     if (waitDomReady) {

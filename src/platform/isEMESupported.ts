@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+
 /** Encrypted Media Extensions */
 export function isEMESupported(): boolean {
   return (

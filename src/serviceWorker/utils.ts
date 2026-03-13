@@ -8,17 +8,16 @@ export function isLocalhost(hostname = window.location.hostname): boolean {
     // [::1] is the IPv6 localhost address.
     hostname === '[::1]' ||
     // 127.0.0.1/8 is considered localhost for IPv4.
-    hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+    /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/.exec(hostname)
   );
 }
 
 /** Delete all caches that aren't named in `caches`. */
-export function removeUnknownCaches<T extends Record<string, string>>(
-  expectedCaches: T
-): Promise<unknown> {
+export function removeUnknownCaches(expectedCaches: Record<string, string>): Promise<unknown> {
   return caches.keys().then((cacheNames) => {
     const expectedCacheNamesSet = new Set(Object.values(expectedCaches));
     return Promise.all(
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       cacheNames.map((cacheName) => {
         if (!expectedCacheNamesSet.has(cacheName)) {
           // If this cache name isn't present in the set of "expected" cache names, then delete it.
@@ -99,7 +98,7 @@ export async function cacheFirst(
     }
     return response;
   } catch (error) {
-    const fallbackResponse = fallbackUrl && (await cache.match(fallbackUrl));
+    const fallbackResponse = fallbackUrl ? await cache.match(fallbackUrl) : undefined;
     if (fallbackResponse) {
       return fallbackResponse;
     }

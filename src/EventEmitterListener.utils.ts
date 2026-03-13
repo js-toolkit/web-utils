@@ -184,7 +184,7 @@ try {
 export function normalizeOptions(
   options: boolean | AddEventListenerOptions | undefined
 ): typeof options {
-  if (options && typeof options === 'object') {
+  if (options != null && typeof options === 'object') {
     let result = options;
     if ('passive' in options && !passiveSupported) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-dynamic-delete */
+/* eslint-disable @typescript-eslint/no-unnecessary-type-conversion */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-prototype-builtins, prefer-destructuring, no-param-reassign */
 
@@ -31,6 +33,7 @@ export function trace(text: string): void {
   if (text.endsWith('\n')) {
     text = text.substring(0, text.length - 1);
   }
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   if (window.performance) {
     const now = (window.performance.now() / 1000).toFixed(3);
     console.log(`${now}: ${text}`);
@@ -53,7 +56,7 @@ export function isValidIceCandidate(
     return false;
   }
   // If we're trying to eat non-relay candidates, do that.
-  if (config && config.iceTransportPolicy === 'relay' && iceCandidateType(candidate) !== 'relay') {
+  if (config?.iceTransportPolicy === 'relay' && iceCandidateType(candidate) !== 'relay') {
     return false;
   }
   return true;
@@ -360,16 +363,16 @@ function removeCodecParam(sdp: string, codec: string, param: string): string {
   }
 
   const map = parseFmtpLine(sdpLines[fmtpLineIndex]);
-  if (map) {
-    delete map.params[param];
+  // if (map) {
+  delete map.params[param];
 
-    const newLine = writeFmtpLine(map);
-    if (newLine === null) {
-      sdpLines.splice(fmtpLineIndex, 1);
-    } else {
-      sdpLines[fmtpLineIndex] = newLine;
-    }
+  const newLine = writeFmtpLine(map);
+  if (newLine === null) {
+    sdpLines.splice(fmtpLineIndex, 1);
+  } else {
+    sdpLines[fmtpLineIndex] = newLine;
   }
+  // }
 
   sdp = sdpLines.join('\r\n');
   return sdp;
@@ -383,7 +386,7 @@ function parseFmtpLine(fmtpLine: string): RequiredSome<FmtpObj, 'params'> {
 
   const pattern = /a=fmtp:(\d+)/;
   const result = pattern.exec(fmtpLine);
-  if (result && result.length === 2) {
+  if (result?.length === 2) {
     fmtpObj.pt = result[1];
   } else {
     // return null;
@@ -459,7 +462,7 @@ function getCodecPayloadType(sdpLines: string[], codec: string): string | null {
 function getCodecPayloadTypeFromLine(sdpLine: string): string {
   const pattern = /a=rtpmap:(\d+) [a-zA-Z0-9-]+\/\d+/;
   const result = pattern.exec(sdpLine);
-  return result && result.length === 2 ? result[1] : '';
+  return result?.length === 2 ? result[1] : '';
 }
 
 // Returns a new m= line with the specified codec as the first one.

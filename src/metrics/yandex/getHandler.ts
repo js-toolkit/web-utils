@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
+/* eslint-disable @typescript-eslint/prefer-function-type */
+
 import { UnreachableCaseError } from '@js-toolkit/utils/UnreachableCaseError';
 import type { YTMEventData } from './types';
 

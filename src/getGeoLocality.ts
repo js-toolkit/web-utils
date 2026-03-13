@@ -19,7 +19,8 @@ export function getGeoLocality({ longitude, latitude, lang }: GeoLocalityOptions
     .then((data) => {
       /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
       const { address, error } = data;
-      if (error) throw new Error(getErrorMessage(error), { cause: error });
+      if (error != null) throw new Error(getErrorMessage(error), { cause: error });
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
       return (address.PlaceName || address.LongLabel || address.ShortLabel || '') as string;
     });
 }

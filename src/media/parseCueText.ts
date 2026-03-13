@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-cond-assign */
 // https://github.com/mozilla/vtt.js/blob/master/lib/vtt.js
 
@@ -40,12 +41,13 @@ const NEEDS_PARENT: Record<string, string> = {
 };
 
 function computeSeconds(h: string, m: string, s: string, f: string): number {
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   return (+h || 0) * 3600 + (+m || 0) * 60 + (+s || 0) + (+f || 0) / 1000;
 }
 
 // Try to parse input as a time stamp.
 function parseTimeStamp(input: string): number | undefined {
-  const matchAr = input.match(/^(\d+):(\d{2})(:\d{2})?\.(\d{3})/);
+  const matchAr = /^(\d+):(\d{2})(:\d{2})?\.(\d{3})/.exec(input);
   if (!matchAr) {
     return undefined;
   }
@@ -66,7 +68,7 @@ function parseTimeStamp(input: string): number | undefined {
 function unescape(str0: string): string {
   let str = str0;
   let matchAr;
-  while ((matchAr = str.match(/&(amp|lt|gt|lrm|rlm|nbsp);/))) {
+  while ((matchAr = /&(amp|lt|gt|lrm|rlm|nbsp);/.exec(str))) {
     // Unescape a string 's'.
     str = str.replace(matchAr[0], (s) => ESCAPE[s]);
   }
@@ -78,7 +80,7 @@ function nextToken(input: string): [output: string, token: string | undefined] {
   if (!input) {
     return [input, undefined];
   }
-  const matchAr = input.match(/^([^<]*)(<[^>]*>?)?/);
+  const matchAr = /^([^<]*)(<[^>]*>?)?/.exec(input);
   if (!matchAr) {
     return [input, undefined];
   }
@@ -146,7 +148,7 @@ export function parseCueText<P = CueSegment>(
   const addSegment = (id: string): void => {
     const tag = tagStack.pop() ?? '';
     const node = current!;
-    current = node.parentElement || undefined;
+    current = node.parentElement ?? undefined;
     if (current == null) {
       const segment: CueSegment = {
         id,
@@ -198,7 +200,7 @@ export function parseCueText<P = CueSegment>(
 
   while ((([input, token] = nextToken(input)), token) != null) {
     // console.log('token', token);
-    if (token[0] === '<') {
+    if (token.startsWith('<')) {
       // If the closing tag matches, move back up to the parent node.
       // Otherwise just ignore the end tag.
       if (token[1] === '/') {
@@ -209,10 +211,10 @@ export function parseCueText<P = CueSegment>(
         // Try to parse timestamp.
         // Timestamps are lead nodes as well.
         const ts = parseTimeStamp(token.substring(1, token.length - 1));
-        if (ts) {
+        if (ts != null && Number.isFinite(ts)) {
           timeStamp = ts;
         } else {
-          const matchAr = token.match(/^<([^.\s/0-9>]+)(\.[^\s\\>]+)?([^>\\]+)?(\\?)>?$/);
+          const matchAr = /^<([^.\s/0-9>]+)(\.[^\s\\>]+)?([^>\\]+)?(\\?)>?$/.exec(token);
           // If we can't parse the tag, skip to the next tag.
           // Try to construct an element, and ignore the tag if we couldn't.
           const node = matchAr && createHtmlNode(matchAr[1], matchAr[3]);

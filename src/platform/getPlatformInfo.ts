@@ -19,6 +19,7 @@ function toPlatformInfo(result: UAParser.IResult): PlatformInfo {
         (acc, key) => {
           const prop = key as keyof typeof this;
           if (this[prop] != null && typeof this[prop] !== 'function') {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             acc[prop] = this[prop].toString();
           }
           return acc;
@@ -36,6 +37,7 @@ export function getPlatformInfoSync(): PlatformInfo {
       new UAParser(navigator.userAgent).getResult().withFeatureCheck() as UAParser.IResult
     );
   }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return asyncResult ?? syncResult!;
 }
 

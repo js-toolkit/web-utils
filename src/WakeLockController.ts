@@ -21,7 +21,7 @@ export class WakeLockController extends EventEmitter<
   private restoreWakeLock = (): void => {
     if (document.visibilityState === 'visible' && this.relockOnVisible) {
       this.relockOnVisible = false;
-      this.request().catch((error) => this.emit('error', { error }));
+      this.request().catch((error: unknown) => this.emit('error', { error }));
     }
   };
 

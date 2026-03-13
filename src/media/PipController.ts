@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-conversion */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { EventEmitterListener } from '../EventEmitterListener';
 import { toggleNativeSubtitles } from './toggleNativeSubtitles';
@@ -182,7 +184,13 @@ export namespace PipController {
     Change = 'change',
   }
 
-  export type EventMap = {
-    [Events.Change]: [{ pip: boolean }];
-  };
+  export type EventMap = EventEmitter.EventMap<
+    DefineAll<
+      Events,
+      {
+        [Events.Change]: [{ pip: boolean }];
+      }
+    >,
+    PipController
+  >;
 }

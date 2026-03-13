@@ -119,8 +119,9 @@ export function getAutoConnector<SendData, ReceiveData>({
   let specialTargets: Set<Window> | undefined;
   let disposer: VoidFunction | undefined;
 
-  const post = <M extends IframeMessage>(
-    message: M,
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+  const post = <T extends IframeMessage>(
+    message: T,
     target: MessageEventSource,
     origin: string,
     targetId: string,
@@ -131,20 +132,25 @@ export function getAutoConnector<SendData, ReceiveData>({
       target.postMessage(message, origin, transfer);
       const targetName = target === window.parent ? 'iframe parent' : 'iframe';
       logger.v1(
-        `${`${label}: `}Post message to ${targetName} (uid=${targetId},self.uid=${uid},origin=${origin}):`,
+        `${label}: Post message to ${targetName} (uid=${targetId},self.uid=${uid},origin=${origin}):`,
         message
       );
     } else {
       target.postMessage(message, transfer && { transfer });
       logger.v1(
-        `${`${label}: `}Post message to MessageEventSource (uid=${targetId},self.uid=${uid}):`,
+        `${label}: Post message to MessageEventSource (uid=${targetId},self.uid=${uid}):`,
         message
       );
     }
   };
 
   const sendPing = (target: MessageEventSource, origin: string, targetId: string): void => {
-    post<IframeMessage<'Ping'>>({ uid, type: messagesTypes.Ping }, target, origin, targetId);
+    post(
+      { uid, type: messagesTypes.Ping } satisfies IframeMessage<'Ping'>,
+      target,
+      origin,
+      targetId
+    );
   };
 
   const sendReady = (
@@ -154,8 +160,8 @@ export function getAutoConnector<SendData, ReceiveData>({
     targetId: string,
     port: MessagePort | undefined
   ): void => {
-    post<IframeDataMessage<'SelfReady', unknown>>(
-      { uid, type: messagesTypes.SelfReady, data },
+    post(
+      { uid, type: messagesTypes.SelfReady, data } satisfies IframeDataMessage<'SelfReady'>,
       target,
       origin,
       targetId,
@@ -181,13 +187,13 @@ export function getAutoConnector<SendData, ReceiveData>({
     const targetId = message.data.uid;
 
     logger.v1(
-      `${`${label}: `}Receive message from iframe (uid=${targetId},self.uid=${uid},origin=${message.origin}):`,
+      `${label}: Receive message from iframe (uid=${targetId},self.uid=${uid},origin=${message.origin}):`,
       message.data
     );
 
     if (strictTargets && specialTargets && !specialTargets.has(target)) {
       logger.v1(
-        `${`${label}: `}Could not find target (uid=${targetId},self.uid=${uid}) by message.source.`
+        `${label}: Could not find target (uid=${targetId},self.uid=${uid}) by message.source.`
       );
       return;
     }
@@ -248,19 +254,19 @@ export function getAutoConnector<SendData, ReceiveData>({
         }
         if (channelOption === 'use') {
           const port2 = message.ports[0];
-          if (!port2)
+          if (port2 == null)
             throw new Error(
               'MessagePort is not received despite the fact that the `channel` option is `use`. The `channel` option of connector on another side must be equals `open`.'
             );
           return port2;
         }
-        return undefined;
+        throw new Error(`Something went wrong: Unknown channelOption value ${channelOption}.`);
       })();
 
       const { data } = message.data;
       const complete = (): void => {
-        logger.v1(`${`${label}: `}Connection established (self.uid=${uid} + uid=${targetId}).`);
-        onConnect({ data, target, origin }, port!);
+        logger.v1(`${label}: Connection established (self.uid=${uid} + uid=${targetId}).`);
+        onConnect({ data, target, origin }, port);
         // if (channelOption === 'open') {
         //   const port1 = channelMap?.get(targetId)?.port1;
         //   if (!port1) throw new Error();
@@ -285,7 +291,7 @@ export function getAutoConnector<SendData, ReceiveData>({
 
   const start: AutoConnector['start'] = (targets, options = {}): void => {
     if (disposer && !options.append) {
-      logger.warn(`${`${label}: `}Already started. You should first call \`stop\`.`);
+      logger.warn(`${label}: Already started. You should first call \`stop\`.`);
       return;
     }
 
@@ -307,7 +313,8 @@ export function getAutoConnector<SendData, ReceiveData>({
 
       if (options.append) {
         specialTargets ??= new Set();
-        newWindowsSet.forEach((w) => specialTargets!.add(w));
+        const t = specialTargets;
+        newWindowsSet.forEach((w) => t.add(w));
       } else {
         specialTargets = newWindowsSet;
       }
@@ -320,6 +327,7 @@ export function getAutoConnector<SendData, ReceiveData>({
       });
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
     const cancel = typeof targets === 'function' ? onDOMReady(ready) : ready();
 
     disposer = () => {

@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+
 /** Safe for unicode string. */
 export function toBase64(str: string): string {
   const binString = window.TextEncoder

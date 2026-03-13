@@ -1,5 +1,6 @@
 type WithCancel<T> = T & { cancel: VoidFunction };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function rafCallback<T extends (...args: any[]) => void>(callback: T): WithCancel<T> {
   let handle = 0;
 

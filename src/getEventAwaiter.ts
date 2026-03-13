@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getAwaiter, type Awaiter, type AwaiterOptions } from '@js-toolkit/utils/getAwaiter';
 import { EventEmitterListener } from './EventEmitterListener';
@@ -32,7 +33,7 @@ export function getEventAwaiter<
   const readyAwaiter = getAwaiter<any>({ lazy, ...rest });
   const resolveEvents = Array.isArray(resolveEvent) ? resolveEvent : [resolveEvent];
   const rejectEvents =
-    (Array.isArray(rejectEvent) && rejectEvent) || (rejectEvent && [rejectEvent]) || [];
+    rejectEvent == null ? [] : Array.isArray(rejectEvent) ? rejectEvent : [rejectEvent];
   const listener = isEventEmitterLike(target) ? target : new EventEmitterListener<any>(target);
 
   const resolve = (ev: unknown): void => {
