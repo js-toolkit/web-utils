@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
+/* eslint-disable @typescript-eslint/no-dynamic-delete */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import {
   type DomEventTarget,
   type GetEventMap,
@@ -10,15 +13,15 @@ import {
   normalizeOptions,
 } from './EventEmitterListener.utils';
 
-type GetOnOptions<T extends EmitterTarget> = T extends DomEventTarget
+type GetOnOptions<T /* extends EmitterTarget */> = T extends DomEventTarget
   ? boolean | AddEventListenerOptions
   : unknown;
 
-type GetOnceOptions<T extends EmitterTarget> = T extends DomEventTarget
+type GetOnceOptions<T /* extends EmitterTarget */> = T extends DomEventTarget
   ? boolean | OmitStrict<AddEventListenerOptions, 'once'>
   : undefined;
 
-type GetOffOptions<T extends EmitterTarget> = T extends DomEventTarget
+type GetOffOptions<T /* extends EmitterTarget */> = T extends DomEventTarget
   ? boolean | EventListenerOptions
   : undefined;
 
@@ -34,7 +37,7 @@ type GetOffOptions<T extends EmitterTarget> = T extends DomEventTarget
 // ];
 
 type GetOnceParameters<
-  T extends EmitterTarget,
+  T /* extends EmitterTarget */,
   E extends GetEventType<T> | string,
   EM extends AnyObject,
 > = [
@@ -45,7 +48,7 @@ type GetOnceParameters<
 ];
 
 type GetOffParameters<
-  T extends EmitterTarget,
+  T /* extends EmitterTarget */,
   E extends GetEventType<T> | string,
   EM extends AnyObject,
 > = [
@@ -98,7 +101,7 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
       if (once) {
         this.off(...([type, listener, ...rest] as GetOffParameters<T, string, M>));
       }
-      const nextParams = (this.interceptor && this.interceptor(...params)) || params;
+      const nextParams = this.interceptor?.(...params) ?? params;
       // if (typeof listener === 'object') {
       //   (listener.handleEvent as ListenerWrapper)(...params);
       // } else {
@@ -136,23 +139,23 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
     if (!map) {
       const normal = this.getListeners<L>({ event, type: 'normal', wrapper });
       const capture = this.getListeners<L>({ event, type: 'capture', wrapper });
-      const acc: Record<string, L[]> = {};
+      const acc: PartialRecord<string, L[]> = {};
       const callback = ([evtype, l]: [string, L[]]): void => {
         const list = acc[evtype];
         acc[evtype] = list ? list.concat(l) : l;
       };
       Object.entries(normal).forEach(callback);
       Object.entries(capture).forEach(callback);
-      return acc;
+      return acc as Record<string, L[]>;
     }
 
     const entries = event ? map[event] && { [event]: map[event] } : map;
     if (!entries) return {};
-    return Object.entries(entries).reduce((acc, [evtype, m]) => {
+    return Object.entries(entries).reduce<AnyObject>((acc, [evtype, m]) => {
       const listeners = m ? Array.from(wrapper ? m.values() : m.keys()) : [];
       if (listeners.length > 0) acc[evtype] = listeners;
       return acc;
-    }, {} as AnyObject);
+    }, {});
   }
 
   has<K extends GetEventType<T>>(
@@ -396,15 +399,13 @@ export class EventEmitterListener<T extends EmitterTarget, M extends AnyObject =
   removeAllListeners(type?: string): this {
     if (type) {
       const normalMap = this.normalListeners[type];
-      normalMap &&
-        normalMap.forEach((_, listener) =>
-          this.off(...([type, listener] as unknown as GetOffParameters<T, string, M>))
-        );
+      normalMap?.forEach((_, listener) =>
+        this.off(...([type, listener] as unknown as GetOffParameters<T, string, M>))
+      );
       const captureMap = this.captureListeners[type];
-      captureMap &&
-        captureMap.forEach((_, listener) =>
-          this.off(...([type, listener, true] as unknown as GetOffParameters<T, string, M>))
-        );
+      captureMap?.forEach((_, listener) =>
+        this.off(...([type, listener, true] as unknown as GetOffParameters<T, string, M>))
+      );
     } else {
       Object.keys(this.normalListeners).forEach((k) => this.removeAllListeners(k));
       Object.keys(this.captureListeners).forEach((k) => this.removeAllListeners(k));

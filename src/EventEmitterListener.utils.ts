@@ -1,19 +1,20 @@
+/* eslint-disable @typescript-eslint/unified-signatures */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { EventEmitter } from '@js-toolkit/utils/EventEmitter';
 import { isEmptyObject } from '@js-toolkit/utils/isEmptyObject';
 
 export type DomEventTarget = EventTarget;
 
-export type EventTargetLike = {
+export interface EventTargetLike {
   addEventListener: EventEmitterLike['on'];
   removeEventListener: EventEmitterLike['off'];
-};
+}
 
-export type EventEmitterLike = {
+export interface EventEmitterLike {
   on: (type: any, listener: AnyFunction, ...rest: any[]) => void;
   once?: ((type: any, listener: AnyFunction, ...rest: any[]) => void) | undefined;
   off: (type: any, listener: AnyFunction, ...rest: any[]) => void;
-};
+}
 
 export type EmitterTarget = DomEventTarget | EventTargetLike | EventEmitterLike;
 
@@ -34,16 +35,33 @@ export type GetDomEventType<T extends DomEventTarget> = T['addEventListener'] ex
 
 export type GetDomEventListener<E, EM extends AnyObject> = (
   ev: E extends keyof EM ? EM[E] : Event,
-  ...rest: unknown[]
-) => unknown;
+  ...rest: any[]
+) => any;
 
-export type GetEventTypeFromFn<T extends EventEmitterLike['on']> = T extends {
-  (type: infer K, listener: AnyFunction, ...rest: unknown[]): unknown;
+/** https://github.com/microsoft/TypeScript/issues/32164 */
+export type GetEventTypeFromFn<T> = T extends {
+  (type: infer K1, listener: AnyFunction, ...rest: any[]): any;
+  (type: infer K2, listener: AnyFunction, ...rest: any[]): any;
+  (type: infer K3, listener: AnyFunction, ...rest: any[]): any;
+  (type: infer K4, listener: AnyFunction, ...rest: any[]): any;
 }
-  ? K
-  : string;
+  ? K1 | K2 | K3 | K4
+  : T extends {
+        (type: infer K1, listener: AnyFunction, ...rest: any[]): any;
+        (type: infer K2, listener: AnyFunction, ...rest: any[]): any;
+        (type: infer K3, listener: AnyFunction, ...rest: any[]): any;
+      }
+    ? K1 | K2 | K3
+    : T extends {
+          (type: infer K1, listener: AnyFunction, ...rest: any[]): any;
+          (type: infer K2, listener: AnyFunction, ...rest: any[]): any;
+        }
+      ? K1 | K2
+      : T extends (type: infer K, listener: AnyFunction, ...rest: any[]) => any
+        ? K
+        : string;
 
-export type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
+export type GetEventType<T /* extends EmitterTarget */> = T extends DomEventTarget
   ? GetDomEventType<T>
   : T extends EventEmitterLike
     ? GetEventTypeFromFn<T['on']>
@@ -52,7 +70,7 @@ export type GetEventType<T extends EmitterTarget> = T extends DomEventTarget
       : string;
 
 export type GetEventListener<
-  T extends EmitterTarget,
+  T /* extends EmitterTarget */,
   E,
   EM extends AnyObject = GetEventMap<T>,
 > = T extends DomEventTarget
@@ -126,24 +144,24 @@ export type GetEventMap<T> = T extends Window
                                                   >
                                                 : EmptyObject;
 
-export function isEventTargetLike(target: EmitterTarget): target is EventTargetLike {
+export function isEventTargetLike(target: unknown): target is EventTargetLike {
   return (
     (target as EventTargetLike).addEventListener !== undefined &&
     (target as EventTargetLike).removeEventListener !== undefined
   );
 }
 
-export function isDomEventTarget(target: EmitterTarget): target is DomEventTarget {
+export function isDomEventTarget(target: unknown): target is DomEventTarget {
   return isEventTargetLike(target) && (target as DomEventTarget).dispatchEvent !== undefined;
 }
 
-export function isEventEmitterLike(target: EmitterTarget): target is EventEmitterLike {
+export function isEventEmitterLike(target: unknown): target is EventEmitterLike {
   return (
     !isEventTargetLike(target) &&
     !isDomEventTarget(target) &&
-    target.on !== undefined &&
-    target.once !== undefined &&
-    target.off !== undefined
+    (target as EventEmitterLike).on !== undefined &&
+    (target as EventEmitterLike).once !== undefined &&
+    (target as EventEmitterLike).off !== undefined
   );
 }
 
