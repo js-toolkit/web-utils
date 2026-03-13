@@ -36,7 +36,7 @@ export function getPlatformInfoSync(): PlatformInfo {
       new UAParser(navigator.userAgent).getResult().withFeatureCheck() as UAParser.IResult
     );
   }
-  return (asyncResult ?? syncResult) as PlatformInfo;
+  return asyncResult ?? syncResult!;
 }
 
 export async function getPlatformInfo(): Promise<PlatformInfo> {

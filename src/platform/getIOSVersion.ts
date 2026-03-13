@@ -7,7 +7,7 @@ let memo: Semver | null | undefined;
 export function getIOSVersion(): Semver | undefined {
   if (memo === undefined) {
     const platformInfo = getCachedPlatformInfo() ?? getPlatformInfoSync();
-    if (!platformInfo) return undefined;
+    // if (!platformInfo) return undefined;
     const { os } = platformInfo;
     if (isIOS() && os.version) {
       memo = Semver.parse(os.version);
