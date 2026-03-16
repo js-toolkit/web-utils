@@ -23,8 +23,8 @@
   "devDependencies": {
     "@eslint/compat": "2.0.3",
     "@eslint/js": "10.0.1",
-    "@js-toolkit/configs": "3.105.1",
-    "@js-toolkit/utils": "1.61.0",
+    "@js-toolkit/configs": "3.106.0",
+    "@js-toolkit/utils": "1.62.0",
     "@types/eslint": "9.6.1",
     "@types/lodash.throttle": "4.1.9",
     "@types/uuid": "11.0.0",

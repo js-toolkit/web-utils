@@ -253,10 +253,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@js-toolkit/configs@npm:3.105.1":
-  version: 3.105.1
-  resolution: "@js-toolkit/configs@npm:3.105.1"
-  checksum: 10c0/4d5ce94a877f67ad0824df5ac80220a659cb17d38e0494b77f4566adad3788cc3938164c4b908a267d5ee808df420e160fc0f82a3a4f91a7d2f250ed4a11dbb4
+"@js-toolkit/configs@npm:3.106.0":
+  version: 3.106.0
+  resolution: "@js-toolkit/configs@npm:3.106.0"
+  checksum: 10c0/d11777243ec6a0c99e376d6f7da0c184c5d4df3dfd0a43b725294cd46746dcb1f845f4c57bfdaffcc7cfa4db326ef6c0df6c8ef0cd8f379cfd7fa34df85f8ddd
   languageName: node
   linkType: hard
 
@@ -269,15 +269,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@js-toolkit/utils@npm:1.61.0":
-  version: 1.61.0
-  resolution: "@js-toolkit/utils@npm:1.61.0"
+"@js-toolkit/utils@npm:1.62.0":
+  version: 1.62.0
+  resolution: "@js-toolkit/utils@npm:1.62.0"
   dependencies:
     "@js-toolkit/node-utils": "npm:1.2.6"
   dependenciesMeta:
     "@js-toolkit/node-utils":
       optional: true
-  checksum: 10c0/2233e3d8fe62bd7207002f4002c8582f99d7f25d51b9c343ca9ed408d31f9a0bf660a25c888922a0f7f4502098ff2dca65aa5431b00d72be325043284aaa1026
+  checksum: 10c0/d0d23d819d257816cd54570ff1b7eb179f6fac7f2c785715aa8386272a4c7e1a6e964af319edf70327979d6770c585a260854777bf5b7dbf1e993ce31eff7e94
   languageName: node
   linkType: hard
 
@@ -287,9 +287,9 @@ __metadata:
   dependencies:
     "@eslint/compat": "npm:2.0.3"
     "@eslint/js": "npm:10.0.1"
-    "@js-toolkit/configs": "npm:3.105.1"
+    "@js-toolkit/configs": "npm:3.106.0"
     "@js-toolkit/node-utils": "npm:1.2.6"
-    "@js-toolkit/utils": "npm:1.61.0"
+    "@js-toolkit/utils": "npm:1.62.0"
     "@types/eslint": "npm:9.6.1"
     "@types/lodash.throttle": "npm:4.1.9"
     "@types/uuid": "npm:11.0.0"
